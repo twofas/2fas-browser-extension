@@ -1,0 +1,116 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@import "variables";
+@import "fonts";
+
+:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+  outline: none;
+}
+
+input,
+textarea,
+button {
+  -webkit-appearance: none; /* stylelint-disable-line */
+  appearance: none;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+
+  @media all and (max-width: $screen-sm-max) {
+    font-size: 15px;
+  }
+
+  @media all and (max-width: $screen-xs-max) {
+    font-size: 14px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+body {
+  background-color: $bg;
+  font-family: 'Montserrat', sans-serif;
+  height: 100%;
+  min-height: 100vh;
+  text-rendering: optimizespeed;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $bg-dark;
+  }
+
+  * {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-bottom: 0;
+  margin-top: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+a {
+  color: inherit;
+  outline: none;
+  text-decoration: none;
+}
+
+::-webkit-input-placeholder { /* stylelint-disable-line */
+  color: inherit;
+}
+
+::-moz-placeholder { /* stylelint-disable-line */
+  color: inherit;
+}
+
+:-ms-input-placeholder { /* stylelint-disable-line */
+  color: inherit;
+}
+
+picture {
+  img {
+    display: block;
+  }
+}

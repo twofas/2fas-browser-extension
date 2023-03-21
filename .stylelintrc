@@ -1,0 +1,47 @@
+{
+  "extends": "stylelint-config-recommended-scss",
+  "rules": {
+    "color-no-invalid-hex": true,
+    "font-family-no-duplicate-names": true,
+    "function-calc-no-unspaced-operator": true,
+    "function-linear-gradient-no-nonstandard-direction": true,
+    "unit-no-unknown": true,
+    "shorthand-property-no-redundant-values": true,
+    "keyframe-declaration-no-important": true,
+    "block-no-empty": true,
+    "at-rule-no-unknown": null,
+    "no-unknown-animations": null,
+    "no-empty-source": null,
+    "declaration-block-single-line-max-declarations": 1,
+    "color-hex-length": "short",
+    "function-url-quotes": "always",
+    "length-zero-no-unit": true,
+    "value-keyword-case": "lower",
+    "no-descending-specificity": null,
+    "no-invalid-position-at-import-rule": null,
+    "scss/comment-no-empty": null,
+    "at-rule-empty-line-before": [
+      "always", {
+        "ignore": ["after-comment"],
+        "ignoreAtRules": [
+          "if",
+          "else",
+          "else if",
+          "return",
+          "warn",
+          "for",
+          "import",
+          "mixin",
+          "extend",
+          "include",
+          "media",
+          "content",
+          "keyframes",
+          "-ms-keyframes",
+          "-moz-keyframes",
+          "-webkit-keyframes"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+// COLORS
+$bg: #f4f4f8;
+$bg-dark: #15161b;
+$color: #000;
+$color-2: #fff;
+$color-header: #797a81;
+$desc-color: $color-header;
+$color-header-line: #e4e4e6;
+$color-header-line-dark: #393939;
+$theme-color: #ed1c24;
+$success-color: #50e3c2;
+$dark-color: #1c1d24;
+
+// INPUTS
+$input-bg: #f4f4f8;
+$input-bg-dark: #30313b;
+$input-color: #000;
+$input-color-dark: #fff;
+$button-bg: $input-bg;
+$button-bg-dark: $input-bg-dark;
+
+// OPTIONS PAGE
+$op-rwd-height: 575px;
+
+// RWD
+$screen-xs: 576px;
+$screen-xs-min: $screen-xs;
+$screen-phone: $screen-xs-min;
+$screen-sm: 768px;
+$screen-sm-min: $screen-sm;
+$screen-tablet: $screen-sm-min;
+$screen-md: 992px;
+$screen-md-min: $screen-md;
+$screen-desktop: $screen-md-min;
+$screen-lg: 1200px;
+$screen-lg-min: $screen-lg;
+$screen-lg-desktop: $screen-lg-min;
+$screen-xs-max: ($screen-sm-min - 1);
+$screen-sm-max: ($screen-md-min - 1);
+$screen-md-max: ($screen-lg-min - 1);

@@ -1,0 +1,332 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "variables";
+
+.twofas-shortcut-edit {
+  // VARIABLES
+  $box-bg: $bg;
+  $box-bg-dark: #272931;
+  $btn-bg: $color-2;
+  $btn-bg-dark: #4c4d58;
+  $btn-color: $color;
+  $btn-color-dark: $color-2;
+  $plus-color: #a9aabd;
+  $install-page-bg: #dcdee8;
+  $install-page-shadow: rgba(186, 188, 195, .25);
+  $install-page-btn-color: #979797;
+  $tooltip-bg: $color-2;
+  $tooltip-bg-dark: #30313b;
+  $tooltip-color: $color;
+  $tooltip-color-dark: $color-2;
+  $tooltip-shadow-color: rgba(186, 188, 195, .25);
+  $tooltip-shadow-color-dark: rgba(0, 0, 0, .25);
+  $tooltip-x-bg: #f5f5f8;
+  $tooltip-x-bg-dark: #272931;
+  $tooltip-x-color: #b3b3b3;
+
+  margin-top: 61px;
+  max-width: 306px;
+  width: 100%;
+
+  @media all and (max-width: $screen-sm-max) {
+    margin-top: 40px;
+  }
+
+  @media all and (max-width: $screen-xs-max) {
+    margin-top: 20px;
+  }
+
+  &.twofas-shortcut-edit-box-install {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0;
+    max-width: unset;
+    width: 100%;
+
+    @media all and (max-width: $screen-xs-max) {
+      display: inline-flex;
+      width: auto;
+    }
+
+    .twofas-install-page-configured-breadcrumbs-item-left & {
+      justify-content: flex-end;
+    }
+
+    .twofas-install-page-configured-breadcrumbs-item-right & {
+      justify-content: flex-start;
+    }
+
+    .twofas-shortcut-edit-box {
+      background-color: $install-page-bg;
+      border-radius: 25px;
+      margin-bottom: 0;
+      padding: 14px 27px;
+      position: relative;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $box-bg-dark;
+      }
+
+      @media all and (max-width: $screen-sm-max) {
+        padding: 11px 24px;
+      }
+
+      &::before {
+        background-color: $install-page-shadow;
+        content: "";
+        display: block;
+        filter: blur(30px);
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 30px;
+        width: 100%;
+        z-index: 1;
+
+        @media (prefers-color-scheme: dark) {
+          background-color: rgba($box-bg-dark, .25);
+        }
+
+        @media all and (max-width: $screen-xs-max) {
+          background-color: rgba($install-page-shadow, .125);
+          left: 0;
+          filter: blur(15px);
+          top: 0;
+
+          @media (prefers-color-scheme: dark) {
+            background-color: rgba($box-bg-dark, .125);
+          }
+        }
+      }
+
+      &::after {
+        background-color: $install-page-bg;
+        border-radius: 25px;
+        content: "";
+        display: block;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 2;
+
+        @media (prefers-color-scheme: dark) {
+          background-color: $box-bg-dark;
+        }
+      }
+
+      &-btn {
+        border-radius: 6px;
+        color: $install-page-btn-color;
+        font-size: 21px;
+        font-weight: 600;
+        margin-right: 10px;
+        min-width: 70px;
+        padding: 24px 15px;
+        position: relative;
+        text-align: center;
+        z-index: 3;
+
+        @media (prefers-color-scheme: dark) {
+          color: $color-2;
+        }
+
+        @media all and (max-width: $screen-sm-max) {
+          font-size: 16px;
+          font-weight: 400;
+          min-width: 50px;
+          padding: 15px 10px;
+        }
+
+        &:first-of-type:last-of-type {
+          margin-right: 0;
+        }
+      }
+
+      &-plus {
+        font-size: 26px;
+        margin-right: 10px;
+        position: relative;
+        z-index: 3;
+      }
+    }
+  }
+
+  &-box {
+    align-items: center;
+    background-color: $box-bg;
+    border-radius: 12px;
+    display: inline-flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+    padding: 27px;
+    position: relative;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: $box-bg-dark;
+    }
+
+    @media all and (max-width: 480px) {
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    &-btn {
+      background-color: $btn-bg;
+      border-radius: 3px;
+      color: $btn-color;
+      font-size: 14px;
+      font-weight: 400;
+      margin-right: 8px;
+      padding: 12px 13px;
+      pointer-events: none;
+      user-select: none;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $btn-bg-dark;
+        color: $btn-color-dark;
+      }
+    }
+
+    &-plus {
+      color: $plus-color;
+      font-size: 16px;
+      font-weight: 600;
+      margin-right: 8px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &-firefox-tooltip {
+      background-color: $tooltip-bg;
+      bottom: 90%;
+      box-shadow: 10px 10px 40px $tooltip-shadow-color;
+      color: $tooltip-color;
+      display: none;
+      left: 222px;
+      padding: 24px 28px;
+      position: absolute;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $tooltip-bg-dark;
+        box-shadow: 10px 10px 40px $tooltip-shadow-color-dark;
+        color: $tooltip-color-dark;
+      }
+
+      @media all and (max-width: 640px) {
+        bottom: 100%;
+        left: 0;
+        padding: 15px 50px 15px 15px;
+      }
+
+      &::after {
+        border-color: $tooltip-bg transparent transparent transparent;
+        border-style: solid;
+        border-width: 15px 14.5px 0;
+        bottom: -14px;
+        content: "";
+        display: block;
+        height: 0;
+        left: 28px;
+        position: absolute;
+        width: 0;
+
+        @media (prefers-color-scheme: dark) {
+          border-color: $tooltip-bg-dark transparent transparent transparent;
+        }
+
+        @media all and (max-width: $screen-sm-max) {
+          display: none;
+        }
+      }
+
+      &.visible {
+        display: block;
+      }
+
+      &-close {
+        cursor: pointer;
+        position: absolute;
+        right: 0;
+        top: 0;
+
+        &:hover {
+          .twofas-shortcut-edit-box-firefox-tooltip-close-bg {
+            fill: color.adjust($tooltip-x-bg, $lightness: -5%);
+
+            @media (prefers-color-scheme: dark) {
+              fill: color.adjust($tooltip-x-bg-dark, $lightness: -5%);
+            }
+          }
+
+          .twofas-shortcut-edit-box-firefox-tooltip-close-x {
+            fill: color.adjust($tooltip-x-color, $lightness: -10%);
+          }
+        }
+
+        &-bg {
+          fill: $tooltip-x-bg;
+          transition: fill .2s ease-in-out;
+
+          @media (prefers-color-scheme: dark) {
+            fill: $tooltip-x-bg-dark;
+          }
+        }
+
+        &-x {
+          fill: $tooltip-x-color;
+          transition: fill .2s ease-in-out;
+        }
+      }
+
+      p {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 18px;
+        width: 319px;
+        max-width: calc(100% - 66px);
+
+        @media all and (max-width: 640px) {
+          max-width: 100%;
+          width: 100%;
+        }
+      }
+    }
+
+    .btn-clear {
+      margin-left: 19px;
+      padding-left: 0;
+      padding-right: 0;
+
+      @media all and (max-width: $screen-xs-max) {
+        margin-left: 5px;
+      }
+    }
+  }
+
+  p {
+    color: $desc-color;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+  }
+}

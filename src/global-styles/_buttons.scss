@@ -1,0 +1,360 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "variables";
+
+.btn {
+  // VARIABLES
+  $btn-icon-bg: $color-2;
+
+  -moz-appearance: none; /* stylelint-disable-line */
+  -webkit-appearance: none; /* stylelint-disable-line */
+  appearance: none;
+  background-color: transparent;
+  border: 0;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  height: 40px;
+  letter-spacing: .646px;
+  line-height: 40px;
+  outline: none !important;
+  padding: 0 35px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color .2s ease-in-out, color .2s ease-in-out;
+
+  // SIZES
+  &.btn-xxl {
+    border-radius: 58px;
+    font-size: 36px;
+    font-weight: 700;
+    height: 116px;
+    line-height: 116px;
+    padding: 0 48px;
+
+    @media all and (max-width: $screen-md-max) {
+      border-radius: 50px;
+      font-size: 32px;
+      height: 100px;
+      line-height: 100px;
+      padding: 0 32px;
+    }
+
+    @media all and (max-width: $screen-sm-max) {
+      border-radius: 40px;
+      font-size: 28px;
+      height: 80px;
+      line-height: 80px;
+    }
+
+    @media all and (max-width: $screen-xs-max) {
+      font-size: 24px;
+      line-height: 1;
+      padding: 32px;
+    }
+
+    @media all and (max-width: 400px) {
+      font-size: 20px;
+      height: 60px;
+      padding: 24px;
+    }
+  }
+
+  &.btn-lg {
+    border-radius: 25.5px;
+    font-size: 14px;
+    font-weight: 600;
+    height: 51px;
+    letter-spacing: .9px;
+    line-height: 51px;
+    padding: 0 35px;
+    text-transform: uppercase;
+
+    .btn-icon {
+      height: 41px;
+      width: 41px;
+    }
+  }
+
+  &.btn-sm {
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 600;
+    height: 36px;
+    letter-spacing: 0.9px;
+    line-height: 36px;
+    padding: 0 5px;
+    text-transform: uppercase;
+    width: 260px;
+  }
+
+  // COLORS
+  &.btn-clear {
+    color: $theme-color;
+
+    &:hover {
+      color: color.adjust($theme-color, $lightness: -10%);
+    }
+
+    &:active {
+      color: color.adjust($theme-color, $lightness: -20%);
+    }
+  }
+
+  &.btn-theme {
+    background-color: $theme-color;
+    color: $color-2;
+
+    svg {
+      fill: $theme-color;
+    }
+
+    &:hover {
+      background-color: color.adjust($theme-color, $lightness: -10%);
+
+      svg {
+        fill: color.adjust($theme-color, $lightness: -10%);
+      }
+    }
+
+    &:active {
+      background-color: color.adjust($theme-color, $lightness: -20%);
+
+      svg {
+        fill: color.adjust($theme-color, $lightness: -20%);
+      }
+    }
+  }
+
+  &.btn-theme-outline {
+    background-color: transparent;
+    border: 2px solid $theme-color;
+    color: $color-2;
+    transition: background-color .2s ease-in-out, color .2s ease-in-out, border-color .2s ease-in-out;
+
+    svg {
+      fill: $theme-color;
+    }
+
+    &:hover {
+      border-color: color.adjust($theme-color, $lightness: -10%);
+      color: color.adjust($theme-color, $lightness: -10%);
+
+      svg {
+        fill: color.adjust($theme-color, $lightness: -10%);
+      }
+    }
+
+    &:active {
+      border-color: color.adjust($theme-color, $lightness: -20%);
+      color: color.adjust($theme-color, $lightness: -20%);
+
+      svg {
+        fill: color.adjust($theme-color, $lightness: -20%);
+      }
+    }
+  }
+
+  // OTHER
+  &.btn-intro {
+    align-items: center;
+    display: inline-flex;
+    gap: 0 32px;
+    min-width: 250px;
+    text-transform: unset;
+
+    @media all and (max-width: $screen-sm-max) {
+      gap: 0 16px;
+    }
+
+    @media all and (max-width: 400px) {
+      min-width: 205px;
+    }
+  }
+
+  &.btn-got-it {
+    padding: 0 24px;
+  }
+
+  &.btn-download-app {
+    align-items: center;
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 5px 0 29px;
+
+    > span:not(.btn-icon) {
+      flex-grow: 1;
+      margin-right: 28px;
+    }
+  }
+
+  &.btn-app-installed {
+    align-items: center;
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 5px 0 24px;
+
+    @media all and (max-width: 400px) {
+      .btn-icon {
+        display: none;
+      }
+    }
+
+    > span:not(.btn-icon) {
+      flex-grow: 1;
+      margin-right: 16px;
+    }
+  }
+
+  &.btn-config {
+    align-items: center;
+    color: $theme-color;
+    display: inline-flex;
+    gap: 0 6px;
+    padding: 0 24px;
+
+    .btn-icon {
+      background: transparent;
+      transform: rotate(90deg);
+    }
+  }
+
+  &.btn-install-back {
+    align-items: center;
+    display: inline-flex;
+    padding-left: 0;
+
+    @media all and (max-width: 700px) {
+      padding-left: inherit;
+    }
+
+    svg {
+      height: 10px;
+      margin-right: 10px;
+      width: 5px;
+    }
+  }
+
+  // ICON
+  .btn-icon {
+    align-items: center;
+    background-color: $btn-icon-bg;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+
+    svg {
+      transition: stroke .2s ease-in-out, fill .2s ease-in-out;
+    }
+  }
+}
+
+.twofas-toggle {
+  // VARIABLES
+  $twofas-toggle-circle-bg: $color-2;
+
+  &.loaded {
+    label {
+      .twofas-toggle-box {
+        transition: background-color .2s ease-in-out;
+
+        .twofas-toggle-box-circle {
+          transition: transform .2s ease-in-out;
+        }
+      }
+    }
+  }
+
+  input[type="checkbox"] {
+    display: none;
+
+    &:checked {
+      + label {
+        .twofas-toggle-box {
+          background-color: $theme-color;
+
+          .twofas-toggle-box-circle {
+            transform: translateX(15px);
+          }
+        }
+      }
+    }
+  }
+
+  label {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    flex-direction: row;
+    letter-spacing: 0;
+    text-transform: none;
+
+    .twofas-toggle-box {
+      border-radius: 9px;
+      background: $color-header;
+      display: block;
+      height: 17px;
+      margin-right: 10px;
+      position: relative;
+      width: 32px;
+
+      .twofas-toggle-box-circle {
+        background-color: $twofas-toggle-circle-bg;
+        border-radius: 50%;
+        height: 13px;
+        left: 2px;
+        position: absolute;
+        top: 2px;
+        transform: translateX(0);
+        width: 13px;
+      }
+    }
+
+    .twofas-toggle-text {
+      user-select: none;
+
+      > span {
+        color: $color;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 17px;
+        user-select: none;
+
+        @media all and (prefers-color-scheme: dark) {
+          color: $color-2;
+        }
+
+        @media all and (max-width: $screen-xs-max) {
+          font-size: 12px;
+        }
+
+        @media all and (max-width: 360px) {
+          font-size: 11px;
+        }
+      }
+    }
+  }
+}

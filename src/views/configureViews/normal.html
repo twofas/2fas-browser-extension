@@ -1,0 +1,65 @@
+<!--
+
+  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+  Copyright © 2023 Two Factor Authentication Service, Inc.
+  Contributed by Grzegorz Zając. All rights reserved.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>
+
+-->
+<div class="twofas-app-phone">
+  <div class="twofas-app-phone-left">
+    <div class="twofas-app-qr-number">
+      <span>1</span>
+      <small>/2</small>
+    </div>
+    
+    <h4 class="twofas-app-phone-header">
+      <span data-i18n="install">Install</span><br />
+      <span data-i18n="2faAuthenticator2FAS">2FA Authenticator (2FAS)</span>
+    </h4>
+
+    <div class="twofas-app-phone-stores">
+      <a href="https://apps.apple.com/us/app/2fas-auth/id1217793794" rel="noreferrer noopener" target="_blank" class="twofas-new-tab-link">
+        <img data-i18n="2fasAuthAP" src="../../images/app_store.svg" alt="2FAS Auth on App Store">
+      </a>
+      <a href="https://play.google.com/store/apps/details?id=com.twofasapp" rel="noreferrer noopener" target="_blank" class="twofas-new-tab-link">
+        <img data-i18n="2fasAuthGP" src="../../images/google_play.svg" alt="2FAS Auth on Google Play">
+      </a>
+    </div>
+
+    <button class="btn btn-theme btn-lg btn-app-installed js-twofas-install-handler" data-step="2">
+      <span data-i18n="installAppInstalled">I've installed the app</span>
+      <div class="btn-icon">
+        <svg width="14" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5.5v4h-6v6h6v4l7-7-7-7z"/><mask id="prefix__a" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="14" height="15"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5.5v4h-6v6h6v4l7-7-7-7z" fill="#fff"/></mask></svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="twofas-app-phone-right">
+    <div class="twofas-app-phone-right-icon">
+      <img data-i18n="2fasAuthApp" src="../../images/shield-logo.svg" alt="2FAS" />
+    </div>
+
+    <picture class="twofas-app-phone-img twofas-app-phone-img-light">
+      <source srcSet="../../images/phone@3x.png 3x, ../../images/phone@2x.png 2x, ../../images/phone.png 1x" type="image/png" />
+      <img data-i18n="2fasAuthApp" src="../../images/phone.png" alt='2FAS Auth App' />
+    </picture>
+
+    <picture class="twofas-app-phone-img twofas-app-phone-img-dark">
+      <source srcSet="../../images/phone-dark@3x.png 3x, ../../images/phone-dark@2x.png 2x, ../../images/phone-dark.png 1x" type="image/png" />
+      <img data-i18n="2fasAuthApp" src="../../images/phone-dark.png" alt='2FAS Auth App' />
+    </picture>
+  </div>
+</div>

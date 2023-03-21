@@ -1,0 +1,109 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "../../global-styles/variables";
+
+&-pin-info {
+  // VARIABLES
+  $backdrop-color: rgba(#4f4f4f, 50%);
+  $backdrop-dark-color: rgba($color, 50%);
+  $box-bg-dark: #202229;
+  
+  align-items: flex-start;
+  background-color: $backdrop-color;
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+  left: 0;
+  opacity: 1;
+  padding: 12px;
+  position: fixed;
+  top: 0;
+  transition: opacity .25s ease-in-out;
+  width: 100%;
+  z-index: 9999;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $backdrop-dark-color;
+  }
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &-box {
+    background-color: $color-2;
+    border-radius: 24px;
+    padding: 16px;
+    max-width: 352px;
+    text-align: center;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: $box-bg-dark;
+    }
+
+    &-header {
+      color: $color;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 20px;
+      margin-bottom: 8px;
+
+      @media (prefers-color-scheme: dark) {
+        color: $color-2;
+      }
+    }
+
+    &-subheader {
+      color: $color-header;
+      font-size: 12px;
+      line-height: 1.17;
+      margin-bottom: 17px;
+
+      @media (prefers-color-scheme: dark) {
+        color: $color-2;
+      }
+    }
+
+    img {
+      margin-bottom: 20px;
+      width: 100%;
+
+      &.light {
+        display: block;
+      }
+
+      &.dark {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        &.light {
+          display: none;
+        }
+
+        &.dark {
+          display: block;
+        }
+      }
+    }
+  }
+}

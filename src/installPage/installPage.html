@@ -1,0 +1,159 @@
+<!--
+
+  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+  Copyright © 2023 Two Factor Authentication Service, Inc.
+  Contributed by Grzegorz Zając. All rights reserved.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title data-i18n="installTitle">2FAS Browser Extension | Configuration</title>
+
+  <style>.preload{display:flex;justify-content:center;align-items:center;position:fixed;z-index:10000;visibility:hidden;opacity:0;width:100vw;height:100vh;top:0;background-color:#f4f4f8;transition:opacity .4s ease-in-out,visibility 0s .4s;will-change:opacity}@media (prefers-color-scheme:dark){.preload{background-color:#202023}}.show-preloader{visibility:visible;opacity:1}.circle{background-color:#ed1c24;height:10px;width:10px;border-radius:50%;display:inline-block;animation:bounce-circles .7s infinite ease-in-out;margin:0 5px}.preload .circle:nth-child(1){animation-delay:-.6s}.preload .circle:nth-child(2){animation-delay:-.5s}.preload .circle:nth-child(3){animation-delay:-.4s}.preload .circle:nth-child(4){animation-delay:-.3s}@keyframes bounce-circles{0%,100%,40%{transform:translateY(-10px)}20%{transform:translateY(-20px)}} /* stylelint-disable-line */</style>
+</head>
+<body>
+  <div class="preload show-preloader"><div class="circles-group"><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div></div></div>
+
+  <div class="twofas-install-page">
+    <div class="twofas-install-page-header">
+      <div class="twofas-install-page-header-logo">
+        <img data-i18n="2fasLogo" src="<%=require('../images/logo.svg')%>" alt="2FAS Logo" class="twofas-install-page-header-logo-light">
+        <img data-i18n="2fasLogo" src="<%=require('../images/logo-dark.svg')%>" alt="2FAS Logo" class="twofas-install-page-header-logo-dark">
+      </div>
+    </div>
+
+    <div class="twofas-install-page-container">
+      <div class="twofas-install-page-new-device hidden">
+        <div class="twofas-install-page-container-header">
+          <h1 data-i18n="installH1">To start, you need to pair this extension with the 2FAS mobile application.</h1>
+        </div>
+
+        <div class="twofas-install-page-container-blocks">
+          <div class="twofas-install-page-container-blocks-app active">
+            <%= require.context('html-loader!../views/configureViews', false, CONFIGURE_VIEW_REGEXP)(CONFIGURE_VIEW_FILENAME).default %>
+          </div>
+          <div class="twofas-install-page-container-blocks-qr">
+            <div class="twofas-app-qr">
+              <div class="twofas-app-qr-left">
+                <div class="twofas-app-qr-number">
+                  <span>2</span>
+                  <small>/2</small>
+                </div>
+
+                <div class="twofas-qr-container">
+                  <div class="twofas-qr-container-timeout">
+                    <p>The QR code has expired</p>
+                    <button class="btn btn-sm btn-theme js-twofas-regenerate-qr">Click here to regenerate</button>
+                  </div>
+
+                  <img data-i18n="qrCode" src="#" alt="QR Code" class="twofas-js-qrcode">
+                </div>
+
+                <h4 class="twofas-app-qr-header" data-i18n="installScan">Scan this code with your 2FAS mobile app</h4>
+                <div class="twofas-app-qr-steps">
+                  <div class="twofas-app-qr-steps-item">
+                    <div class="twofas-app-qr-steps-item-number">1</div>
+                    <div data-i18n="installStep1" class="twofas-app-qr-steps-item-desc">Open the 2FAS mobile app</div>
+                  </div>
+                  <div class="twofas-app-qr-steps-item">
+                    <div class="twofas-app-qr-steps-item-number">2</div>
+                    <div data-i18n="installStep2" class="twofas-app-qr-steps-item-desc">Go to Settings → Browser Extension</div>
+                  </div>
+                  <div class="twofas-app-qr-steps-item">
+                    <div class="twofas-app-qr-steps-item-number">3</div>
+                    <div data-i18n="installStep3" class="twofas-app-qr-steps-item-desc">Tap "Pair with web browser" and scan the QR code</div>
+                  </div>
+                </div>
+                <button class="btn btn-clear btn-install-back js-twofas-install-handler" data-step="1">
+                  <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 11L1 6L6 1" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                    
+                  <span data-i18n="installBackToStep1">Back to step 1</span>
+                </button>
+              </div>
+              <div class="twofas-app-qr-right">
+                <div class="twofas-app-qr-right-icon">
+                  <img data-i18n="2fasAuthApp" src="<%=require('../images/shield-logo.svg')%>" alt="2FAS" />
+                </div>
+
+                <div class="twofas-app-qr-img-container">
+                  <div class="twofas-qr-container">
+                    <div class="twofas-qr-container-timeout">
+                      <p data-i18n="installQRTimeoutText">The QR code has expired</p>
+                      <button data-i18n="installQRTimeoutButton" class="btn btn-sm btn-theme js-twofas-regenerate-qr">Click here to regenerate</button>
+                    </div>
+
+                    <img data-i18n="qrCode" src="#" alt="QR Code" class="twofas-js-qrcode">
+                  </div>
+  
+                  <img class="twofas-app-qr-border" data-i18n="2fasAuthApp" src="<%=require('../images/qr-border.svg')%>" alt="2FAS Auth App">
+
+                  <picture class="twofas-app-qr-img twofas-app-qr-img-light">
+                    <source srcSet="<%=require('../images/qr-phone@3x.png')%> 3x, <%=require('../images/qr-phone@2x.png')%> 2x, <%=require('../images/qr-phone.png')%> 1x" type="image/png" />
+                    <img data-i18n="2fasAuthApp" src="<%=require('../images/qr-phone.png')%>" alt='2FAS Auth App' />
+                  </picture>
+  
+                  <picture class="twofas-app-qr-img twofas-app-qr-img-dark">
+                    <source srcSet="<%=require('../images/qr-phone-dark@3x.png')%> 3x, <%=require('../images/qr-phone-dark@2x.png')%> 2x, <%=require('../images/qr-phone-dark.png')%> 1x" type="image/png" />
+                    <img data-i18n="2fasAuthApp" src="<%=require('../images/qr-phone-dark.png')%>" alt='2FAS Auth App' />
+                  </picture>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="twofas-install-page-configured hidden">
+        <div class="twofas-install-page-configured-header">
+          <h2 data-i18n="installSuccessHeader">2FAS extension is successfully paired with your 2FAS app</h2>
+          <h3 data-i18n="installSuccessSubheader">Now you can quickly autofill Two-Factor forms with mobile app confirmation.</h3>
+          <hr />
+          <h4 data-i18n="installStart">Learn how it works</h4>
+        </div>
+
+        <div class="twofas-install-page-configured-video">
+          <a class="btn btn-theme btn-xxl btn-intro twofas-new-tab-link" href="https://2fas.com/be-video/" target="_blank" rel="noreferrer noopener">
+            <svg width="48" height="60" viewBox="0 0 48 60" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 0V60L47.1429 30L0 0Z" fill="white"/>
+            </svg>
+
+            <span data-i18n="playVideo">Play video</span>
+          </a>
+          <img data-i18n="playVideo" src="<%=require('../images/intro-video-bg.svg')%>" alt="Play video">
+        </div>
+
+        <a href="../optionsPage/optionsPage.html" class="btn btn-theme btn-lg btn-open-tutorial" data-i18n="installGoToSettings">Go to settings</a>
+      </div>
+    </div>
+
+    <div class="twofas-install-page-footer">
+      <div class="twofas-install-page-footer-faq">
+        <p>
+          <span data-i18n="installQuestions">Any questions? Read our</span>&nbsp;
+          <a href="https://support.2fas.com/" target="_blank" rel="noopener norefferer" class="twofas-new-tab-link" data-i18n="2fasSupport">2FAS Support</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="twofas-be-notifications"></div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "optionsTitle": "2FAS Browser Extension | Options",
+  "optionsHeader": "2FAS Browser Extension Settings",
+  "optionsIntroHeader": "Introduction to 2FAS Browser Extension",
+  "optionsIntro": "Intro",
+  "optionsSettings": "Settings",
+  "optionsAbout": "About 2FAS",
+  "optionsDonate": "Donate",
+  "optionsPairedHeader": "Paired devices:",
+  "optionsAddAnotherDevice": "Add another device",
+  "optionsLogsLabel": "Approve 2FAS Browser Extension logs",
+  "optionsLogsDesc": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
+  "optionsPushDesc": "Choose a notification mechanism which will prompt you about communication with the 2FAS mobile app when you use this browser extension.",
+  "optionsPushCustom": "2FAS Custom Notifications",
+  "optionsPushNative": "Native Browser's Notifications",
+  "optionsPushTest": "Test push Notification",
+  "optionsPushConfigDesc1": "Native Browser's Notifications do not work?",
+  "optionsPushConfigDesc2": "Make sure they are enabled in the system settings",
+  "optionsShortcutFirefoxDesc": "To set or change this shortcut go to your browser settings, and extensions, then click on the gear icon and choose “Manage Extension Shortcuts.”",
+  "optionsPinHeader": "Pin 2FAS for faster authentication",
+  "optionsPinDesc": "Check the Extension List to make it visible."
+}

@@ -1,0 +1,680 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3719092328C5F9940088849E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3719092228C5F9940088849E /* AppDelegate.swift */; };
+		3719092628C5F9940088849E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3719092428C5F9940088849E /* Main.storyboard */; };
+		3719093828C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3719093728C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3719093F28C5F9940088849E /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 3719090128C5F9930088849E /* Main.html */; };
+		3719094128C5F9940088849E /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3719090328C5F9930088849E /* Icon.png */; };
+		3719094328C5F9940088849E /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 3719090428C5F9930088849E /* Style.css */; };
+		3719094528C5F9940088849E /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = 3719090528C5F9930088849E /* Script.js */; };
+		3719094728C5F9940088849E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3719090628C5F9930088849E /* ViewController.swift */; };
+		3719094928C5F9940088849E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3719090728C5F9940088849E /* Assets.xcassets */; };
+		3719094B28C5F9940088849E /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3719090928C5F9940088849E /* SafariWebExtensionHandler.swift */; };
+		3719096328C5F9950088849E /* background in Resources */ = {isa = PBXBuildFile; fileRef = 3719095D28C5F9950088849E /* background */; };
+		3719096428C5F9950088849E /* images in Resources */ = {isa = PBXBuildFile; fileRef = 3719095E28C5F9950088849E /* images */; };
+		3719096528C5F9950088849E /* content in Resources */ = {isa = PBXBuildFile; fileRef = 3719095F28C5F9950088849E /* content */; };
+		3719096628C5F9950088849E /* installPage in Resources */ = {isa = PBXBuildFile; fileRef = 3719096028C5F9950088849E /* installPage */; };
+		3719096728C5F9950088849E /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 3719096128C5F9950088849E /* manifest.json */; };
+		3719096828C5F9950088849E /* optionsPage in Resources */ = {isa = PBXBuildFile; fileRef = 3719096228C5F9950088849E /* optionsPage */; };
+		37BADBE929780746003C32E1 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = 37BADBE829780746003C32E1 /* _locales */; };
+		37BADBEB29780758003C32E1 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 37BADBEA29780758003C32E1 /* fonts */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3719093928C5F9940088849E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 371908FB28C5F9930088849E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3719093628C5F9940088849E;
+			remoteInfo = "2FAS - Two factor authentication Extension (macOS)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3719095828C5F9940088849E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3719093828C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		3719090228C5F9930088849E /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		3719090328C5F9930088849E /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		3719090428C5F9930088849E /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		3719090528C5F9930088849E /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		3719090628C5F9930088849E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		3719090728C5F9940088849E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3719090928C5F9940088849E /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		3719091128C5F9940088849E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3719091328C5F9940088849E /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		3719091628C5F9940088849E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3719091928C5F9940088849E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3719091B28C5F9940088849E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3719092028C5F9940088849E /* 2FAS - Two Factor Authentication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "2FAS - Two Factor Authentication.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3719092228C5F9940088849E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3719092528C5F9940088849E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3719092728C5F9940088849E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3719092828C5F9940088849E /* 2FAS - Two factor authentication.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "2FAS - Two factor authentication.entitlements"; sourceTree = "<group>"; };
+		3719093228C5F9940088849E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3719093728C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "2FAS - Two Factor Authentication Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3719093C28C5F9940088849E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3719093D28C5F9940088849E /* 2FAS - Two factor authentication.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "2FAS - Two factor authentication.entitlements"; sourceTree = "<group>"; };
+		3719095D28C5F9950088849E /* background */ = {isa = PBXFileReference; lastKnownFileType = folder; name = background; path = ../../public/background; sourceTree = "<group>"; };
+		3719095E28C5F9950088849E /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = images; path = ../../public/images; sourceTree = "<group>"; };
+		3719095F28C5F9950088849E /* content */ = {isa = PBXFileReference; lastKnownFileType = folder; name = content; path = ../../public/content; sourceTree = "<group>"; };
+		3719096028C5F9950088849E /* installPage */ = {isa = PBXFileReference; lastKnownFileType = folder; name = installPage; path = ../../public/installPage; sourceTree = "<group>"; };
+		3719096128C5F9950088849E /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../public/manifest.json; sourceTree = "<group>"; };
+		3719096228C5F9950088849E /* optionsPage */ = {isa = PBXFileReference; lastKnownFileType = folder; name = optionsPage; path = ../../public/optionsPage; sourceTree = "<group>"; };
+		37BADBE829780746003C32E1 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../public/_locales; sourceTree = "<group>"; };
+		37BADBEA29780758003C32E1 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../public/fonts; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3719091D28C5F9940088849E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3719093428C5F9940088849E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		371908FA28C5F9930088849E = {
+			isa = PBXGroup;
+			children = (
+				371908FF28C5F9930088849E /* Shared (App) */,
+				3719090828C5F9940088849E /* Shared (Extension) */,
+				3719091028C5F9940088849E /* iOS (App) */,
+				3719092128C5F9940088849E /* macOS (App) */,
+				3719093128C5F9940088849E /* iOS (Extension) */,
+				3719093B28C5F9940088849E /* macOS (Extension) */,
+				3719090F28C5F9940088849E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		371908FF28C5F9930088849E /* Shared (App) */ = {
+			isa = PBXGroup;
+			children = (
+				3719090628C5F9930088849E /* ViewController.swift */,
+				3719090728C5F9940088849E /* Assets.xcassets */,
+				3719090028C5F9930088849E /* Resources */,
+			);
+			path = "Shared (App)";
+			sourceTree = "<group>";
+		};
+		3719090028C5F9930088849E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3719090128C5F9930088849E /* Main.html */,
+				3719090328C5F9930088849E /* Icon.png */,
+				3719090428C5F9930088849E /* Style.css */,
+				3719090528C5F9930088849E /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		3719090828C5F9940088849E /* Shared (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				3719095C28C5F9950088849E /* Resources */,
+				3719090928C5F9940088849E /* SafariWebExtensionHandler.swift */,
+			);
+			path = "Shared (Extension)";
+			sourceTree = "<group>";
+		};
+		3719090F28C5F9940088849E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3719092028C5F9940088849E /* 2FAS - Two Factor Authentication.app */,
+				3719093728C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3719091028C5F9940088849E /* iOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				3719091128C5F9940088849E /* AppDelegate.swift */,
+				3719091328C5F9940088849E /* SceneDelegate.swift */,
+				3719091528C5F9940088849E /* LaunchScreen.storyboard */,
+				3719091828C5F9940088849E /* Main.storyboard */,
+				3719091B28C5F9940088849E /* Info.plist */,
+			);
+			path = "iOS (App)";
+			sourceTree = "<group>";
+		};
+		3719092128C5F9940088849E /* macOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				3719092228C5F9940088849E /* AppDelegate.swift */,
+				3719092428C5F9940088849E /* Main.storyboard */,
+				3719092728C5F9940088849E /* Info.plist */,
+				3719092828C5F9940088849E /* 2FAS - Two factor authentication.entitlements */,
+			);
+			path = "macOS (App)";
+			sourceTree = "<group>";
+		};
+		3719093128C5F9940088849E /* iOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				3719093228C5F9940088849E /* Info.plist */,
+			);
+			path = "iOS (Extension)";
+			sourceTree = "<group>";
+		};
+		3719093B28C5F9940088849E /* macOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				3719093C28C5F9940088849E /* Info.plist */,
+				3719093D28C5F9940088849E /* 2FAS - Two factor authentication.entitlements */,
+			);
+			path = "macOS (Extension)";
+			sourceTree = "<group>";
+		};
+		3719095C28C5F9950088849E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				37BADBEA29780758003C32E1 /* fonts */,
+				37BADBE829780746003C32E1 /* _locales */,
+				3719095D28C5F9950088849E /* background */,
+				3719095E28C5F9950088849E /* images */,
+				3719095F28C5F9950088849E /* content */,
+				3719096028C5F9950088849E /* installPage */,
+				3719096128C5F9950088849E /* manifest.json */,
+				3719096228C5F9950088849E /* optionsPage */,
+			);
+			name = Resources;
+			path = "Shared (Extension)";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3719091F28C5F9940088849E /* 2FAS - Two Factor Authentication (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3719095928C5F9940088849E /* Build configuration list for PBXNativeTarget "2FAS - Two Factor Authentication (macOS)" */;
+			buildPhases = (
+				3719091C28C5F9940088849E /* Sources */,
+				3719091D28C5F9940088849E /* Frameworks */,
+				3719091E28C5F9940088849E /* Resources */,
+				3719095828C5F9940088849E /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3719093A28C5F9940088849E /* PBXTargetDependency */,
+			);
+			name = "2FAS - Two Factor Authentication (macOS)";
+			productName = "2FAS - Two factor authentication (macOS)";
+			productReference = 3719092028C5F9940088849E /* 2FAS - Two Factor Authentication.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3719093628C5F9940088849E /* 2FAS - Two Factor Authentication Extension (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3719095528C5F9940088849E /* Build configuration list for PBXNativeTarget "2FAS - Two Factor Authentication Extension (macOS)" */;
+			buildPhases = (
+				3719093328C5F9940088849E /* Sources */,
+				3719093428C5F9940088849E /* Frameworks */,
+				3719093528C5F9940088849E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "2FAS - Two Factor Authentication Extension (macOS)";
+			productName = "2FAS - Two factor authentication Extension (macOS)";
+			productReference = 3719093728C5F9940088849E /* 2FAS - Two Factor Authentication Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		371908FB28C5F9930088849E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1340;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					3719091F28C5F9940088849E = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+					3719093628C5F9940088849E = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+				};
+			};
+			buildConfigurationList = 371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two factor authentication" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 371908FA28C5F9930088849E;
+			productRefGroup = 3719090F28C5F9940088849E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3719091F28C5F9940088849E /* 2FAS - Two Factor Authentication (macOS) */,
+				3719093628C5F9940088849E /* 2FAS - Two Factor Authentication Extension (macOS) */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3719091E28C5F9940088849E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3719094128C5F9940088849E /* Icon.png in Resources */,
+				3719094328C5F9940088849E /* Style.css in Resources */,
+				3719092628C5F9940088849E /* Main.storyboard in Resources */,
+				3719094528C5F9940088849E /* Script.js in Resources */,
+				3719094928C5F9940088849E /* Assets.xcassets in Resources */,
+				3719093F28C5F9940088849E /* Main.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3719093528C5F9940088849E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3719096528C5F9950088849E /* content in Resources */,
+				3719096428C5F9950088849E /* images in Resources */,
+				3719096828C5F9950088849E /* optionsPage in Resources */,
+				3719096728C5F9950088849E /* manifest.json in Resources */,
+				3719096328C5F9950088849E /* background in Resources */,
+				37BADBE929780746003C32E1 /* _locales in Resources */,
+				3719096628C5F9950088849E /* installPage in Resources */,
+				37BADBEB29780758003C32E1 /* fonts in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3719091C28C5F9940088849E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3719094728C5F9940088849E /* ViewController.swift in Sources */,
+				3719092328C5F9940088849E /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3719093328C5F9940088849E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3719094B28C5F9940088849E /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3719093A28C5F9940088849E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3719093628C5F9940088849E /* 2FAS - Two Factor Authentication Extension (macOS) */;
+			targetProxy = 3719093928C5F9940088849E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		3719090128C5F9930088849E /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3719090228C5F9930088849E /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		3719091528C5F9940088849E /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3719091628C5F9940088849E /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		3719091828C5F9940088849E /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3719091928C5F9940088849E /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		3719092428C5F9940088849E /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3719092528C5F9940088849E /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3719094C28C5F9940088849E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3719094D28C5F9940088849E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		3719095628C5F9940088849E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/2FAS - Two factor authentication.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 21;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = ZY8UR5ADFW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "2FAS - Two factor authentication Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twofas.org.browser.extension;
+				PRODUCT_NAME = "2FAS - Two Factor Authentication Extension";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3719095728C5F9940088849E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/2FAS - Two factor authentication.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 21;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = ZY8UR5ADFW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "2FAS - Two factor authentication Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twofas.org.browser.extension;
+				PRODUCT_NAME = "2FAS - Two Factor Authentication Extension";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		3719095A28C5F9940088849E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/2FAS - Two factor authentication.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 21;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = ZY8UR5ADFW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "2FAS - Two Factor Authentication Extension";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twofas.org.browser;
+				PRODUCT_NAME = "2FAS - Two Factor Authentication";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3719095B28C5F9940088849E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/2FAS - Two factor authentication.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 21;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = ZY8UR5ADFW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "2FAS - Two Factor Authentication Extension";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.4.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twofas.org.browser;
+				PRODUCT_NAME = "2FAS - Two Factor Authentication";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two factor authentication" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3719094C28C5F9940088849E /* Debug */,
+				3719094D28C5F9940088849E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3719095528C5F9940088849E /* Build configuration list for PBXNativeTarget "2FAS - Two Factor Authentication Extension (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3719095628C5F9940088849E /* Debug */,
+				3719095728C5F9940088849E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3719095928C5F9940088849E /* Build configuration list for PBXNativeTarget "2FAS - Two Factor Authentication (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3719095A28C5F9940088849E /* Debug */,
+				3719095B28C5F9940088849E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 371908FB28C5F9930088849E /* Project object */;
+}

@@ -1,0 +1,151 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "../../global-styles/variables";
+
+&-configured {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: 120px;
+
+  @media all and (max-width: $screen-md-max) {
+    padding-bottom: 80px;
+  }
+
+  @media all and (max-width: $screen-sm-max) {
+    padding-bottom: 40px;
+  }
+
+  @media all and (max-width: $screen-xs-max) {
+    padding-bottom: 20px;
+  }
+
+  &-header {
+    color: $color;
+    margin-bottom: 40px;
+    text-align: center;
+
+    @media (prefers-color-scheme: dark) {
+      color: $color-2;
+    }
+
+    @media all and (max-width: $screen-sm-max) {
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 48px;
+      margin: 0 auto 14px;
+      max-width: 730px;
+      width: 95%;
+
+      @media all and (max-width: $screen-sm-max) {
+        font-size: 32px;
+        line-height: 42px;
+      }
+
+      @media all and (max-width: $screen-xs-max) {
+        font-size: 28px;
+        line-height: 38px;
+      }
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24px;
+      margin: 0 auto 42px;
+      max-width: 720px;
+      width: 95%;
+
+      @media all and (max-width: $screen-xs-max) {
+        margin: 0 auto 30px;
+      }
+    }
+
+    h4 {
+      font-size: 27px;
+      font-weight: 600;
+      line-height: 33px;
+
+      @media all and (max-width: $screen-sm-max) {
+        font-size: 24px;
+        line-height: 30px;
+      }
+
+      @media all and (max-width: $screen-xs-max) {
+        font-size: 20px;
+        line-height: 28px;
+      }
+    }
+
+    hr {
+      background: $color-header-line;
+      border: 0;
+      display: block;
+      height: 1px;
+      margin: 0 auto 42px;
+      max-width: 221px;
+      width: 80%;
+
+      @media (prefers-color-scheme: dark) {
+        background: $color-header-line-dark;
+      }
+
+      @media all and (max-width: $screen-xs-max) {
+        margin: 0 auto 30px;
+      }
+    }
+  }
+
+  &-video {
+    margin-bottom: 40px;
+    position: relative;
+
+    @media all and (max-width: $screen-sm-max) {
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+
+      svg {
+        height: 30px;
+        width: 24px;
+      }
+    }
+
+    img {
+      width: 100%;
+
+      @media (prefers-color-scheme: dark) {
+        opacity: .5;
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "installTitle": "2FAS Browser Extension | Configuration",
+  "installH1": "To start, you need to pair this extension with the 2FAS mobile application.",
+  "installAppInstalled": "I've installed the app",
+  "installScan": "Scan this code with your 2FAS mobile app",
+  "installStep1": "Open the 2FAS mobile app",
+  "installStep2": "Go to Settings → Browser Extension",
+  "installStep3": "Tap \"Pair with web browser\" and scan the QR code",
+  "installSuccessHeader": "2FAS Browser Extension is successfully paired with your 2FAS app",
+  "installSuccessSubheader": "Now you can quickly autofill Two-Factor forms with mobile app confirmation.",
+  "installStart": "Learn how it works",
+  "installGoToSettings": "Go to settings",
+  "installQuestions": "Any questions? Read our",
+  "installBackToStep1": "Back to step 1",
+  "installQRTimeoutText": "The QR code has expired",
+  "installQRTimeoutButton": "Click here to regenerate"
+}

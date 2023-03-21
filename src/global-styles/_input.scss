@@ -1,0 +1,222 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "variables";
+
+input,
+button,
+select {
+  &:focus,
+  &:active {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+label {
+  color: $color-header;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 2.33;
+  text-transform: uppercase;
+}
+
+.twofas-ext-name-input {
+  display: flex;
+  flex-direction: row;
+  height: 51px;
+  max-width: 100%;
+  width: 365px;
+
+  input {
+    background-color: $input-bg;
+    border: 0;
+    border-radius: 10px 0 0 10px;
+    color: $input-color;
+    display: block;
+    flex-grow: 1;
+    font-size: 16px;
+    font-weight: 400;
+    height: 100%;
+    margin: 0;
+    padding: 0 0 0 17px;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: $input-bg-dark;
+      color: $input-color-dark;
+    }
+
+    @media all and (max-width: 660px) {
+      padding: 0 10px;
+    }
+
+    &::-webkit-input-placeholder { /* stylelint-disable-line */
+      color: $desc-color;
+    }
+
+    &::-moz-placeholder { /* stylelint-disable-line */
+      color: $desc-color;
+    }
+
+    &:-ms-input-placeholder { /* stylelint-disable-line */
+      color: $desc-color;
+    }
+  }
+
+  button {
+    background: $button-bg;
+    border: 0;
+    border-radius: 0 10px 10px 0;
+    color: $theme-color;
+    cursor: pointer;
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    height: 100%;
+    letter-spacing: .8125px;
+    line-height: 44px;
+    margin: 0 0 0 -1px;
+    padding: 0 20px;
+    text-transform: uppercase;
+    transition: color .2s ease-in-out;
+
+    @media (prefers-color-scheme: dark) {
+      background: $button-bg-dark;
+    }
+
+    @media all and (max-width: 660px) {
+      padding: 0 10px;
+    }
+
+    &:hover {
+      color: color.adjust($theme-color, $lightness: -10%);
+    }
+
+    &:active {
+      color: color.adjust($theme-color, $lightness: -20%);
+    }
+
+    &[disabled],
+    &:disabled {
+      color: color.adjust($theme-color, $saturation: -75%);
+      cursor: wait;
+    }
+  }
+
+  + .twofas-ext-name-input-text {
+    color: transparent;
+    min-height: 25px;
+    opacity: 0;
+    overflow: hidden;
+    padding: 10px 0 0 17px;
+    transition: opacity .2s ease-in-out, color .2s ease-in-out;
+
+    @media all and (max-width: 660px) {
+      padding: 10px 0 0 10px;
+    }
+
+    &.error {
+      color: $theme-color;
+      opacity: 1;
+    }
+
+    &.success {
+      color: $success-color;
+      opacity: 1;
+    }
+  }
+}
+
+.twofas-radio {
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  input {
+    &[type="radio"] {
+      display: none;
+
+      &:checked + label {
+        span {
+          &.twofas-radio-switch {
+            &::before {
+              border-width: 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  label {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    line-height: 1;
+
+    span {
+      &.twofas-radio-switch {
+        background-color: $color-header-line;
+        border-radius: 50%;
+        display: block;
+        height: 20px;
+        margin-right: 10px;
+        position: relative;
+        width: 20px;
+
+        @media (prefers-color-scheme: dark) {
+          background-color: $color-2;
+        }
+
+        &::before {
+          content: "";
+          border: 0 solid $theme-color;
+          border-radius: 50%;
+          display: block;
+          height: 10px;
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          transform-origin: 50% 50%;
+          transition: border-width .1s ease-in-out;
+          width: 10px;
+        }
+      }
+
+      &.twofas-radio-label {
+        color: $color;
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+        user-select: none;
+
+        @media (prefers-color-scheme: dark) {
+          color: $color-2;
+        }
+      }
+    }
+  }
+}

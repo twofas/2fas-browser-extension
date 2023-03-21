@@ -1,0 +1,260 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "src/global-styles/variables";
+
+&-menu {
+  // VARIABLES
+  $menu-color: $color-header;
+  $menu-hover-color: $color;
+  $menu-hover-color-dark: $color-2;
+  $menu-hover-bg: #d3d4e2;
+  $menu-hover-bg-dark: #30313b;
+
+  display: flex;
+  flex: 0 0 240px;
+  flex-direction: column;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 240px;
+  z-index: 9997;
+
+  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    background-color: $bg;
+    flex: 0;
+    height: 54px;
+    padding: 10px 0;
+    width: 100%;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: $dark-color;
+    }
+  }
+
+  &-hamburger {
+    display: none;
+
+    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+      display: block;
+      left: 10px;
+      position: fixed;
+      top: 17px;
+      z-index: 9997;
+    }
+  }
+
+  &-logo {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin: 50px 0;
+
+    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+      margin: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .twofas-options-page-menu-logo-light {
+        display: none !important;
+      }
+
+      .twofas-options-page-menu-logo-dark {
+        display: inline-block !important;
+      }
+    }
+
+    .twofas-options-page-menu-logo-light {
+      display: inline-block;
+    }
+
+    .twofas-options-page-menu-logo-dark {
+      display: none;
+    }
+  }
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+
+    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+      background-color: $bg;
+      height: 100%;
+      left: -240px;
+      position: fixed;
+      top: 53px;
+      transform: translateX(0);
+      transition: transform .25s ease-in-out;
+      width: 240px;
+      z-index: 9999;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $dark-color;
+      }
+
+      &.visible {
+        transform: translateX(240px);
+      }
+    }
+  }
+
+  &-nav {
+    flex-grow: 1;
+    width: 100%;
+
+    ul {
+      display: block;
+      list-style: none;
+      margin: 0 22px;
+      padding: 0;
+
+      li {
+        display: block;
+        margin: 0 0 10px;
+        padding: 0;
+
+        a {
+          align-items: center;
+          border-radius: 45px;
+          color: $menu-color;
+          display: inline-flex;
+          flex-direction: row;
+          height: 52px;
+          justify-content: flex-start;
+          line-height: 52px;
+          padding: 15px 18px;
+          text-decoration: none;
+          transition: color .2s ease-in-out, background-color .2s ease-in-out;
+          width: 100%;
+
+          &.active,
+          &:hover {
+            color: $menu-hover-color;
+            background-color: $menu-hover-bg;
+
+            @media (prefers-color-scheme: dark) {
+              color: $menu-hover-color-dark;
+              background-color: $menu-hover-bg-dark;
+            }
+
+            .icon-settings {
+              fill: $menu-hover-color;
+              opacity: .6;
+
+              @media (prefers-color-scheme: dark) {
+                fill: $menu-hover-color-dark;
+                opacity: 1;
+              }
+            }
+
+            .icon-intro,
+            .icon-newpage,
+            .icon-support {
+              opacity: .6;
+              stroke: $menu-hover-color;
+
+              @media (prefers-color-scheme: dark) {
+                stroke: $menu-hover-color-dark;
+                opacity: 1;
+              }
+            }
+
+            span {
+              color: $menu-hover-color;
+              opacity: .7;
+              transition: color .2s ease-in-out;
+
+              @media (prefers-color-scheme: dark) {
+                color: $menu-hover-color-dark;
+                opacity: 1;
+              }
+            }
+          }
+
+          &:active {
+            background-color: color.adjust($menu-hover-bg, $lightness: -10%);
+
+            @media (prefers-color-scheme: dark) {
+              background-color: color.adjust($menu-hover-bg-dark, $lightness: -10%);
+            }
+          }
+
+          svg {
+            flex-shrink: 0;
+            margin-right: 15px;
+            opacity: 1;
+            transition: fill .2s ease-in-out, stroke .2s ease-in-out, opacity .2s ease-in-out;
+
+            &.icon-settings {
+              fill: $menu-color;
+            }
+
+            &.icon-intro,
+            &.icon-newpage,
+            &.icon-support {
+              stroke: $menu-color;
+            }
+
+            &.icon-donate {
+              fill: $theme-color;
+            }
+          }
+
+          span {
+            color: $menu-color;
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1;
+            height: 16px;
+            opacity: 1;
+            transition: opacity .2s ease-in-out;
+          }
+        }
+      }
+    }
+  }
+
+  &-social {
+    padding: 0 10px 20px;
+
+    ul {
+      align-content: center;
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      margin: 0 22px;
+      padding: 0;
+
+      li {
+        a {
+          align-items: center;
+          display: flex;
+          height: 32px;
+          justify-content: center;
+          width: 32px;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,669 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@import "../../global-styles/variables";
+
+&-container {
+  // VARIABLES
+  $bg-qr: $color-2;
+  $qr-border-color: #eee;
+  $bg-box: $color-2;
+  $bg-box-dark: $dark-color;
+  $box-border-color: #eee;
+  $number-color: $color-2;
+  $content-img-shadow-color: rgba(186, 188, 195, .25);
+  $content-img-shadow-color-dark: rgba(0, 0, 0, .25);
+  $border-color: #E6E6F2;
+  $border-color-dark: $color-header-line-dark;
+  $header-color: $color;
+  $header-color-dark: $color-2;
+
+  margin: 0 auto 60px;
+  max-width: 95%;
+  min-height: calc(100vh - 240px);
+  text-align: center;
+  width: 1240px;
+
+  @media all and (max-width: 800px) {
+    min-height: calc(100vh - 210px);
+  }
+
+  &-header {
+    color: $color;
+    margin-bottom: 60px;
+    text-align: center;
+
+    @media all and (prefers-color-scheme: dark) {
+      color: $color-2;
+    }
+
+    @media all and (max-width: 1200px) {
+      margin-bottom: 50px;
+    }
+
+    @media all and (max-width: 800px) {
+      margin-bottom: 40px;
+    }
+
+    @media all and (max-width: 640px) {
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 40px;
+      margin: 0 auto;
+      max-width: 700px;
+      text-align: center;
+
+      @media all and (max-width: 800px) {
+        font-size: 26px;
+        line-height: 36px;
+      }
+
+      @media all and (max-width: 640px) {
+        font-size: 24px;
+        line-height: 32px;
+      }
+    }
+  }
+
+  &-blocks {
+    margin: 0 auto;
+    max-width: 926px;
+    position: relative;
+    text-align: left;
+
+    &-app,
+    &-qr {
+      background-color: $bg-box;
+      border-radius: 4px;
+      color: $color;
+      margin: 0 auto;
+      max-width: 926px;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $bg-box-dark;
+        border-color: transparent;
+        color: $color-2;
+      }
+
+      &.active {
+        max-height: 476px;
+        z-index: 2;
+
+        @media all and (max-width: 700px) {
+          max-height: 900px;
+        }
+      }
+
+      &.loaded {
+        transition:
+          border-bottom-left-radius .5s ease-in-out,
+          border-bottom-right-radius .5s ease-in-out,
+          border-top-left-radius .5s ease-in-out,
+          border-top-right-radius .5s ease-in-out,
+          max-height .5s ease-in-out,
+          max-width .5s ease-in-out,
+          opacity .5s ease-in-out;
+      }
+
+      &:not(.active) {
+        max-height: 32px;
+        max-width: 95%;
+        opacity: .5;
+
+        @media (prefers-color-scheme: dark) {
+          opacity: .3;
+        }
+
+        > * {
+          opacity: 0;
+        }
+      }
+
+      > * {
+        opacity: 1;
+        transition: opacity .5s ease-in-out;
+      }
+    }
+
+    &-app {
+      &:not(.active) {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &-qr {
+      &:not(.active) {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+  }
+
+  .twofas-app-phone,
+  .twofas-app-qr {
+    display: flex;
+    flex-direction: row;
+
+    &-left {
+      padding: 40px 0 40px 40px;
+    }
+
+    &-right {
+      flex-grow: 1;
+      position: relative;
+
+      @media all and (max-width: 700px) {
+        flex-grow: unset;
+        position: static;
+      }
+    }
+
+    &-number {
+      border: .5px solid $border-color;
+      border-radius: 50%;
+      color: $theme-color;
+      font-size: 32px;
+      font-weight: 700;
+      height: 64px;
+      line-height: 64px;
+      margin-bottom: 16px;
+      position: relative;
+      text-align: center;
+      width: 64px;
+
+      @media (prefers-color-scheme: dark) {
+        border-color: $border-color-dark;
+      }
+
+      small {
+        color: $color-header;
+        font-size: 18px;
+        letter-spacing: 2px;
+        line-height: 1;
+        margin-left: 5px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+      }
+    }
+
+    h4 {
+      color: $header-color;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.31;
+      margin-bottom: 20px;
+
+      @media (prefers-color-scheme: dark) {
+        color: $header-color-dark;
+      }
+
+      @media all and (max-width: 400px) {
+        font-size: 24px;
+      }
+    }
+  }
+
+  .twofas-app-phone {
+    &-left {
+      @media all and (max-width: 700px) {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        padding: 30px;
+        width: 100%;
+        text-align: center;
+      }
+
+      @media all and (max-width: 400px) {
+        padding: 20px;
+      }
+    }
+
+    &-right {
+      @media all and (max-width: 740px) {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+
+      @media all and (max-width: 700px) {
+        display: none !important;
+      }
+
+      &-icon {
+        align-items: center;
+        background-color: $bg-qr;
+        border-radius: 26px;
+        box-shadow: 0 0 20px 5px $content-img-shadow-color;
+        display: flex;
+        height: 110px;
+        justify-content: center;
+        left: -18px;
+        position: absolute;
+        top: 30px;
+        width: 110px;
+        z-index: 2;
+
+        @media (prefers-color-scheme: dark) {
+          box-shadow: 0 0 20px 5px $content-img-shadow-color-dark;
+        }
+
+        @media all and (max-width: $screen-sm-max) {
+          left: auto;
+          right: 370px;
+          top: 17px;
+        }
+
+        @media all and (max-width: 850px) {
+          height: 100px;
+          right: 260px;
+          width: 100px;
+
+          img {
+            width: 48px;
+          }
+        }
+
+        @media all and (max-width: 740px) {
+          top: 15px;
+          right: 15px;
+        }
+
+        img {
+          width: 58px;
+        }
+      }
+    }
+
+    &-stores {
+      display: flex;
+      flex-direction: row;
+      gap: 0 12px;
+      margin-bottom: 97px;
+
+      @media all and (max-width: 700px) {
+        flex-direction: column;
+        gap: 12px 0;
+        margin-bottom: 36px;
+      }
+    }
+
+    &-img {
+      bottom: 0;
+      display: block;
+      height: 451px;
+      overflow: hidden;
+      position: absolute;
+      right: 0;
+
+      &.twofas-app-phone-img-light {
+        display: block;
+      }
+
+      &.twofas-app-phone-img-dark {
+        display: none;
+      }
+
+      @media all and (max-width: $screen-sm-max) {
+        width: 400px;
+
+        img {
+          width: 100%;
+        }
+      }
+
+      @media all and (max-width: 850px) {
+        top: 60px;
+        width: 300px;
+      }
+
+      @media all and (max-width: 740px) {
+        width: 225px;
+        top: 80px;
+        right: 40px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        &.twofas-app-phone-img-light {
+          display: none;
+        }
+
+        &.twofas-app-phone-img-dark {
+          display: block;
+        }
+      }
+    }
+  }
+
+  .twofas-app-qr {
+    height: 100%;
+
+    &-left {
+      @media all and (max-width: 700px) {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        padding: 30px;
+        text-align: center;
+        width: 100%;
+      }
+
+      @media all and (max-width: 400px) {
+        padding: 20px;
+      }
+
+      .twofas-qr-container {
+        display: none !important;
+
+        @media all and (max-width: 700px) {
+          display: flex !important;
+        }
+      }
+    }
+
+    &-right {
+      position: relative;
+
+      &-icon {
+        align-items: center;
+        background-color: $bg-qr;
+        border-radius: 26px;
+        box-shadow: 0 0 20px 5px $content-img-shadow-color;
+        display: flex;
+        height: 110px;
+        justify-content: center;
+        position: absolute;
+        right: 48px;
+        top: 37px;
+        width: 110px;
+        z-index: 2;
+
+        @media (prefers-color-scheme: dark) {
+          box-shadow: 0 0 20px 5px $content-img-shadow-color-dark;
+        }
+
+        @media all and (max-width: 780px) {
+          right: 10px;
+          top: 10px;
+        }
+
+        @media all and (max-width: 700px) {
+          display: none;
+        }
+
+        img {
+          width: 58px;
+        }
+      }
+
+      .twofas-qr-container {
+        display: flex;
+
+        @media all and (max-width: 700px) {
+          display: none !important;
+        }
+      }
+    }
+
+    &-steps {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: 41px;
+      max-width: 339px;
+
+      @media all and (max-width: 700px) {
+        align-items: center;
+      }
+
+      &-item {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 19px;
+
+        @media all and (max-width: 1310px) {
+          margin-bottom: 15px;
+        }
+
+        @media all and (max-width: 1150px) {
+          margin-bottom: 10px;
+        }
+
+        @media all and (max-width: 420px) {
+          align-items: center;
+          flex-direction: column;
+          gap: 5px 0;
+        }
+
+        &:last-of-type {
+          margin-bottom: 0;
+        }
+
+        &-number {
+          background-color: $theme-color;
+          border-radius: 50%;
+          color: $number-color;
+          flex-shrink: 0;
+          font-size: 14px;
+          font-weight: 700;
+          height: 34px;
+          line-height: 34px;
+          text-align: center;
+          width: 34px;
+
+          @media all and (max-width: 1150px) {
+            font-size: 13px;
+            height: 26px;
+            line-height: 26px;
+            width: 26px;
+          }
+        }
+
+        &-desc {
+          color: $color;
+          font-size: 16px;
+          line-height: 28px;
+          margin-left: 18px;
+          margin-top: 3px;
+
+          @media (prefers-color-scheme: dark) {
+            color: $color-2;
+          }
+
+          @media all and (max-width: 1310px) {
+            font-size: 14px;
+            line-height: 22px;
+            margin-left: 10px;
+          }
+        }
+      }
+    }
+
+    &-border {
+      left: -6px;
+      pointer-events: none;
+      position: absolute;
+      top: 90px;
+      z-index: 2;
+
+      @media all and (max-width: 780px) {
+        left: 16px;
+        top: 110px;
+        width: 220px;
+      }
+    }
+
+    &-img-container {
+      position: absolute;
+      right: 61px;
+      top: 32px;
+      z-index: 1;
+
+      @media all and (max-width: 850px) {
+        right: 0;
+      }
+
+      @media all and (max-width: 780px) {
+        bottom: 0;
+        right: -30px;
+        top: auto;
+      }
+
+      @media all and (max-width: 700px) {
+        bottom: auto;
+        position: static;
+        right: auto;
+      }
+    }
+
+    &-img {
+      @media all and (max-width: 780px) {
+        width: 300px;
+
+        img {
+          width: 100%;
+        }
+      }
+
+      @media all and (max-width: 700px) {
+        display: none !important;
+      }
+
+      &-light {
+        display: block;
+      }
+
+      &-dark {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        &-light {
+          display: none;
+        }
+
+        &-dark {
+          display: block;
+        }
+      }
+    }
+
+    .twofas-qr-container {
+      align-items: center;
+      display: flex;
+      height: 197px;
+      left: 47px;
+      justify-content: center;
+      position: absolute;
+      top: 142px;
+      width: 197px;
+
+      @media all and (max-width: 780px) {
+        left: 26px;
+        top: 122px;
+      }
+
+      @media all and (max-width: 700px) {
+        left: auto;
+        margin-bottom: 10px;
+        position: relative;
+        top: auto;
+      }
+
+      &-timeout {
+        opacity: 0;
+        position: relative;
+        transition: opacity .2s ease-in-out;
+        text-align: center;
+        z-index: 2;
+
+        &.visible {
+          opacity: 1;
+        }
+
+        p {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          text-shadow: 0 1px 1px $bg-dark;
+        }
+      }
+
+      img {
+        border-radius: 4px;
+        filter: blur(0);
+        height: 100%;
+        left: 0;
+        opacity: 1;
+        overflow: hidden;
+        position: absolute;
+        transition: filter .2s ease-in-out, opacity .2s ease-in-out;
+        top: 0;
+        width: 100%;
+
+        &.twofas-qrcode-timeout {
+          filter: blur(2px);
+          opacity: .3;
+        }
+      }
+    }
+
+    h4 {
+      max-width: 300px;
+    }
+  }
+
+  .twofas-install-page-new-device,
+  .twofas-install-page-configured {
+    height: 100%;
+    opacity: 1;
+    padding-top: 60px;
+    transition: opacity .5s ease-in-out;
+    visibility: visible;
+
+    @media all and (max-width: 1200px) {
+      padding-top: 60px;
+    }
+
+    @media all and (max-width: 800px) {
+      padding-top: 40px;
+    }
+
+    @media all and (max-width: 640px) {
+      padding-top: 30px;
+    }
+
+    &.hidden {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      padding-bottom: 0;
+      padding-top: 0;
+      visibility: hidden;
+    }
+  }
+}

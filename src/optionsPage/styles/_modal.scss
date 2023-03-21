@@ -1,0 +1,149 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "src/global-styles/variables";
+
+.twofas-options-modal {
+  // VARIABLES
+  $modal-backdrop-color: rgba(#4f4f4f, .5);
+  $modal-backdrop-color-dark: rgba($color, .5);
+  $modal-close-bg: #f5f5f8;
+  $modal-close-bg-dark: #272931;
+  $modal-close-x-color: #b3b3b3;
+  $modal-body-bg: $color-2;
+  $modal-body-bg-dark: #30313b;
+  $modal-body-shadow: rgba($color, .25);
+
+  align-items: center;
+  background-color: $modal-backdrop-color;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  opacity: 1;
+  position: fixed;
+  top: 0;
+  transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
+  user-select: none;
+  width: 100%;
+  z-index: 9998;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $modal-backdrop-color-dark;
+  }
+
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  &-close {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    &:hover {
+      .twofas-options-modal-close-bg {
+        fill: color.adjust($modal-close-bg, $lightness: -5%);
+
+        @media (prefers-color-scheme: dark) {
+          fill: color.adjust($modal-close-bg-dark, $lightness: -5%);
+        }
+      }
+
+      .twofas-options-modal-close-x {
+        fill: color.adjust($modal-close-x-color, $lightness: -10%);
+      }
+    }
+
+    &-bg {
+      fill: $modal-close-bg;
+      transition: fill .2s ease-in-out;
+
+      @media (prefers-color-scheme: dark) {
+        fill: $modal-close-bg-dark;
+      }
+    }
+
+    &-x {
+      fill: $modal-close-x-color;
+      transition: fill .2s ease-in-out;
+    }
+  }
+
+  &-body {
+    background: $modal-body-bg;
+    box-shadow: 4px 4px 50px $modal-body-shadow;
+    color: $color;
+    max-width: 90%;
+    padding: 86px 0 57px;
+    position: relative;
+    text-align: center;
+    width: 652px;
+
+    @media (prefers-color-scheme: dark) {
+      background: $modal-body-bg-dark;
+      color: $color-2;
+    }
+
+    @media all and (max-width: 660px) {
+      padding: 80px 0 45px;
+    }
+
+    @media all and (max-height: $op-rwd-height) {
+      padding: 50px 0 45px;
+    }
+
+    &-buttons {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      margin-top: 34px;
+
+      @media all and (max-width: 660px), all and (max-height: $op-rwd-height) {
+        margin-top: 15px;
+      }
+    }
+
+    h2,
+    p {
+      margin: 0 auto;
+      max-width: 90%;
+      width: 376px;
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 26px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 18px;
+    }
+  }
+}

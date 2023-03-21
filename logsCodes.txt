@@ -1,0 +1,46 @@
+// GENERAL
+0 - Undefined Error
+
+// BACKGROUND
+1 - onStartup
+2 - onTabRemoved
+3 - onTabUpdated
+4 - browserAction
+5 - initPluginAction
+6 - updateBrowserInfo
+7 - handleConfigurationRequest
+8 - handleLoginRequest
+9 - onInstalled
+10 - sendNotificationInfo
+11 - subscribeChannel - channel.onerror
+12 - subscribeChannel - browser_extensions.pairing.failure
+13 - subscribeChannel - subscribeChannel event default
+26 - updateIncognitoAccess
+27 - updateBrowserExtension
+28 - generateDefaultStorage
+29 - verifyStorageIntegrity
+30 - closeRequest
+
+// CONTENT
+33 - content_script
+14 - getTabData
+15 - createObserver
+16 - inputFocus
+17 - contentOnMessage
+18 - neverShowNotificationInfo
+*19 - openOptionsPage [redundant]
+
+// INSTALL PAGE
+20 - installPage
+34 - regenerate QR
+
+// OPTIONS PAGE
+21 - optionsPage
+22 - removeDevice
+31 - removeDevice - wrong deviceID or deviceName
+
+// PARTIALS
+*23 - openShortcutEdit [redundant]
+32 - openShortcutEdit - empty URL
+*24 - handleTargetBlank [redundant]
+25 - extNameUpdate

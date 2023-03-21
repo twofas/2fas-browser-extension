@@ -1,0 +1,41 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+
+.twofas-options-page {
+  background-color: $bg;
+  color: $color;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $dark-color;
+    color: $color-2;
+  }
+
+  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    flex-direction: column;
+  }
+
+  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons";
+}

@@ -1,0 +1,97 @@
+<!--
+
+  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+  Copyright © 2023 Two Factor Authentication Service, Inc.
+  Contributed by Grzegorz Zając. All rights reserved.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>
+
+-->
+<div class="twofas-shortcut-edit">
+  <h2><span data-i18n="shortcut">Shortcut</span>:</h2>
+
+  <div class="twofas-shortcut-edit-box js-twofas-shortcut-edit-box">
+    <button data-i18n="edit" class="btn btn-clear js-twofas-shortcut-edit">Edit</button>
+  </div>
+
+  <p data-i18n="shortcutUseDesc" class="js-twofas-shortcut-description">Use this shortcut to open the 2FAS Browser Extension on any page.</p>
+</div>
+
+<div class="twofas-options-page-content-advanced">
+  <div class="twofas-options-page-content-advanced-header">
+    <h2 class="js-twofas-advance-header">
+      <svg width="9" height="6" viewBox="0 0 9 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1.271 1.5L4.271 4.5L7.271 1.5" stroke="#797A81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span data-i18n="advanced">Advanced</span>
+    </h2>
+  </div>
+
+  <div class="twofas-options-page-content-advanced-content js-twofas-advance-content">
+    <div class="twofas-options-page-push-config">
+      <p data-i18n="optionsPushDesc">Choose a notification mechanism which will prompt you about communication with the 2FAS mobile app when you use this browser extension.</p>
+
+      <div class="twofas-options-page-push-config-radios">
+        <div class="twofas-radio">
+          <input type="radio" name="pushConfig" value="custom" id="custom" />
+          <label for="custom">
+            <span class="twofas-radio-switch"></span>
+            <span data-i18n="optionsPushCustom" class="twofas-radio-label">2FAS Custom Notifications</span>
+          </label>
+        </div>
+        <div class="twofas-radio">
+          <input type="radio" name="pushConfig" value="native" id="native" />
+          <label for="native">
+            <span class="twofas-radio-switch"></span>
+            <span data-i18n="optionsPushNative" class="twofas-radio-label">Native Browser's Notifications</span>
+          </label>
+        </div>
+      </div>
+
+      <button data-i18n="optionsPushTest" class="btn btn-theme js-twofas-send-test-notification">Test push Notification</button>
+
+      <div class="twofas-options-page-push-config-description">
+        <p>
+          <span data-i18n="optionsPushConfigDesc1">Native Browser's Notifications do not work?</span><br />
+          <span data-i18n="optionsPushConfigDesc2">Make sure they are enabled in the system settings</span>&nbsp;
+          <a href="https://support.2fas.com/browser-extension/i-dont-see-browser-extension-notifications/" target="_blank" rel="noreferrer noopener" class="twofas-new-tab-link">
+            <span data-i18n="learnMore">Learn more</span>&nbsp;
+            <svg width="6" height="8" viewBox="0 0 6 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.771 1L4.771 4L1.771 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <div class="twofas-options-page-content-logs">
+      <div class="twofas-toggle">
+        <input type="checkbox" name="twofas-logs" id="twofas-logs">
+        <label for="twofas-logs">
+              <span class="twofas-toggle-box">
+                <span class="twofas-toggle-box-circle"></span>
+              </span>
+
+          <span class="twofas-toggle-text">
+                <span data-i18n="optionsLogsLabel">Approve 2FAS browser extension logs</span>
+              </span>
+        </label>
+
+        <div class="twofas-options-page-content-logs-desc">
+          <p data-i18n="optionsLogsDesc">Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS extension errors only.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

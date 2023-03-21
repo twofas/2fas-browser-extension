@@ -1,0 +1,89 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "src/global-styles/variables";
+
+&-push-config {
+  margin-top: 17px;
+
+  &-radios {
+    margin-bottom: 10px;
+  }
+
+  &-description {
+    p {
+      color: $desc-color;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      max-width: 477px;
+
+      a {
+        color: $theme-color;
+        text-decoration: none;
+        transition: color .25s ease-in-out;
+
+        &:hover {
+          color: color.adjust($theme-color, $lightness: -10%);
+
+          svg {
+            stroke: color.adjust($theme-color, $lightness: -10%);
+          }
+        }
+
+        &:focus {
+          color: color.adjust($theme-color, $lightness: -15%);
+
+          svg {
+            stroke: color.adjust($theme-color, $lightness: -15%);
+          }
+        }
+
+        &:active {
+          color: color.adjust($theme-color, $lightness: -20%);
+
+          svg {
+            stroke: color.adjust($theme-color, $lightness: -20%);
+          }
+        }
+
+        svg {
+          stroke: $theme-color;
+          transition: stroke .25s ease-in-out;
+        }
+      }
+    }
+  }
+
+  > p {
+    color: $color;
+    font-size: 13px;
+    margin-bottom: 10px;
+    max-width: 600px;
+
+    @media (prefers-color-scheme: dark) {
+      color: $color-2;
+    }
+  }
+
+  button {
+    margin-bottom: 10px;
+  }
+}

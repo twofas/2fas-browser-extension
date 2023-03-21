@@ -1,0 +1,196 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+@use "sass:color";
+@import "../../global-styles/variables";
+
+.twofas-be-notifications {
+  // VARIABLES
+  $bg: $color-2;
+  $shadow-color: rgba(#333, .1);
+  $text-color: $color-header;
+
+  box-sizing: border-box !important;
+  font-family: 'Montserrat', sans-serif !important;
+  position: fixed !important;
+  right: 25px !important;
+  top: 25px !important;
+  user-select: none !important;
+  z-index: 999999 !important;
+
+  @media all and (max-width: 400px) {
+    padding: 10px !important;
+    right: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+  }
+
+  * {
+    box-sizing: border-box !important;
+    font-family: 'Montserrat', sans-serif !important;
+  }
+
+  .twofas-be-notification {
+    background-color: $bg !important;
+    border-radius: 13px !important;
+    color: $color !important;
+    display: flex !important;
+    flex-direction: row !important;
+    font-family: 'Montserrat', sans-serif !important;
+    margin-bottom: 25px !important;
+    max-width: 380px !important;
+    overflow: hidden !important;
+    text-align: left !important;
+    transform: translateX(425px) !important;
+    transition: box-shadow .3s ease-in-out, max-height .3s ease-in-out, margin-bottom .3s ease-in-out, transform .3s ease-in-out !important;
+
+    &.visible {
+      box-shadow: 0 0 20px 5px $shadow-color !important;
+      transform: translateX(0) !important;
+    }
+
+    &.hidden {
+      margin-bottom: 0 !important;
+      max-height: 0 !important;
+    }
+
+    &-buttons {
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      display: flex !important;
+      flex-direction: row !important;
+      height: 15px !important;
+      justify-content: space-between !important;
+      margin-top: 10px !important;
+      overflow: auto !important;
+      width: 100% !important;
+
+      button {
+        background: transparent !important;
+        border: 0 !important;
+        color: $theme-color !important;
+        cursor: pointer !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        margin-right: 8px !important;
+        padding: 0 !important;
+        transition: color .2s ease-in-out !important;
+
+        &:last-of-type {
+          margin-right: 0 !important;
+        }
+
+        &:hover {
+          color: color.adjust($theme-color, $lightness: -10%) !important;
+        }
+
+        &:active {
+          color: color.adjust($theme-color, $lightness: -20%) !important;
+        }
+
+        &.twofas-never {
+          color: $text-color !important;
+          font-family: 'Montserrat', sans-serif !important;
+          font-weight: 400 !important;
+          text-decoration: underline !important;
+
+          &:hover,
+          &:active {
+            color: $color !important;
+          }
+        }
+      }
+    }
+
+    .twofas-be-col {
+      flex-shrink: unset !important;
+      font-family: 'Montserrat', sans-serif !important;
+      margin: 13px 0 !important;
+
+      &:first-of-type {
+        align-items: center !important;
+        display: flex !important;
+        margin-left: 16px !important;
+      }
+
+      &:last-of-type {
+        margin-right: 18px !important;
+      }
+    }
+
+    /* ProtonMail FIX */
+    .twofas-be-notification-header,
+    .twofas-be-notification-text {
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      display: block !important;
+      overflow: auto !important;
+    }
+    /* ProtonMail FIX */
+
+    svg {
+      height: 34px !important;
+      margin-right: 16px;
+      max-width: 28px !important;
+      width: 28px !important;
+    }
+
+    h3,
+    p {
+      font-family: 'Montserrat', sans-serif !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-decoration: none !important;
+      text-transform: unset !important;
+    }
+
+    h3 {
+      color: $color !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      line-height: 20px !important;
+      margin-bottom: 4px !important;
+    }
+
+    p {
+      color: $text-color !important;
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      line-height: 15px !important;
+
+      > a {
+        color: $theme-color !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        line-height: 15px !important;
+        transition: color .2s ease-in-out !important;
+
+        &:hover {
+          color: color.adjust($theme-color, $lightness: -10%) !important;
+        }
+
+        &:active {
+          color: color.adjust($theme-color, $lightness: -20%) !important;
+        }
+      }
+    }
+  }
+}

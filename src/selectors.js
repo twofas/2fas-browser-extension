@@ -1,0 +1,89 @@
+//
+//  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Contributed by Grzegorz Zając. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program. If not, see <https://www.gnu.org/licenses/>
+//
+
+const selectors = {
+  installPage: {
+    configured: '.twofas-install-page-configured',
+    newDevice: '.twofas-install-page-new-device',
+    welcomeHeader: 'h1.twofas-js-welcome-header',
+    container: {
+      app: '.twofas-install-page-container-blocks-app',
+      qr: '.twofas-install-page-container-blocks-qr',
+      handler: '.js-twofas-install-handler'
+    },
+    qr: {
+      timeout: '.twofas-qr-container-timeout',
+      regenerate: '.js-twofas-regenerate-qr',
+      imgs: 'img.twofas-js-qrcode'
+    }
+  },
+  optionsPage: {
+    modal: {
+      element: '.js-twofas-options-modal',
+      cancel: '.js-twofas-options-modal-cancel',
+      confirm: '.js-twofas-options-modal-confirm',
+      header: '.js-twofas-options-modal-header',
+      text: '.js-twofas-options-modal-text'
+    },
+    shortcut: {
+      edit: '.js-twofas-shortcut-edit',
+      editText: '.js-twofas-shortcut-edit-text',
+      editBox: '.js-twofas-shortcut-edit-box',
+      editBoxBtn: '.twofas-shortcut-edit-box-btn',
+      editBoxPlus: '.twofas-shortcut-edit-box-plus',
+      info: '.js-twofas-shortcut-info',
+      tooltip: '.js-twofas-shortcut-tooltip',
+      close: '.js-twofas-shortcut-close',
+      description: '.js-twofas-shortcut-description'
+    },
+    advanced: {
+      header: '.js-twofas-advance-header',
+      content: '.js-twofas-advance-content'
+    },
+    pin: {
+      gotIt: '.js-twofas-pin-info-got-it',
+      info: '.twofas-options-page-pin-info'
+    },
+    hamburger: {
+      element: '.js-twofas-options-menu-hamburger',
+      content: '.js-twofas-options-menu-content'
+    },
+    menuLink: '.js-twofas-menu-link',
+    extVersion: 'span.twofas-ext-version',
+    logsInput: 'input#twofas-logs',
+    testNotification: '.js-twofas-send-test-notification',
+    devicesList: '.js-twofas-device-list',
+    content: '.js-twofas-options-content',
+    toggle: '.twofas-toggle'
+  },
+  notification: {
+    container: 'div.twofas-be-notifications',
+    notification: 'div.twofas-be-notification',
+    visible: 'div.twofas-be-notification.visible'
+  },
+  extName: {
+    input: 'input.js-twofas-extension-name',
+    updateForm: '.js-twofas-extension-name-update',
+    updateBtn: '.js-twofas-extension-name-update button',
+    error: '.js-twofas-extension-name-error'
+  },
+  preload: '.preload'
+};
+
+module.exports = selectors;

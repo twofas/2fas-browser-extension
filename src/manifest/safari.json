@@ -1,0 +1,86 @@
+{
+  "manifest_version": 2,
+  "name": "2FAS - Two Factor Authentication",
+  "short_name": "2FAS",
+  "author": "Two Factor Authentication Service, Inc.",
+  "version": "1.4.1",
+  "description": "__MSG_appDesc__",
+  "default_locale": "en",
+  "icons": {
+    "16": "images/icons/icon16.png",
+    "32": "images/icons/icon32.png",
+    "48": "images/icons/icon48.png",
+    "96": "images/icons/icon96.png",
+    "128": "images/icons/icon128.png"
+  },
+  "browser_action": {
+    "default_icon": {
+      "16": "images/icons/icon16.png",
+      "32": "images/icons/icon32.png",
+      "48": "images/icons/icon48.png",
+      "96": "images/icons/icon96.png",
+      "128": "images/icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "optionsPage/optionsPage.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "scripts": [
+      "background/background.js"
+    ]
+  },
+  "browser_specific_settings": {
+    "safari": {
+      "strict_min_version": "16.0"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": [
+        "content/content_script.js"
+      ],
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "css": [
+        "content/content_script.css"
+      ],
+      "all_frames": false,
+      "match_about_blank": true
+    }
+  ],
+  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "commands": {
+    "tokenRequest": {
+      "description": "__MSG_shortcutDesc__",
+      "global": false,
+      "suggested_key": {
+        "default": "Ctrl+Shift+2",
+        "mac": "MacCtrl+Shift+2"
+      }
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "notifications",
+    "contextMenus",
+    "https://*.2fas.com/*",
+    "wss://*.2fas.com/*"
+  ],
+  "web_accessible_resources": [
+    "/fonts/*"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "presets": [["@babel/env", {
+    "targets": {
+      "browsers": ["> 1%", "last 2 versions", "safari >= 16", "not ie > 0", "not dead"]
+    },
+    "modules": "commonjs"
+  }], ["minify", {
+    "builtIns": false
+  }]],
+  "env": {
+    "production": {
+      "plugins": [
+        "@babel/plugin-transform-runtime",
+        "transform-remove-debugger",
+        "transform-minify-booleans"
+      ]
+    }
+  },
+  "ignore": [
+    "2FAS - Two factor authentication/**/*.js"
+  ]
+}

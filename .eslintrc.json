@@ -1,0 +1,12 @@
+{
+  "extends": ["standard"],
+  "parser": "@babel/eslint-parser",
+  "rules": {
+    "no-tabs": "off",
+    "semi": "off",
+    "indent": ["warn", 2, { "SwitchCase": 1 }],
+    "no-useless-escape": "off",
+    "no-trailing-spaces": ["error", { "skipBlankLines": true }],
+    "no-irregular-whitespace": "off"
+  }
+}
