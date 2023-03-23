@@ -97,6 +97,7 @@ const subscribeChannel = (storage, tabID, data = {
           case 'browser_extensions.pairing.success': {
             handleConfigurationRequest(tabID, data);
             closeWSChannel(channel);
+            clearTimeout(timeoutID);
   
             browser.tabs.onRemoved.removeListener(tabFunc);
             browser.tabs.onUpdated.removeListener(tabFunc);
@@ -107,6 +108,7 @@ const subscribeChannel = (storage, tabID, data = {
           case 'browser_extensions.device.2fa_response': {
             handleLoginRequest(tabID, data);
             closeWSChannel(channel);
+            clearTimeout(timeoutID);
   
             browser.tabs.onRemoved.removeListener(tabFunc);
             browser.tabs.onUpdated.removeListener(tabFunc);
