@@ -17,29 +17,29 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+const generateDefaultStorage = require('./generateDefaultStorage');
 const openInstallPage = require('./openInstallPage');
 const storeLog = require('../../partials/storeLog');
-const updateBrowserInfo = require('./updateBrowserInfo');
-const createContextMenus = require('./createContextMenus');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const checkSafariStorage = require('./checkSafariStorage');
 
-const onInstalled = (details, browserInfo) => {
-  if (process.env.EXT_PLATFORM !== 'Safari' && process.env.EXT_PLATFORM !== 'Firefox') {
-    createContextMenus();
-  }
+const checkSafariStorage = browserInfo => {
+  return loadFromLocalStorage(null)
+    .then(storage => {
+      if (
+        !storage.browserInfo ||
+        !storage.keys ||
+        !storage?.keys?.publicKey ||
+        !storage?.keys?.privateKey ||
+        !storage?.extensionID
+      ) {
+        return generateDefaultStorage(browserInfo)
+          .then(() => openInstallPage())
+          .catch(err => storeLog('error', 9, err, 'onInstalled'));
+      }
 
-  if (details?.reason !== 'install') {
-    return updateBrowserInfo(browserInfo);
-  }
-
-  if (process.env.EXT_PLATFORM === 'Safari') {
-    return checkSafariStorage(browserInfo);
-  }
-
-  return generateDefaultStorage(browserInfo)
-    .then(() => openInstallPage())
-    .catch(err => storeLog('error', 9, err, 'onInstalled'));
+      return false;
+    })
+    .catch(err => storeLog('error', 35, err, 'checkSafariStorage'));
 };
 
-module.exports = onInstalled;
+module.exports = checkSafariStorage;

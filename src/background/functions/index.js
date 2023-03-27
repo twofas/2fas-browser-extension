@@ -22,6 +22,7 @@ exports.b642ab = require('./b642ab');
 exports.browserAction = require('./browserAction');
 exports.browserActionConfigured = require('./browserActionConfigured');
 exports.checkBadgeText = require('./checkBadgeText');
+exports.checkSafariStorage = require('./checkSafariStorage');
 exports.closeRequest = require('./closeRequest');
 exports.closeWSChannel = require('./closeWSChannel');
 exports.createContextMenus = require('./createContextMenus');
