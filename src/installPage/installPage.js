@@ -24,7 +24,7 @@ const SDK = require('../sdk');
 const TwoFasNotification = require('../notification');
 const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
 const subscribeChannel = require('../background/functions/subscribeChannel');
-const { extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } = require('../partials');
+const { delay, extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } = require('../partials');
 const { generateQRCode, installContainerHandlers } = require('./functions');
 
 const installPageError = async err => {
@@ -35,7 +35,16 @@ const installPageError = async err => {
 const init = async storage => {
   i18n();
 
-  await storageValidation(storage);
+  try {
+    await storageValidation(storage);
+  } catch (e) {
+    return delay(() => {
+      return browser.runtime.sendMessage({ action: 'storageReset' })
+        .then(() => window.location.reload())
+        .catch(async err => await storeLog('error', 38, err, 'storageValidationReload'));
+    }, 5300);
+  }
+
   const channel = await subscribeChannel(storage, null, {
     action: false,
     timeout: false,
