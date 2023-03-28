@@ -393,6 +393,7 @@
   &-safari-reset {
     border: 2px solid $theme-color;
     border-radius: 16px;
+    max-width: 600px;
     padding: 16px;
 
     h6 {
@@ -405,8 +406,25 @@
     }
 
     p {
-      margin-bottom: 10px;
-      max-width: 600px;
+      color: $color;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22px;
+      margin-bottom: 16px;
+      user-select: none;
+
+      @media all and (prefers-color-scheme: dark) {
+        color: $color-2;
+      }
+
+      @media all and (max-width: $screen-xs-max) {
+        font-size: 12px;
+        line-height: 18px;
+      }
+
+      @media all and (max-width: 360px) {
+        font-size: 11px;
+      }
     }
   }
 

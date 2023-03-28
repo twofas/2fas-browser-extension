@@ -266,7 +266,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two factor authentication" */;
+			buildConfigurationList = 371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two Factor Authentication" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -498,7 +498,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -512,7 +512,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -534,7 +534,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -548,7 +548,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -572,7 +572,7 @@
 				CODE_SIGN_ENTITLEMENTS = "macOS (App)/2FAS - Two factor authentication.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -587,7 +587,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -613,7 +613,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -628,7 +628,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -647,7 +647,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two factor authentication" */ = {
+		371908FE28C5F9930088849E /* Build configuration list for PBXProject "2FAS - Two Factor Authentication" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3719094C28C5F9940088849E /* Debug */,
