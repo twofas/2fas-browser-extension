@@ -18,7 +18,7 @@
 //
 
 @use "sass:color";
-@import "src/global-styles/variables";
+@import "../../global-styles/variables";
 
 &-content {
   // VARIABLES
@@ -336,6 +336,7 @@
   }
 
   &-advanced {
+    margin-bottom: 20px;
     margin-top: 40px;
 
     &-header {
@@ -364,13 +365,14 @@
       transition: max-height .35s ease-in-out;
 
       &.visible {
-        max-height: 500px;
+        max-height: 600px;
       }
     }
   }
 
   &-logs,
-  &-push {
+  &-push,
+  &-safari-reset {
     margin-top: 40px;
 
     @media all and (max-width: $screen-xs-max) {
@@ -385,6 +387,26 @@
         line-height: 1.5;
         max-width: 477px;
       }
+    }
+  }
+
+  &-safari-reset {
+    border: 2px solid $theme-color;
+    border-radius: 16px;
+    padding: 16px;
+
+    h6 {
+      color: $theme-color;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .8125px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    p {
+      margin-bottom: 10px;
+      max-width: 600px;
     }
   }
 

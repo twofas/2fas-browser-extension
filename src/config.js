@@ -105,6 +105,10 @@ const config = {
       DeviceDisconnected: {
         Title: browser.i18n.getMessage('successDeviceDisconnectedTitle'),
         Message: browser.i18n.getMessage('successDeviceDisconnectedMessage')
+      },
+      SafariReset: {
+        Title: browser.i18n.getMessage('successSafariResetTitle'),
+        Message: browser.i18n.getMessage('successSafariResetMessage')
       }
     },
     Info: {

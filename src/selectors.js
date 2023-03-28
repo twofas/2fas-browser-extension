@@ -70,7 +70,8 @@ const selectors = {
     testNotification: '.js-twofas-send-test-notification',
     devicesList: '.js-twofas-device-list',
     content: '.js-twofas-options-content',
-    toggle: '.twofas-toggle'
+    toggle: '.twofas-toggle',
+    safariReset: '.js-twofas-safari-reset'
   },
   notification: {
     container: 'div.twofas-be-notifications',

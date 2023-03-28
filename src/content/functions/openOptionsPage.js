@@ -20,8 +20,15 @@
 const browser = require('webextension-polyfill');
 
 const openOptionsPage = e => {
-  e.preventDefault();
-  e.stopPropagation();
+  if (e) {
+    if (typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+
+    if (typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+  }
 
   const port = browser.runtime.connect({ name: '2FAS' });
   

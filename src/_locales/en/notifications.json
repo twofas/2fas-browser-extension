@@ -35,6 +35,8 @@
   "successExtNameUpdatedMessage": "Extension name updated",
   "successDeviceDisconnectedTitle": "Success",
   "successDeviceDisconnectedMessage": "Device disconnected",
+  "successSafariResetTitle": "Success",
+  "successSafariResetMessage": "Browser Extension configuration removed",
   "infoNativeNotificationsTitle": "2FAS Notifications",
   "infoNativeNotificationsMessage": "From now on, you'll be receiving system notifications instead of 2FAS custom ones. If you'd like to change this, go to the ",
   "infoEnabledNativeNotifications": "extension's settings",

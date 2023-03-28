@@ -39,6 +39,7 @@
 21 - optionsPage
 22 - removeDevice
 31 - removeDevice - wrong deviceID or deviceName
+36 - handleSafariReset
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]
