@@ -22,7 +22,7 @@
   "errorRemoveDeviceBadDataTitle": "Device data error",
   "errorRemoveDeviceBadDataMessage": "Please refresh and try again.",
   "errorStorageCorruptedTitle": "Extension storage is corrupted",
-  "errorStorageCorruptedMessage": "We will try to fix it for you. After closing the extension page, click on the extension icon to continue.",
+  "errorStorageCorruptedMessage": "We will try to fix it for you. Please wait.",
   "errorInactiveTabTitle": "Inactive tab",
   "errorInactiveTabMessage": "Please refresh this tab to use the 2FAS Browser Extension.",
   "warningTooSoonTitle": "Wait a moment",
