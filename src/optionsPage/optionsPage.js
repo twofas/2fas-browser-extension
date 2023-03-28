@@ -25,7 +25,7 @@ const TwoFasNotification = require('../notification');
 const SDK = require('../sdk');
 const extPageOnMessage = require('../partials/extPageOnMessage');
 const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setGotIt, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink } = require('./functions');
+const { generateDevicesList, setLoggingToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink } = require('./functions');
 
 const init = async storage => {
   i18n();
@@ -48,7 +48,7 @@ const init = async storage => {
     .then(setModalListeners)
     .then(setAdvanced)
     .then(setMenuLinks)
-    .then(setGotIt)
+    .then(setPinInfoBtns)
     .then(generateShortcutBox)
     .then(generateShortcutLink)
     .then(setShortcutBox)

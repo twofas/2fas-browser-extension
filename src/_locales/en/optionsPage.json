@@ -19,6 +19,9 @@
   "optionsShortcutFirefoxDesc": "To set or change this shortcut go to your browser settings, and extensions, then click on the gear icon and choose “Manage Extension Shortcuts.”",
   "optionsPinHeader": "Pin 2FAS for faster authentication",
   "optionsPinDesc": "Check the Extension List to make it visible.",
+  "optionsPinSafariStep1": "Right click on the address bar, select Toolbar customization",
+  "optionsPinSafariStep2": "Find 2FAS icon on the list, drag it to the toolbar",
+  "optionsPinSafariToolbarCustomization": "Toolbar customization",
   "optionsDangerZone": "Danger Zone",
   "optionsSafariResetDesc": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dicta ab possimus odit similique? Veritatis laboriosam accusantium dolores architecto quaerat quia optio? Maxime, voluptate explicabo perferendis molestiae natus harum labore hic?",
   "optionsSafariReset": "Reset Browser Extension"

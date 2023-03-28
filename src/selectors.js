@@ -58,7 +58,10 @@ const selectors = {
     },
     pin: {
       gotIt: '.js-twofas-pin-info-got-it',
-      info: '.twofas-options-page-pin-info'
+      prev: '.js-twofas-pin-info-prev',
+      next: '.js-twofas-pin-info-next',
+      info: '.twofas-options-page-pin-info',
+      slider: '.js-twofas-pin-info-slider'
     },
     hamburger: {
       element: '.js-twofas-options-menu-hamburger',

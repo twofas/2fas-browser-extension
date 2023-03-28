@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
 const S = require('../../selectors');
 
-const handlePinInfoGotIt = () => {
-  const view = document.querySelector(S.optionsPage.pin.info);
-  view.classList.add('hidden');
+const handlePinInfoPrev = () => {
+  const slider = document.querySelector(S.optionsPage.pin.slider);
 
-  return saveToLocalStorage({ pinInfo: true });
+  if (slider) {
+    slider.classList.remove('step2');
+  }
 };
 
-module.exports = handlePinInfoGotIt;
+module.exports = handlePinInfoPrev;
