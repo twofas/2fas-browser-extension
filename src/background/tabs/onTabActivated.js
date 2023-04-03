@@ -23,12 +23,18 @@ const onTabActivated = async ({ tabId }) => {
   const tabInfo = await browser.tabs.get(tabId);
   const tabUrl = tabInfo.url ? tabInfo.url : tabInfo.pendingUrl;
   const extUrl = browser.runtime.getURL('');
+  let urlObj;
 
   if (tabUrl.includes(extUrl)) {
     return;
   }
 
-  const urlObj = new URL(tabUrl);
+  try {
+    urlObj = new URL(tabUrl);
+  } catch (e) {
+    return;
+  }
+
   if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
     return;
   }

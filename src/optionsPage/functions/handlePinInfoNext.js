@@ -18,14 +18,13 @@
 //
 
 const S = require('../../selectors');
-const handlePinInfoGotIt = require('./handlePinInfoGotIt');
 
-const setGotIt = () => {
-  const gotIt = document.querySelector(S.optionsPage.pin.gotIt);
+const handlePinInfoNext = () => {
+  const slider = document.querySelector(S.optionsPage.pin.slider);
 
-  if (gotIt) {
-    gotIt.addEventListener('click', handlePinInfoGotIt);
+  if (slider) {
+    slider.classList.add('step2');
   }
 };
 
-module.exports = setGotIt;
+module.exports = handlePinInfoNext;

@@ -24,12 +24,21 @@ const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
 const TwoFasNotification = require('../notification');
 const SDK = require('../sdk');
 const extPageOnMessage = require('../partials/extPageOnMessage');
-const { storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setGotIt, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink } = require('./functions');
+const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
+const { generateDevicesList, setLoggingToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink } = require('./functions');
 
 const init = async storage => {
   i18n();
-  await storageValidation(storage);
+
+  try {
+    await storageValidation(storage);
+  } catch (e) {
+    return delay(() => {
+      return browser.runtime.sendMessage({ action: 'storageReset' })
+        .then(() => window.location.reload())
+        .catch(async err => await storeLog('error', 38, err, 'storageValidationReload'));
+    }, 5300);
+  }
 
   return new SDK().getAllPairedDevices(storage.extensionID)
     .then(generateDevicesList)
@@ -39,7 +48,7 @@ const init = async storage => {
     .then(setModalListeners)
     .then(setAdvanced)
     .then(setMenuLinks)
-    .then(setGotIt)
+    .then(setPinInfoBtns)
     .then(generateShortcutBox)
     .then(generateShortcutLink)
     .then(setShortcutBox)

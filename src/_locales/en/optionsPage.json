@@ -18,5 +18,11 @@
   "optionsPushConfigDesc2": "Make sure they are enabled in the system settings",
   "optionsShortcutFirefoxDesc": "To set or change this shortcut go to your browser settings, and extensions, then click on the gear icon and choose “Manage Extension Shortcuts.”",
   "optionsPinHeader": "Pin 2FAS for faster authentication",
-  "optionsPinDesc": "Check the Extension List to make it visible."
+  "optionsPinDesc": "Check the Extension List to make it visible.",
+  "optionsPinSafariStep1": "Right click on the address bar, select Toolbar customization",
+  "optionsPinSafariStep2": "Find 2FAS icon on the list, drag it to the toolbar",
+  "optionsPinSafariToolbarCustomization": "Toolbar customization",
+  "optionsDangerZone": "Danger Zone",
+  "optionsSafariResetDesc": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
+  "optionsSafariReset": "Reset Browser Extension"
 }

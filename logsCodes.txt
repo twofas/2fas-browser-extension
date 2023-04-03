@@ -20,6 +20,8 @@
 28 - generateDefaultStorage
 29 - verifyStorageIntegrity
 30 - closeRequest
+35 - checkSafariStorage
+37 - storageReset
 
 // CONTENT
 33 - content_script
@@ -38,6 +40,8 @@
 21 - optionsPage
 22 - removeDevice
 31 - removeDevice - wrong deviceID or deviceName
+36 - handleSafariReset
+38 - storageValidationReload
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]

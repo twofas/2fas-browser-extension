@@ -22,14 +22,19 @@ const storeLog = require('../../partials/storeLog');
 const updateBrowserInfo = require('./updateBrowserInfo');
 const createContextMenus = require('./createContextMenus');
 const generateDefaultStorage = require('./generateDefaultStorage');
+const checkSafariStorage = require('./checkSafariStorage');
 
 const onInstalled = (details, browserInfo) => {
   if (process.env.EXT_PLATFORM !== 'Safari' && process.env.EXT_PLATFORM !== 'Firefox') {
     createContextMenus();
   }
 
-  if (details.reason !== 'install') {
+  if (details?.reason !== 'install') {
     return updateBrowserInfo(browserInfo);
+  }
+
+  if (process.env.EXT_PLATFORM === 'Safari') {
+    return checkSafariStorage(browserInfo);
   }
 
   return generateDefaultStorage(browserInfo)

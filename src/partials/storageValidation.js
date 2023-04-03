@@ -18,24 +18,22 @@
 //
 
 const config = require('../config');
-const browser = require('webextension-polyfill');
 const TwoFasNotification = require('../notification');
 
 const storageValidation = storage => {
-  if (
-    !storage.keys ||
-    !storage?.keys?.publicKey ||
-    !storage?.keys?.privateKey ||
-    !storage?.extensionID
-  ) {
-    return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
+    if (
+      !storage.keys ||
+      !storage?.keys?.publicKey ||
+      !storage?.keys?.privateKey ||
+      !storage?.extensionID
+    ) {
       TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
+      return reject(new TypeError('Storage corrupted'));
+    }
 
-      setTimeout(() => {
-        return resolve(browser.runtime.reload());
-      }, 5300);
-    });
-  }
+    return resolve();
+  });
 };
 
 module.exports = storageValidation;

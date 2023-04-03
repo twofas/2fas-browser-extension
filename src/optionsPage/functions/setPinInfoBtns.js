@@ -17,25 +17,29 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+const S = require('../../selectors');
+const handlePinInfo = require('./handlePinInfo');
+const handlePinInfoNext = require('./handlePinInfoNext');
+const handlePinInfoPrev = require('./handlePinInfoPrev');
 
-const openOptionsPage = e => {
-  if (e) {
-    if (typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
+const setPinInfoBtns = () => {
+  const gotIt = document.querySelector(S.optionsPage.pin.gotIt);
+  const next = document.querySelectorAll(S.optionsPage.pin.next);
+  const prev = document.querySelector(S.optionsPage.pin.prev);
 
-    if (typeof e.stopPropagation === 'function') {
-      e.stopPropagation();
-    }
+  if (gotIt) {
+    gotIt.addEventListener('click', handlePinInfo);
   }
 
-  const port = browser.runtime.connect({ name: '2FAS' });
-  
-  port.postMessage({
-    action: 'openBrowserPage',
-    url: browser.runtime.getURL('/optionsPage/optionsPage.html')
-  });
+  if (next) {
+    next.forEach(btn => {
+      btn.addEventListener('click', handlePinInfoNext);
+    });
+  }
+
+  if (prev) {
+    prev.addEventListener('click', handlePinInfoPrev);
+  }
 };
 
-module.exports = openOptionsPage;
+module.exports = setPinInfoBtns;

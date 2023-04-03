@@ -47,7 +47,7 @@ const generateDefaultStorage = browserInfo => {
         notifications: false,
         incognito: false,
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
-        pinInfo: process.env.EXT_PLATFORM === 'Safari',
+        pinInfo: false,
         extensionVersion: config.ExtensionVersion
       });
     })

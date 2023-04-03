@@ -35,6 +35,8 @@
   "qrCode": "QR Code",
   "modalDisconnectDeviceHeader": "Disconnect device",
   "modalDisconnectDeviceText": "You are attempting to disconnect the device \"DEVICE_NAME\" from this browser extension. Are you sure?",
+  "modalSafariResetHeader": "Browser Extension reset",
+  "modalSafariResetText": "You are attempting to reset the 2FAS Browser Extension. Are you sure?",
   "noPairedDevices": "No paired devices found",
   "deviceName": "Device name",
   "pairingDate": "Pairing date",
