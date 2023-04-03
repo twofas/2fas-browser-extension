@@ -63,7 +63,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   try {
-    await loadFromLocalStorage(['logging', 'extensionID', 'extensionVersion', 'browserInfo']);
+    storage = await loadFromLocalStorage(['logging', 'extensionID', 'extensionVersion', 'browserInfo']);
   } catch (err) {
     console.error(err);
   }

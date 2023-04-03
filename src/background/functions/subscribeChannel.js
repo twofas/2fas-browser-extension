@@ -78,8 +78,8 @@ const subscribeChannel = (storage, tabID, data = {
       channel.ws.onerror = async err => {
         browser.tabs.onRemoved.removeListener(tabFunc);
         browser.tabs.onUpdated.removeListener(tabFunc);
-  
         clearTimeout(timeoutID);
+        
         await storeLog('error', 11, err, 'WebSocket channel error');
         return reject(err);
       }
@@ -100,6 +100,7 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabFunc);
             browser.tabs.onUpdated.removeListener(tabFunc);
+            clearTimeout(timeoutID);
   
             return true;
           }
@@ -110,6 +111,7 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabFunc);
             browser.tabs.onUpdated.removeListener(tabFunc);
+            clearTimeout(timeoutID);
   
             return true;
           }
@@ -122,6 +124,7 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabFunc);
             browser.tabs.onUpdated.removeListener(tabFunc);
+            clearTimeout(timeoutID);
   
             return true;
           }

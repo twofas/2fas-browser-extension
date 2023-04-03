@@ -17,25 +17,29 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+const generateDefaultStorage = require('./generateDefaultStorage');
+const openInstallPage = require('./openInstallPage');
+const storeLog = require('../../partials/storeLog');
 
-const openOptionsPage = e => {
-  if (e) {
-    if (typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
+const checkSafariStorage = browserInfo => {
+  return loadFromLocalStorage(null)
+    .then(storage => {
+      if (
+        !storage.browserInfo ||
+        !storage.keys ||
+        !storage?.keys?.publicKey ||
+        !storage?.keys?.privateKey ||
+        !storage?.extensionID
+      ) {
+        return generateDefaultStorage(browserInfo)
+          .then(() => openInstallPage())
+          .catch(err => storeLog('error', 9, err, 'onInstalled'));
+      }
 
-    if (typeof e.stopPropagation === 'function') {
-      e.stopPropagation();
-    }
-  }
-
-  const port = browser.runtime.connect({ name: '2FAS' });
-  
-  port.postMessage({
-    action: 'openBrowserPage',
-    url: browser.runtime.getURL('/optionsPage/optionsPage.html')
-  });
+      return false;
+    })
+    .catch(err => storeLog('error', 35, err, 'checkSafariStorage'));
 };
 
-module.exports = openOptionsPage;
+module.exports = checkSafariStorage;

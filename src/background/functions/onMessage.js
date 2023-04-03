@@ -18,6 +18,10 @@
 //
 
 /* global URL */
+const getBrowserInfo = require('./getBrowserInfo');
+const generateDefaultStorage = require('./generateDefaultStorage');
+const storeLog = require('../../partials/storeLog');
+
 const onMessage = (request, sender) => {
   return new Promise(resolve => {
     switch (request.action) {
@@ -35,6 +39,14 @@ const onMessage = (request, sender) => {
           url: sender?.tab?.url,
           urlPath
         });
+      }
+
+      case 'storageReset': {
+        const browserInfo = getBrowserInfo();
+
+        return generateDefaultStorage(browserInfo)
+          .then(() => resolve(true))
+          .catch(async err => await storeLog('error', 37, err, 'storageReset'));
       }
 
       default: {

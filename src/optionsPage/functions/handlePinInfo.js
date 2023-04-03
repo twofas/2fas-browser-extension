@@ -17,25 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const S = require('../../selectors');
 
-const openOptionsPage = e => {
-  if (e) {
-    if (typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
+const handlePinInfo = () => {
+  const view = document.querySelector(S.optionsPage.pin.info);
+  view.classList.add('hidden');
 
-    if (typeof e.stopPropagation === 'function') {
-      e.stopPropagation();
-    }
-  }
-
-  const port = browser.runtime.connect({ name: '2FAS' });
-  
-  port.postMessage({
-    action: 'openBrowserPage',
-    url: browser.runtime.getURL('/optionsPage/optionsPage.html')
-  });
+  return saveToLocalStorage({ pinInfo: true });
 };
 
-module.exports = openOptionsPage;
+module.exports = handlePinInfo;
