@@ -22,6 +22,13 @@ const showNativePush = require('../../notification/functions/showNativePush');
 const config = require('../../config');
 
 const checkIconTitleText = async tabID => {
+  if (
+    !tabID ||
+    parseInt(tabID, 10) < 0
+  ) {
+    return true;
+  }
+
   let badgeText;
 
   if (process.env.EXT_PLATFORM === 'Safari') {
