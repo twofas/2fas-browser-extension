@@ -54,8 +54,6 @@ const onTabActivated = async ({ tabId }) => {
         tabId
       });
       await browser.browserAction.setTitle({ tabId, title: browser.i18n.getMessage('inActiveTabInfo') });
-      await browser.browserAction.setBadgeText({ tabId, text: '!' });
-      await browser.browserAction.setBadgeBackgroundColor({ tabId, color: '#ed1c24' });
     } else {
       browser.action.setIcon({
         path: {
@@ -68,8 +66,6 @@ const onTabActivated = async ({ tabId }) => {
         tabId
       });
       await browser.action.setTitle({ tabId, title: browser.i18n.getMessage('inActiveTabInfo') });
-      await browser.action.setBadgeText({ tabId, text: '!' });
-      await browser.action.setBadgeBackgroundColor({ tabId, color: '#ed1c24' });
     }
   }
 };

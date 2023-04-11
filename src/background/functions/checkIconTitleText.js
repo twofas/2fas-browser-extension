@@ -21,7 +21,7 @@ const browser = require('webextension-polyfill');
 const showNativePush = require('../../notification/functions/showNativePush');
 const config = require('../../config');
 
-const checkBadgeText = async tabID => {
+const checkIconTitleText = async tabID => {
   let badgeText;
 
   if (process.env.EXT_PLATFORM === 'Safari') {
@@ -29,12 +29,12 @@ const checkBadgeText = async tabID => {
   }
 
   if (process.env.EXT_PLATFORM === 'Firefox') {
-    badgeText = await browser.browserAction.getBadgeText({ tabId: tabID });
+    badgeText = await browser.browserAction.getTitle({ tabId: tabID });
   } else {
-    badgeText = await browser.action.getBadgeText({ tabId: tabID });
+    badgeText = await browser.action.getTitle({ tabId: tabID });
   }
 
-  if (badgeText === '!') {
+  if (badgeText === browser.i18n.getMessage('inActiveTabInfo')) {
     showNativePush(config.Texts.Error.InactiveTab, true);
     return false;
   }
@@ -42,4 +42,4 @@ const checkBadgeText = async tabID => {
   return true;
 };
 
-module.exports = checkBadgeText;
+module.exports = checkIconTitleText;
