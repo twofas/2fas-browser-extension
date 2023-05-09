@@ -22,7 +22,7 @@
     "edge-build": "yarn edge-prod && rimraf ./public/.gitkeep && powershell Compress-Archive ./public/* ./build/edge_ext_%npm_package_version%.zip",
     "safari-dev": "yarn clean && yarn generate-locales && cross-env EXT_PLATFORM=Safari node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
     "safari-prod": "yarn clean && yarn generate-locales && npx browserslist@latest --update-db && cross-env EXT_PLATFORM=Safari NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "all-build": "rimraf ./build/* && yarn generate-license-info && yarn chrome-build && yarn opera-build && yarn firefox-build && yarn edge-build",
+    "all-build": "rimraf --glob ./build/* && yarn generate-license-info && yarn chrome-build && yarn opera-build && yarn firefox-build && yarn edge-build",
     "browserlist-update": "npx browserslist@latest --update-db",
     "generate-locales": "node webpack/utils/generateLocales.js",
     "generate-license-info-html": "license-report --output=html >> open-source-licenses.html",
