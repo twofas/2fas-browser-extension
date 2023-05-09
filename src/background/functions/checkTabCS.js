@@ -18,11 +18,42 @@
 //
 
 const browser = require('webextension-polyfill');
-const checkTabCS = require('../functions/checkTabCS');
+const setIcon = require('./setIcon');
 
-const onTabActivated = ({ tabId }) => {
-  console.log('onTabActivated');
-  return checkTabCS(tabId);
+const checkTabCS = async tabId => {
+  console.log('checkTabCS', tabId);
+
+  if (!tabId) {
+    return;
+  }
+
+  const tabInfo = await browser.tabs.get(tabId);
+  const tabUrl = tabInfo.url ? tabInfo.url : tabInfo.pendingUrl;
+  const extUrl = browser.runtime.getURL('');
+  let urlObj;
+
+  if (tabUrl.includes(extUrl)) {
+    await setIcon(tabId, false, false);
+    return;
+  }
+
+  try {
+    urlObj = new URL(tabUrl);
+  } catch (e) {
+    return;
+  }
+
+  if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+    await setIcon(tabId, false, false);
+    return;
+  }
+
+  try {
+    await browser.tabs.sendMessage(tabId, { action: 'contentScript' });
+    await setIcon(tabId);
+  } catch (err) {
+    await setIcon(tabId, false, true);
+  }
 };
 
-module.exports = onTabActivated;
+module.exports = checkTabCS;
