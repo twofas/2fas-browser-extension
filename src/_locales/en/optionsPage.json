@@ -21,6 +21,8 @@
   "optionsPinDesc": "Check the Extension List to make it visible.",
   "optionsPinSafariStep1": "Right click on the address bar, select Toolbar customization",
   "optionsPinSafariStep2": "Find 2FAS icon on the list, drag it to the toolbar",
+  "optionsPinOperaStep2Header": "Find added Extension on the list and click “Details”.",
+  "optionsPinOperaStep2SubHeader": "Then turn on “Allow on site with finding results”.",
   "optionsPinSafariToolbarCustomization": "Toolbar customization",
   "optionsDangerZone": "Danger Zone",
   "optionsSafariResetDesc": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
