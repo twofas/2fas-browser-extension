@@ -21,7 +21,6 @@ const browser = require('webextension-polyfill');
 const checkTabCS = require('../functions/checkTabCS');
 
 const onTabActivated = ({ tabId }) => {
-  console.log('onTabActivated');
   return checkTabCS(tabId);
 };
 

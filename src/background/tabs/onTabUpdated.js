@@ -23,8 +23,6 @@ const SDK = require('../../sdk');
 const checkTabCS = require('../functions/checkTabCS');
 
 const onTabUpdated = async (tabID, changeInfo) => {
-  console.log('onTabUpdated', tabID, changeInfo);
-
   if (!changeInfo) {
     return false;
   }

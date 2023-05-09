@@ -20,8 +20,6 @@
 const browser = require('webextension-polyfill');
 
 const setIcon = async (tabId, active = true, changeTitle = false) => {
-  console.log('setIcon', tabId, active, changeTitle);
-
   const iconObj =
     active ?
     {
