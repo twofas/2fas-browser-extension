@@ -47,9 +47,12 @@ const inputToken = (request, inputElement, siteURL) => {
           }
 
           if (!inputElement.contains(document.activeElement)) {
-            document.activeElement.value = '';
-            document.activeElement.dispatchEvent(clearEvent);
-            document.activeElement.focus();
+            if (!siteURL.includes('secure.newegg')) { // NEWEGG FIX
+              document.activeElement.focus();
+              document.activeElement.value = '';
+              document.activeElement.dispatchEvent(clearEvent);
+              document.activeElement.focus();
+            }
           }
           // END MANY INPUTS FIX
 

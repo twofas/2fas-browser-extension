@@ -23,7 +23,7 @@ const TwoFasNotification = require('../../notification');
 const initBEAction = require('./initBEAction');
 const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
 const sendNotificationInfo = require('./sendNotificationInfo');
-const checkBadgeText = require('./checkBadgeText');
+const checkIconTitleText = require('./checkIconTitleText');
 
 const browserActionConfigured = async (tab, data) => {
   const url = new URL(tab?.url);
@@ -44,7 +44,7 @@ const browserActionConfigured = async (tab, data) => {
     return false;
   }
 
-  go = await checkBadgeText(tab?.id);
+  go = await checkIconTitleText(tab?.id);
 
   if (!go) {
     return false;

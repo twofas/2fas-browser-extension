@@ -22,7 +22,10 @@ const S = require('../../selectors');
 
 const removeDeviceFromDOM = deviceID => {
   const tr = document.querySelector(`tr[data-device-id="${deviceID}"]`);
-  tr.remove();
+
+  if (tr && typeof tr.remove === 'function') {
+    tr.remove();
+  }
 
   const tbody = document.querySelector(S.optionsPage.devicesList);
 

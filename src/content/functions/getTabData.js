@@ -19,10 +19,21 @@
 
 const browser = require('webextension-polyfill');
 const storeLog = require('../../partials/storeLog');
+const delay = require('../../partials/delay');
 
 const getTabData = () => {
   return browser.runtime.sendMessage({ action: 'getTabData' })
-    .catch(err => storeLog('error', 14, err, 'getTabData'));
+    .catch(err => {
+      if (err && typeof err.toString === 'function') {
+        if (err.toString() === 'Error: Could not establish connection. Receiving end does not exist.') {
+          return delay(() => browser.runtime.sendMessage({ action: 'getTabData' }).catch(err => storeLog('error', 14, err, 'getTabData - second try')), 100);
+        }
+
+        return storeLog('error', 14, err, 'getTabData - toString');
+      }
+
+      return storeLog('error', 14, err, 'getTabData - no error');
+    });
 };
 
 module.exports = getTabData;

@@ -3,7 +3,7 @@
   "name": "2FAS - Two Factor Authentication",
   "short_name": "2FAS",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "icons": {
@@ -59,7 +59,6 @@
   "commands": {
     "tokenRequest": {
       "description": "__MSG_shortcutDesc__",
-      "global": false,
       "suggested_key": {
         "default": "Ctrl+Shift+2",
         "mac": "MacCtrl+Shift+2"
