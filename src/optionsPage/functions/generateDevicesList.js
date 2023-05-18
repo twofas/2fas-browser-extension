@@ -60,7 +60,7 @@ const generateDevicesList = list => {
     t.td[1] = createElement('td');
     t.td[1].setAttribute('data-before-i18n', browser.i18n.getMessage('pairingDate'));
     t.pairDate = new Date(device.paired_at);
-    t.dateString = `${('0' + t.pairDate.getDate()).slice(-2)} ${months[t.pairDate.getMonth()]} ${t.pairDate.getFullYear()}`;
+    t.dateString = `${months[t.pairDate.getMonth()]} ${('0' + t.pairDate.getDate()).slice(-2)},  ${t.pairDate.getFullYear()}`;
     t.datePaired = createTextElement('span', t.dateString);
 
     t.td[1].appendChild(t.datePaired);

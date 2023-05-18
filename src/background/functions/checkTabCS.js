@@ -18,28 +18,40 @@
 //
 
 const browser = require('webextension-polyfill');
-const showNativePush = require('../../notification/functions/showNativePush');
-const config = require('../../config');
+const setIcon = require('./setIcon');
 
-const checkBadgeText = async tabID => {
-  let badgeText;
-
-  if (process.env.EXT_PLATFORM === 'Safari') {
-    return true;
+const checkTabCS = async tabId => {
+  if (!tabId) {
+    return;
   }
 
-  if (process.env.EXT_PLATFORM === 'Firefox') {
-    badgeText = await browser.browserAction.getBadgeText({ tabId: tabID });
-  } else {
-    badgeText = await browser.action.getBadgeText({ tabId: tabID });
+  const tabInfo = await browser.tabs.get(tabId);
+  const tabUrl = tabInfo.url ? tabInfo.url : tabInfo.pendingUrl;
+  const extUrl = browser.runtime.getURL('');
+  let urlObj;
+
+  if (tabUrl.includes(extUrl)) {
+    await setIcon(tabId, false, false);
+    return;
   }
 
-  if (badgeText === '!') {
-    showNativePush(config.Texts.Error.InactiveTab, true);
-    return false;
+  try {
+    urlObj = new URL(tabUrl);
+  } catch (e) {
+    return;
   }
 
-  return true;
+  if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+    await setIcon(tabId, false, false);
+    return;
+  }
+
+  try {
+    await browser.tabs.sendMessage(tabId, { action: 'contentScript' });
+    await setIcon(tabId);
+  } catch (err) {
+    await setIcon(tabId, false, true);
+  }
 };
 
-module.exports = checkBadgeText;
+module.exports = checkTabCS;

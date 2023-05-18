@@ -20,12 +20,28 @@
 -->
 <div class="twofas-options-page-pin-info hidden">
   <div class="twofas-options-page-pin-info-box">
-    <img class="light" src="../../images/pin-info/opera.svg" alt="Pin 2FAS for faster authentication" data-i18n="optionsPinHeader" loading="lazy" decoding="async" />
-    <img class="dark" src="../../images/pin-info/opera-dark.svg" alt="Pin 2FAS for faster authentication" data-i18n="optionsPinHeader" loading="lazy" decoding="async" />
+    <div class="twofas-options-page-pin-info-box-slider js-twofas-pin-info-slider">
+      <div class="twofas-options-page-pin-info-box-slider-item">
+        <img class="light" src="../../images/pin-info/opera-step-1.svg" alt="Pin 2FAS for faster authentication" data-i18n="optionsPinHeader" loading="lazy" decoding="async" />
+        <img class="dark" src="../../images/pin-info/opera-step-1-dark.svg" alt="Pin 2FAS for faster authentication" data-i18n="optionsPinHeader" loading="lazy" decoding="async" />
 
-    <p class="twofas-options-page-pin-info-box-header" data-i18n="optionsPinHeader">Pin 2FAS for faster authentication</p>
-    <p class="twofas-options-page-pin-info-box-subheader" data-i18n="optionsPinDesc">Check Extension List to make it visible.</p>
+        <p class="twofas-options-page-pin-info-box-header" data-i18n="optionsPinHeader">Pin 2FAS for faster authentication</p>
+        <p class="twofas-options-page-pin-info-box-subheader" data-i18n="optionsPinDesc">Check Extension List to make it visible.</p>
+        <button class="btn btn-theme btn-got-it js-twofas-pin-info-next" data-i18n="next">Next</button>
+      </div>
+      <div class="twofas-options-page-pin-info-box-slider-item">
+        <img class="light" src="../../images/pin-info/opera-step-2.svg" alt="Find added Extension on the list and click “Details”" data-i18n="optionsPinOperaStep2Header" loading="lazy" decoding="async" />
+        <img class="dark" src="../../images/pin-info/opera-step-2-dark.svg" alt="Find 2FAS icon on the list, drag it to the toolbar" data-i18n="optionsPinOperaStep2Header" loading="lazy" decoding="async" />
+        
+        <p class="twofas-options-page-pin-info-box-header" data-i18n="optionsPinOperaStep2Header">Find added Extension on the list and click “Details”.</p>
+        <p class="twofas-options-page-pin-info-box-subheader" data-i18n="optionsPinOperaStep2SubHeader">Then turn on “Allow on site with finding results”.</p>
+        <button class="btn btn-theme btn-got-it js-twofas-pin-info-got-it" data-i18n="gotIt">Ok, got it</button>
+      </div>
+    </div>
 
-    <button class="btn btn-theme btn-got-it js-twofas-pin-info-got-it" data-i18n="gotIt">Got it</button>
+    <div class="twofas-options-page-pin-info-box-indicators">
+      <div class="js-twofas-pin-info-prev"></div>
+      <div class="js-twofas-pin-info-next"></div>
+    </div>
   </div>
 </div>

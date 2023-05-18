@@ -20,9 +20,18 @@
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const storeLog = require('../../partials/storeLog');
 const SDK = require('../../sdk');
+const checkTabCS = require('../functions/checkTabCS');
 
 const onTabUpdated = async (tabID, changeInfo) => {
-  if (!changeInfo || !changeInfo.url) {
+  if (!changeInfo) {
+    return false;
+  }
+
+  if (tabID) {
+    await checkTabCS(tabID);
+  }
+
+  if (!changeInfo?.url) {
     return false;
   }
 
