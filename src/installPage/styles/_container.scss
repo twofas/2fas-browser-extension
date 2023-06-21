@@ -669,15 +669,16 @@
     }
 
     .twofas-qr-container-manual {
-      background-color: $color-header;
+      background-color: $bg;
       border-radius: 32px;
-      color: $color-2;
+      color: $color;
       font-size: 14px;
       margin-bottom: 16px;
       padding: 12px 20px;
 
       @media (prefers-color-scheme: dark) {
         background-color: $bg-dark;
+        color: $color-2;
       }
     }
 
