@@ -22,7 +22,7 @@ const browser = require('webextension-polyfill');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.4.3',
+  ExtensionVersion: '1.4.4',
 
   Texts: {
     Error: {
