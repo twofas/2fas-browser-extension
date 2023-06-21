@@ -30,7 +30,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   switch (true) {
     case errObj instanceof Event: {
       m = 'EventError';
-      c.eventInfo = {
+      c.errorInfo = {
         currentTargetURL: errObj?.currentTarget?.url || '',
         path: errObj?.path || [],
         type: errObj?.type || ''
@@ -56,8 +56,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
 
     default: {
       m = errObj?.message || 'Unknown Error';
-      c = errObj;
-
+      c.errorInfo = errObj;
       break;
     }
   }
@@ -88,6 +87,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     return false;
   }
 
+  c.errorType = errObj?.constructor?.name || '';
   c.extensionVersion = storage.extensionVersion;
   c.browserInfo = storage.browserInfo;
   c.url = url;

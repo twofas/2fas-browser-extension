@@ -30,13 +30,13 @@ class SDK {
     return Promise.reject(res);
   }
 
-  onError (err) {
+  async onError (err) {
     const errObj = {};
     errObj.status = err.status;
     errObj.statusText = err.statusText;
 
     if (err.status >= 400 && err.status < 500) {
-      errObj.content = err.json();
+      errObj.content = await err.json();
     } else {
       errObj.content = err;
     }
