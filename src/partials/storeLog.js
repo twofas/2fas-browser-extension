@@ -92,6 +92,12 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   c.browserInfo = storage.browserInfo;
   c.url = url;
 
+  if (typeof window !== 'undefined' && window?.location?.href) {
+    try {
+      c.frontUrl = window?.location?.href;
+    } catch (e) {}
+  }
+
   return new SDK().storeLog(storage.extensionID, level, m, c)
     .then(() => {
       storage = null;
