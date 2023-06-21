@@ -30,7 +30,8 @@ const selectors = {
     qr: {
       timeout: '.twofas-qr-container-timeout',
       regenerate: '.js-twofas-regenerate-qr',
-      imgs: 'img.twofas-js-qrcode'
+      imgs: 'img.twofas-js-qrcode',
+      manual: '.twofas-js-qr-manual p'
     }
   },
   optionsPage: {

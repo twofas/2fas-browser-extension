@@ -383,6 +383,14 @@
           display: flex !important;
         }
       }
+
+      .twofas-qr-container-manual {
+        display: none !important;
+
+        @media all and (max-width: 700px) {
+          display: block !important;
+        }
+      }
     }
 
     &-right {
@@ -425,6 +433,32 @@
 
         @media all and (max-width: 700px) {
           display: none !important;
+        }
+      }
+
+      .twofas-qr-container-manual {
+        background-color: transparent !important;
+        bottom: 40px;
+        color: $color !important;
+        position: absolute;
+        text-align: center;
+        width: 291px;
+
+        @media (prefers-color-scheme: dark) {
+          bottom: 35px;
+          color: $color-2 !important;
+        }
+
+        @media all and (max-width: 780px) {
+          bottom: 0;
+          left: 13px;
+          padding: 0 !important;
+          width: 225px;
+        }
+
+        p {
+          margin: 0 auto;
+          max-width: 200px;
         }
       }
     }
@@ -629,6 +663,19 @@
           filter: blur(2px);
           opacity: .3;
         }
+      }
+    }
+
+    .twofas-qr-container-manual {
+      background-color: $color-header;
+      border-radius: 32px;
+      color: $color-2;
+      font-size: 14px;
+      margin-bottom: 16px;
+      padding: 12px 20px;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: $bg-dark;
       }
     }
 
