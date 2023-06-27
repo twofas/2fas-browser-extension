@@ -24,7 +24,16 @@ const S = require('../../selectors');
 const qrTimeout = (QRImgs, channel) => {
   let t;
   const timeoutElements = document.querySelectorAll(S.installPage.qr.timeout);
-  timeoutElements.forEach(el => { el.classList.remove('visible'); });
+  const QRManuals = document.querySelectorAll(S.installPage.qr.manual);
+  
+  if (timeoutElements) {
+    timeoutElements.forEach(el => { el.classList.remove('visible'); });
+  }
+
+  if (QRManuals) {
+    QRManuals.forEach(manual => { manual.classList.remove('twofas-manual-timeout') });
+  }
+  
   if (QRImgs) {
     QRImgs.forEach(img => { img.classList.remove('twofas-qrcode-timeout'); });
   }
@@ -33,8 +42,19 @@ const qrTimeout = (QRImgs, channel) => {
     clearTimeout(t);
 
     channel.connect();
-    QRImgs.forEach(img => { img.classList.remove('twofas-qrcode-timeout'); });
-    timeoutElements.forEach(el => { el.classList.remove('visible'); });
+    
+    if (QRImgs) {
+      QRImgs.forEach(img => { img.classList.remove('twofas-qrcode-timeout'); });
+    }
+
+    if (QRManuals) {
+      QRManuals.forEach(manual => { manual.classList.remove('twofas-manual-timeout') });
+    }
+
+    if (timeoutElements) {
+      timeoutElements.forEach(el => { el.classList.remove('visible'); });
+    }
+
     TwoFasNotification.clearAll();
     
     t = setTimeout(timeout, (1000 * 60 * config.WebSocketTimeout) - 100);
@@ -45,6 +65,10 @@ const qrTimeout = (QRImgs, channel) => {
 
     if (QRImgs) {
       QRImgs.forEach(img => { img.classList.add('twofas-qrcode-timeout'); });
+    }
+
+    if (QRManuals) {
+      QRManuals.forEach(manual => { manual.classList.add('twofas-manual-timeout') });
     }
 
     if (timeoutElements) {

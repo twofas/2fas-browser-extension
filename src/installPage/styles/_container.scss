@@ -680,6 +680,16 @@
         background-color: $bg-dark;
         color: $color-2;
       }
+
+      p {
+        transition: filter .2s ease-in-out, opacity .2s ease-in-out;
+
+        &.twofas-manual-timeout {
+          filter: blur(3px);
+          opacity: .3;
+          pointer-events: none;
+        }
+      }
     }
 
     h4 {
