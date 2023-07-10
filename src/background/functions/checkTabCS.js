@@ -21,6 +21,8 @@ const browser = require('webextension-polyfill');
 const setIcon = require('./setIcon');
 
 const checkTabCS = async tabId => {
+  await new Promise(resolve => setTimeout(resolve, 50));
+
   if (!tabId) {
     return;
   }
