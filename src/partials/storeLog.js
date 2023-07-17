@@ -30,7 +30,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   switch (true) {
     case errObj instanceof Event: {
       m = 'EventError';
-      c.eventInfo = {
+      c.errorInfo = {
         currentTargetURL: errObj?.currentTarget?.url || '',
         path: errObj?.path || [],
         type: errObj?.type || ''
@@ -56,8 +56,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
 
     default: {
       m = errObj?.message || 'Unknown Error';
-      c = errObj;
-
+      c.errorInfo = errObj;
       break;
     }
   }
@@ -82,14 +81,22 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     (storage?.browserInfo?.browser_name === 'Firefox' && storage?.browserInfo?.browser_version === '105.0' && logID === 14) ||
     (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107' && logID === 14) ||
     (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107.0.0.0' && logID === 14) ||
-    (c?.errorInfo?.message.includes('FILE_ERROR_NO_SPACE'))
+    (c?.errorInfo?.message.includes('FILE_ERROR_NO_SPACE')) ||
+    (c?.status === 407)
   ) {
     return false;
   }
 
+  c.errorType = errObj?.constructor?.name || '';
   c.extensionVersion = storage.extensionVersion;
   c.browserInfo = storage.browserInfo;
   c.url = url;
+
+  if (typeof window !== 'undefined' && window?.location?.href) {
+    try {
+      c.frontUrl = window?.location?.href;
+    } catch (e) {}
+  }
 
   return new SDK().storeLog(storage.extensionID, level, m, c)
     .then(() => {

@@ -21,7 +21,7 @@
 const S = require('../../selectors');
 const setQRCode = require('./setQRCode');
 
-const installContainerHandlers = (channel, imageURL) => {
+const installContainerHandlers = (channel, imageURL, extensionID) => {
   const app = document.querySelector(S.installPage.container.app);
   const qr = document.querySelector(S.installPage.container.qr);
   let t;
@@ -41,7 +41,7 @@ const installContainerHandlers = (channel, imageURL) => {
         document.dispatchEvent(qrHiddenEvent);
       }
     } else {
-      t = setQRCode(imageURL, channel);
+      t = setQRCode(imageURL, channel, extensionID);
       channel.connect();
     }
   };

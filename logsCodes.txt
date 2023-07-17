@@ -6,7 +6,7 @@
 2 - onTabRemoved
 3 - onTabUpdated
 4 - browserAction
-5 - initPluginAction
+5 - initBEAction
 6 - updateBrowserInfo
 7 - handleConfigurationRequest
 8 - handleLoginRequest

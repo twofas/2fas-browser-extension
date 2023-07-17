@@ -33,7 +33,7 @@ const generateShortcutBox = () => {
       data = data.filter(command => command.name === 'tokenRequest');
 
       data[0].shortcut =
-        data[0].shortcut
+        data[0]?.shortcut
           .replace(/⌘/g, 'Cmd+')
           .replace(/⇧/g, 'Shift+')
           .replace(/⌥/g, 'Alt+')
@@ -68,7 +68,7 @@ const generateShortcutBox = () => {
       const elementsLength = s.length;
 
       s.reverse().forEach((btn, i) => {
-        const filteredBtn = btn.replace('MacCtrl', 'Ctrl');
+        const filteredBtn = btn?.replace('MacCtrl', 'Ctrl');
         const btnBox = createTextElement('div', filteredBtn);
         btnBox.classList.add('twofas-shortcut-edit-box-btn');
         box.prepend(btnBox);
@@ -82,7 +82,7 @@ const generateShortcutBox = () => {
 
       const text = document.querySelector(S.optionsPage.shortcut.editText);
       if (text) {
-        text.textContent = data[0].shortcut.replace('MacCtrl', 'Ctrl');
+        text.textContent = data[0]?.shortcut.replace('MacCtrl', 'Ctrl');
       }
 
       const editBtn = document.querySelector(S.optionsPage.shortcut.edit);

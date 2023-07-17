@@ -17,7 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
 const checkTabCS = require('../functions/checkTabCS');
 
 const onTabActivated = ({ tabId }) => {

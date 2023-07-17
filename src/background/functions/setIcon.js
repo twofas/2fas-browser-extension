@@ -21,26 +21,27 @@ const browser = require('webextension-polyfill');
 
 const setIcon = async (tabId, active = true, changeTitle = false) => {
   const iconObj =
-    active ?
-    {
-      path: {
-        16: browser.runtime.getURL('images/icons/icon16.png'),
-        32: browser.runtime.getURL('images/icons/icon32.png'),
-        48: browser.runtime.getURL('images/icons/icon48.png'),
-        96: browser.runtime.getURL('images/icons/icon96.png'),
-        128: browser.runtime.getURL('images/icons/icon128.png')
-      },
-      tabId
-    } : {
-      path: {
-        16: browser.runtime.getURL('images/icons/icon16gray.png'),
-        32: browser.runtime.getURL('images/icons/icon32gray.png'),
-        48: browser.runtime.getURL('images/icons/icon48gray.png'),
-        96: browser.runtime.getURL('images/icons/icon96gray.png'),
-        128: browser.runtime.getURL('images/icons/icon128gray.png')
-      },
-      tabId
-    };
+    active
+      ? {
+        path: {
+          16: browser.runtime.getURL('images/icons/icon16.png'),
+          32: browser.runtime.getURL('images/icons/icon32.png'),
+          48: browser.runtime.getURL('images/icons/icon48.png'),
+          96: browser.runtime.getURL('images/icons/icon96.png'),
+          128: browser.runtime.getURL('images/icons/icon128.png')
+        },
+        tabId
+      }
+      : {
+        path: {
+          16: browser.runtime.getURL('images/icons/icon16gray.png'),
+          32: browser.runtime.getURL('images/icons/icon32gray.png'),
+          48: browser.runtime.getURL('images/icons/icon48gray.png'),
+          96: browser.runtime.getURL('images/icons/icon96gray.png'),
+          128: browser.runtime.getURL('images/icons/icon128gray.png')
+        },
+        tabId
+      };
     
   const iconTitle = active ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
 

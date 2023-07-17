@@ -27,7 +27,7 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  if (tabID) {
+  if (tabID && changeInfo.status === 'complete') {
     await checkTabCS(tabID);
   }
 
