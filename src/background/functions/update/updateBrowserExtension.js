@@ -28,7 +28,7 @@ const updateBrowserExtension = async browserInfo => {
   try {
     data = await loadFromLocalStorage(['extensionID', 'extensionVersion', 'browserInfo']);
   } catch (err) {
-    return storeLog('error', 27, err, 'updateBrowserExtension');
+    return storeLog('error', 27, err, 'updateBrowserExtension - storage load');
   }
 
   if (
@@ -46,7 +46,7 @@ const updateBrowserExtension = async browserInfo => {
         data = null;
         bI = null;
       })
-      .catch(err => storeLog('error', 27, err, 'updateBrowserExtension'));
+      .catch(err => storeLog('error', 27, err, 'updateBrowserExtension - API call'));
   }
 
   data = null;

@@ -20,13 +20,20 @@
 const S = require('../../selectors');
 const qrTimeout = require('./qrTimeout');
 
-const setQRCode = (imageURL, channel) => {
+const setQRCode = (imageURL, channel, extensionID) => {
   return new Promise(() => {
     const QRImgs = document.querySelectorAll(S.installPage.qr.imgs);
+    const QRManuals = document.querySelectorAll(S.installPage.qr.manual);
 
     if (QRImgs) {
       QRImgs.forEach(img => {
         img.src = imageURL;
+      });
+    }
+
+    if (QRManuals) {
+      QRManuals.forEach(manual => {
+        manual.innerText = extensionID;
       });
     }
   

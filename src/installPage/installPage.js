@@ -59,7 +59,7 @@ const init = async storage => {
   const configLink = new SDK().generateQRLink(storage.extensionID);
 
   return generateQRCode(configLink)
-    .then(imageURL => installContainerHandlers(channel, imageURL))
+    .then(imageURL => installContainerHandlers(channel, imageURL, storage.extensionID))
     .then(handleTargetBlank)
     .then(() => hidePreloader(true))
     .then(() => browser.runtime.onMessage.addListener(extPageOnMessage));
