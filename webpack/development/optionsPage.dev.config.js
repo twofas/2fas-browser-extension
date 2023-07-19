@@ -113,7 +113,9 @@ const optionsPageDevConfig = {
       OPTIONS_VIEW_FILENAME: process.env.EXT_PLATFORM === 'Safari' ? JSON.stringify('./safari.html') : process.env.EXT_PLATFORM === 'Firefox' ? JSON.stringify('./firefox.html') : JSON.stringify('./normal.html'),
       OPTIONS_VIEW_REGEXP: process.env.EXT_PLATFORM === 'Safari' ? /safari\.html$/ : process.env.EXT_PLATFORM === 'Firefox' ? /firefox\.html$/ : /normal\.html$/,
       PININFO_VIEW_FILENAME: JSON.stringify(`./${process.env.EXT_PLATFORM.toLowerCase()}.html`),
-      PININFO_VIEW_REGEXP: BrowserRegExps[process.env.EXT_PLATFORM.toLowerCase()]
+      PININFO_VIEW_REGEXP: BrowserRegExps[process.env.EXT_PLATFORM.toLowerCase()],
+      MENU_VIEW_FILENAME: process.env.EXT_PLATFORM === 'Safari' ? JSON.stringify('./safari.html') : JSON.stringify('./normal.html'),
+      MENU_VIEW_REGEXP: process.env.EXT_PLATFORM === 'Safari' ? /safari\.html$/ : /normal\.html$/
     }),
     new HtmlWebpackPlugin({
       chunks: ['optionsPage', 'optionsPageStyles', 'contentPageStyles'],
