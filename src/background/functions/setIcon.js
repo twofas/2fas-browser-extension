@@ -20,15 +20,17 @@
 const browser = require('webextension-polyfill');
 
 const setIcon = async (tabId, active = true, changeTitle = false) => {
+  const option = process.env.EXT_PLATFORM === 'Safari' ? 'safari' : '';
+
   const iconObj =
     active
       ? {
         path: {
-          16: browser.runtime.getURL('images/icons/icon16.png'),
-          32: browser.runtime.getURL('images/icons/icon32.png'),
-          48: browser.runtime.getURL('images/icons/icon48.png'),
-          96: browser.runtime.getURL('images/icons/icon96.png'),
-          128: browser.runtime.getURL('images/icons/icon128.png')
+          16: browser.runtime.getURL(`images/icons/icon16${option}.png`),
+          32: browser.runtime.getURL(`images/icons/icon32${option}.png`),
+          48: browser.runtime.getURL(`images/icons/icon48${option}.png`),
+          96: browser.runtime.getURL(`images/icons/icon96${option}.png`),
+          128: browser.runtime.getURL(`images/icons/icon128${option}.png`)
         },
         tabId
       }
