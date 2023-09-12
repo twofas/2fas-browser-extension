@@ -43,6 +43,7 @@ const generateDefaultStorage = browserInfo => {
         configured: false,
         browserInfo,
         keys,
+        contextMenu: true,
         logging: false,
         notifications: false,
         incognito: false,

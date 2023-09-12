@@ -20,6 +20,7 @@
 const S = require('../../selectors');
 const handleAdvancedHeaderClick = require('./handleAdvancedHeaderClick');
 const handleLoggingChange = require('./handleLoggingChange');
+const handleContextMenuChange = require('./handleContextMenuChange');
 const handlePushChange = require('./handlePushChange');
 const handleSafariReset = require('./handleSafariReset');
 const sendTestNotification = require('./sendTestNotification');
@@ -29,12 +30,17 @@ const setAdvanced = () => {
   advancedHeader.addEventListener('click', handleAdvancedHeaderClick);
 
   const loggingToggle = document.querySelector(S.optionsPage.logsInput);
+  const contextMenuToggle = document.querySelector(S.optionsPage.contextMenuInput);
   const pushRadios = document.querySelectorAll('input[name="pushConfig"]');
   const testNotificationBtn = document.querySelector(S.optionsPage.testNotification);
   const safariResetBtn = document.querySelector(S.optionsPage.safariReset);
 
   if (loggingToggle) {
     loggingToggle.addEventListener('change', handleLoggingChange);
+  }
+
+  if (contextMenuToggle) {
+    contextMenuToggle.addEventListener('change', handleContextMenuChange);
   }
 
   if (pushRadios) {

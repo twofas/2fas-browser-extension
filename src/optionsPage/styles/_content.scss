@@ -371,6 +371,7 @@
   }
 
   &-logs,
+  &-context-menu,
   &-push,
   &-safari-reset {
     margin-top: 40px;
@@ -387,6 +388,14 @@
         line-height: 1.5;
         max-width: 477px;
       }
+    }
+  }
+
+  &-logs {
+    margin-top: 6px;
+
+    @media all and (max-width: $screen-xs-max) {
+      margin-top: 6px;
     }
   }
 

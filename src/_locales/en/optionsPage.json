@@ -10,6 +10,7 @@
   "optionsAddAnotherDevice": "Add another device",
   "optionsLogsLabel": "Approve 2FAS Browser Extension logs",
   "optionsLogsDesc": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
+  "optionsContextMenuLabel": "Show 2FAS Browser Extension option in context menu",
   "optionsPushDesc": "Choose a notification mechanism which will prompt you about communication with the 2FAS mobile app when you use this browser extension.",
   "optionsPushCustom": "2FAS Custom Notifications",
   "optionsPushNative": "Native Browser's Notifications",

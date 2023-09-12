@@ -17,10 +17,22 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const browser = require('webextension-polyfill');
 const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const createContextMenus = require('../../background/functions/createContextMenus');
 
-const handleLoggingChange = e => {
-  return saveToLocalStorage({ logging: e.currentTarget.checked });
+const handleContextMenuChange = e => {
+  return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
+    .then(storage => {
+      if (storage.contextMenu) {
+        browser.contextMenus.removeAll();
+        createContextMenus();
+      } else {
+        try {
+          browser.contextMenus.remove('twofas-context-menu');
+        } catch {}
+      }
+    });
 };
 
-module.exports = handleLoggingChange;
+module.exports = handleContextMenuChange;
