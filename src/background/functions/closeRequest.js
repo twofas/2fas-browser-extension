@@ -30,7 +30,7 @@ const closeRequest = async (tabID, requestID) => {
     return storeLog('error', 30, err);
   }
 
-  if (!storage || !storage[`tabData-${tabID}`].requestID || requestID !== storage[`tabData-${tabID}`].requestID) {
+  if (!storage || !storage[`tabData-${tabID}`]?.requestID || requestID !== storage[`tabData-${tabID}`]?.requestID) {
     return false;
   }
 

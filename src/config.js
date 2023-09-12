@@ -80,6 +80,10 @@ const config = {
       InactiveTab: {
         Title: browser.i18n.getMessage('errorInactiveTabTitle') || t.errorInactiveTabTitle,
         Message: browser.i18n.getMessage('errorInactiveTabMessage') || t.errorInactiveTabMessage
+      },
+      LackOfTab: {
+        Title: browser.i18n.getMessage('errorLackOfTabTitle') || t.errorLackOfTabTitle,
+        Message: browser.i18n.getMessage('errorLackOfTabMessage') || t.errorLackOfTabMessage
       }
     },
     Warning: {

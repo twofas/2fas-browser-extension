@@ -25,6 +25,8 @@
   "errorStorageCorruptedMessage": "We will try to fix it for you. Please wait.",
   "errorInactiveTabTitle": "Inactive tab",
   "errorInactiveTabMessage": "Please refresh this tab to use the 2FAS Browser Extension.",
+  "errorLackOfTabTitle": "Your tab has been closed",
+  "errorLackOfTabMessage": "The request will be ignored",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
   "warningSelectInputTitle": "Select the text field first",
