@@ -19,9 +19,11 @@
 
 const browser = require('webextension-polyfill');
 const setIcon = require('./setIcon');
+const dummyGetLocalStorage = require('./dummyGetLocalStorage');
 
 const checkTabCS = async tabId => {
   await new Promise(resolve => setTimeout(resolve, 50));
+  await dummyGetLocalStorage();
 
   if (!tabId) {
     return;
