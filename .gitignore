@@ -117,3 +117,4 @@ fastlane/test_output
 
 iOSInjectionProject/
 .xcuserstate
+utils/export/messages.json
