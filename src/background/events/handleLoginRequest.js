@@ -24,6 +24,7 @@ const TwoFasNotification = require('../../notification');
 const Crypt = require('../functions/Crypt');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const storeLog = require('../../partials/storeLog');
+const sendMessageToTab = require('../../partials/sendMessageToTab');
 
 const handleLoginRequest = (tabID, data) => {
   const crypt = new Crypt();
@@ -40,7 +41,7 @@ const handleLoginRequest = (tabID, data) => {
       const loginData = data;
       loginData.token = token;
 
-      return browser.tabs.sendMessage(tabID, { action: 'inputToken', ...loginData })
+      return sendMessageToTab(tabID, { action: 'inputToken', ...loginData });
     })
     .then(() => closeRequest(tabID, data.token_request_id))
     .catch(async err => {

@@ -18,10 +18,10 @@
 //
 
 const config = require('../../config');
-const browser = require('webextension-polyfill');
 const storeLog = require('../../partials/storeLog');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const TwoFasNotification = require('../../notification');
+const sendMessageToTab = require('../../partials/sendMessageToTab');
 
 const sendNotificationInfo = tab => {
   return loadFromLocalStorage(['nativePush'])
@@ -30,7 +30,7 @@ const sendNotificationInfo = tab => {
         return Promise.resolve();
       }
 
-      return browser.tabs.sendMessage(tab?.id, { action: 'notificationInfo' });
+      return sendMessageToTab(tab?.id, { action: 'notificationInfo' });
     })
     .catch(async err => {
       await storeLog('error', 10, err, tab?.url);

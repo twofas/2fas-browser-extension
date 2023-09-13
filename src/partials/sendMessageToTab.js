@@ -17,15 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const sendMessageToTab = require('../../partials/sendMessageToTab');
+const browser = require('webextension-polyfill');
+const config = require('../config');
+const TwoFasNotification = require('../notification');
 
-const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
-  return sendMessageToTab(tabID, {
-    action: 'notification',
-    title: notificationObject.Title,
-    message: notificationObject.Message,
-    timeout
-  });
+const sendMessageToTab = (tabID, message) => {
+  return browser.tabs.sendMessage(tabID, message)
+    .catch(err => {
+      if (err.toString().includes('Receiving end does not exist')) {
+        return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
+      }
+    });
 };
 
-module.exports = sendFrontEndPushAction;
+module.exports = sendMessageToTab;
