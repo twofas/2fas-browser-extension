@@ -45,7 +45,7 @@ const handleLoginRequest = (tabID, data) => {
     })
     .then(() => closeRequest(tabID, data.token_request_id))
     .catch(async err => {
-      if (err.toString().includes('No tab with id')) {
+      if (err.toString().includes('No tab with id') || err.toString().includes('Invalid tab ID')) {
         return closeRequest(tabID, data.token_request_id)
           .then(() => TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID));
       }
