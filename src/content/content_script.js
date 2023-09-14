@@ -20,7 +20,7 @@
 import './styles/content_script.scss';
 const browser = require('webextension-polyfill');
 const { observe, createObserver } = require('./observer');
-const { getTabData, getInputs, addInputListener, portSetup } = require('./functions');
+const { getTabData, getInputs, addInputListener, portSetup, isInFrame } = require('./functions');
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
@@ -63,7 +63,15 @@ const contentScriptRun = async () => {
   const mutationObserver = createObserver();
   observe(mutationObserver);
 
-  const onMessageListener = request => contentOnMessage(request, tabData);
+  const onMessageListener = request => {
+    if (request?.action === 'contentScript') {
+      if (isInFrame()) {
+        return false;
+      }
+    }
+
+    return contentOnMessage(request, tabData);
+  };
   browser.runtime.onMessage.addListener(onMessageListener);
 
   window.addEventListener('beforeunload', async () => {

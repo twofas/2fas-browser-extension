@@ -71,6 +71,10 @@ const contentOnMessage = async (request, tabData) => {
       break;
     }
 
+    case 'contentScript': {
+      return { status: 'ok' };
+    }
+
     default: {
       return { status: 'error' };
     }
