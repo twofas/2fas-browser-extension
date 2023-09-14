@@ -498,7 +498,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -512,7 +512,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.4;
+				MARKETING_VERSION = 1.4.5;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -534,7 +534,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ZY8UR5ADFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -548,7 +548,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.4;
+				MARKETING_VERSION = 1.4.5;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -587,7 +587,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.4;
+				MARKETING_VERSION = 1.4.5;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -628,7 +628,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.4.4;
+				MARKETING_VERSION = 1.4.5;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
