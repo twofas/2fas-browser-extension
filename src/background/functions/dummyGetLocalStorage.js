@@ -17,10 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 
-const handleLoggingChange = e => {
-  return saveToLocalStorage({ logging: e.currentTarget.checked });
+const dummyGetLocalStorage = () => {
+  return loadFromLocalStorage('extensionID')
+    .then(storage => {
+      storage = null;
+    });
 };
 
-module.exports = handleLoggingChange;
+module.exports = dummyGetLocalStorage;

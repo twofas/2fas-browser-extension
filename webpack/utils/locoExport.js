@@ -17,10 +17,34 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const fs = require('node:fs');
+const readdir = require('node:fs').promises.readdir;
 
-const handleLoggingChange = e => {
-  return saveToLocalStorage({ logging: e.currentTarget.checked });
-};
+const getDirectories = async source =>
+  (await readdir(source, { withFileTypes: true }))
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
 
-module.exports = handleLoggingChange;
+getDirectories('./src/_locales')
+  .then(locales => {
+    return locales.map(locale => {
+      return {
+        locale,
+        files: fs.readdirSync(`./src/_locales/${locale}`)
+      };
+    })
+  })
+  .then(res => {
+    return res.map(l => {
+      return {
+        locale: l.locale,
+        content: Object.assign(...l.files.map(f => {
+          f = JSON.parse(fs.readFileSync(`./src/_locales/${l.locale}/${f}`, 'utf8'));
+          return f;
+        }))
+      }
+    });
+  })
+  .then(res => {
+    fs.writeFileSync('./webpack/utils/export/messages.json', JSON.stringify(res[0].content, null, 2));
+  });

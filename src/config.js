@@ -23,7 +23,7 @@ const t = require('./_locales/en/notifications.json');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.4.4',
+  ExtensionVersion: '1.4.5',
 
   Texts: {
     Error: {
@@ -80,6 +80,10 @@ const config = {
       InactiveTab: {
         Title: browser.i18n.getMessage('errorInactiveTabTitle') || t.errorInactiveTabTitle,
         Message: browser.i18n.getMessage('errorInactiveTabMessage') || t.errorInactiveTabMessage
+      },
+      LackOfTab: {
+        Title: browser.i18n.getMessage('errorLackOfTabTitle') || t.errorLackOfTabTitle,
+        Message: browser.i18n.getMessage('errorLackOfTabMessage') || t.errorLackOfTabMessage
       }
     },
     Warning: {

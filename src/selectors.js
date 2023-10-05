@@ -70,6 +70,7 @@ const selectors = {
     },
     menuLink: '.js-twofas-menu-link',
     extVersion: 'span.twofas-ext-version',
+    contextMenuInput: 'input#twofas-context-menu',
     logsInput: 'input#twofas-logs',
     testNotification: '.js-twofas-send-test-notification',
     devicesList: '.js-twofas-device-list',

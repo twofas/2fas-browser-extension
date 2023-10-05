@@ -27,7 +27,7 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  if (tabID && changeInfo.status === 'complete') {
+  if (tabID && (changeInfo.status === 'complete' || changeInfo.favIconUrl || changeInfo.isArticle)) {
     await checkTabCS(tabID);
   }
 

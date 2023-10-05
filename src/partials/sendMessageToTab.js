@@ -17,10 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const browser = require('webextension-polyfill');
+const config = require('../config');
+const TwoFasNotification = require('../notification');
 
-const handleLoggingChange = e => {
-  return saveToLocalStorage({ logging: e.currentTarget.checked });
+const sendMessageToTab = (tabID, message) => {
+  return browser.tabs.sendMessage(tabID, message)
+    .catch(err => {
+      if (err.toString().includes('Receiving end does not exist')) {
+        return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
+      }
+    });
 };
 
-module.exports = handleLoggingChange;
+module.exports = sendMessageToTab;

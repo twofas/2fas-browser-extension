@@ -17,10 +17,27 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 
-const handleLoggingChange = e => {
-  return saveToLocalStorage({ logging: e.currentTarget.checked });
+const setContextMenuToggle = () => {
+  return loadFromLocalStorage(['contextMenu'])
+    .then(storage => {
+      if (!('contextMenu' in storage)) {
+        return saveToLocalStorage({ contextMenu: true }, storage);
+      }
+
+      return storage;
+    })
+    .then(storage => {
+      const contextMenuToggle = document.querySelector('input#twofas-context-menu');
+
+      if (contextMenuToggle) {
+        contextMenuToggle.checked = storage.contextMenu;
+      }
+
+      return Promise.resolve();
+    })
+    .catch(() => {});
 };
 
-module.exports = handleLoggingChange;
+module.exports = setContextMenuToggle;

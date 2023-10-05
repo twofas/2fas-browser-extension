@@ -34,7 +34,7 @@ const getBrowserInfo = () => {
 
   const isBrave = () => {
     if (navigator?.userAgentData?.brands) {
-      return navigator.userAgentData.brands.filter(item => item.brand.includes('Brave')).length > 0;
+      return navigator.userAgentData.brands.filter(item => item?.brand?.includes('Brave')).length > 0;
     } else if (navigator.brave !== undefined) {
       return navigator.brave.isBrave.name === 'isBrave';
     } else {
@@ -43,7 +43,7 @@ const getBrowserInfo = () => {
   };
 
   try {
-    browserVersion = navigator.userAgentData.brands.filter(item => !item.brand.includes('Brand') && !item.brand.includes('Chromium'))[0].version;
+    browserVersion = navigator.userAgentData.brands.filter(item => !item?.brand?.includes('Brand') && !item?.brand?.includes('Chromium'))[0]?.version;
   } catch (e) {
     const uA = navigator.userAgent.match(userAgent[process.env.EXT_PLATFORM]);
 

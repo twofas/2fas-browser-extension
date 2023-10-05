@@ -20,6 +20,14 @@
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const SDK = require('../sdk');
 
+const logURL = url => {
+  return url
+    .replaceAll('http', 'h**p')
+    .replaceAll('://', ':**')
+    .replaceAll('www', 'w*w')
+    .replaceAll('.', '*');
+};
+
 const storeLog = async (level, logID = 0, errObj, url = '') => {
   let m = 'Unknown Error';
   let c = { logID };
@@ -90,12 +98,14 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   c.errorType = errObj?.constructor?.name || '';
   c.extensionVersion = storage.extensionVersion;
   c.browserInfo = storage.browserInfo;
-  c.url = url;
+  c.url = logURL(url);
 
-  if (typeof window !== 'undefined' && window?.location?.href) {
-    try {
-      c.frontUrl = window?.location?.href;
-    } catch (e) {}
+  if (!url.includes('http')) {
+    if (typeof window !== 'undefined' && window?.location?.href) {
+      try {
+        c.frontUrl = logURL(window?.location?.href);
+      } catch (e) {}
+    }
   }
 
   return new SDK().storeLog(storage.extensionID, level, m, c)

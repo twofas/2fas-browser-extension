@@ -20,6 +20,7 @@
 const browser = require('webextension-polyfill');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
+const checkTabCS = require('../checkTabCS');
 
 const updateIncognitoAccess = async () => {
   let storage = null;
@@ -37,6 +38,8 @@ const updateIncognitoAccess = async () => {
         storage = null;
         incognitoAllowed = null;
       })
+      .then(() => browser.tabs.query({ active: true }))
+      .then(tabs => tabs.map(tab => checkTabCS(tab.id)))
       .catch(err => storeLog('error', 26, err, 'updateIncognitoAccess'));
   }
 };

@@ -18,25 +18,39 @@
 //
 
 const browser = require('webextension-polyfill');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 
 const createContextMenus = () => {
-  const options = {
-    title: browser.i18n.getMessage('shortcutDesc'),
-    id: 'twofas-context-menu',
-    contexts: ['page', 'editable'],
-    enabled: true,
-    type: 'normal',
-    visible: true
-  };
+  return loadFromLocalStorage(['contextMenu'])
+    .then(storage => {
+      if (!('contextMenu' in storage)) {
+        return saveToLocalStorage({ contextMenu: true }, storage);
+      }
 
-  if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
-    options.icons = {
-      16: '/images/icons/icon16.png',
-      32: '/images/icons/icon32.png'
-    };
-  }
-
-  browser.contextMenus.create(options);
+      return storage;
+    })
+    .then(storage => {
+      if (storage.contextMenu) {
+        const options = {
+          title: browser.i18n.getMessage('shortcutDesc'),
+          id: 'twofas-context-menu',
+          contexts: ['page', 'editable'],
+          enabled: true,
+          type: 'normal',
+          visible: true
+        };
+      
+        if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
+          options.icons = {
+            16: '/images/icons/icon16.png',
+            32: '/images/icons/icon32.png'
+          };
+        }
+      
+        browser.contextMenus.create(options);
+      }
+    })
+    .catch(() => {});
 };
 
 module.exports = createContextMenus;

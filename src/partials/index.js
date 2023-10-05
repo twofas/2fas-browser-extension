@@ -26,6 +26,7 @@ exports.inputsSelectors = require('./inputsSelectors');
 exports.months = require('./months');
 exports.onTabFocused = require('./onTabFocused');
 exports.openShortcutEdit = require('./openShortcutEdit');
+exports.sendMessageToTab = require('./sendMessageToTab');
 exports.storageValidation = require('./storageValidation');
 exports.storeLog = require('./storeLog');
 exports.uniqueOnly = require('./uniqueOnly');

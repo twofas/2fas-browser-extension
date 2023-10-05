@@ -28,6 +28,7 @@ exports.closeRequest = require('./closeRequest');
 exports.closeWSChannel = require('./closeWSChannel');
 exports.createContextMenus = require('./createContextMenus');
 exports.Crypt = require('./Crypt');
+exports.dummyGetLocalStorage = require('./dummyGetLocalStorage');
 exports.generateDefaultStorage = require('./generateDefaultStorage');
 exports.getBrowserInfo = require('./getBrowserInfo');
 exports.getOSName = require('./getOSName');

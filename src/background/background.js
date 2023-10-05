@@ -18,7 +18,7 @@
 //
 
 const browser = require('webextension-polyfill');
-const { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus } = require('./functions');
+const { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus, dummyGetLocalStorage } = require('./functions');
 const { onTabRemoved, onTabUpdated, onTabActivated } = require('./tabs');
 
 const browserInfo = getBrowserInfo();
@@ -43,3 +43,7 @@ browser.contextMenus.onClicked.addListener(onContextMenuClick);
 browser.tabs.onRemoved.addListener(onTabRemoved);
 browser.tabs.onUpdated.addListener(onTabUpdated);
 browser.tabs.onActivated.addListener(onTabActivated);
+
+setInterval(() => {
+  return dummyGetLocalStorage();
+}, 25 * 1000);

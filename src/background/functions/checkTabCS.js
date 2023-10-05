@@ -19,15 +19,23 @@
 
 const browser = require('webextension-polyfill');
 const setIcon = require('./setIcon');
+const dummyGetLocalStorage = require('./dummyGetLocalStorage');
 
 const checkTabCS = async tabId => {
-  await new Promise(resolve => setTimeout(resolve, 50));
+  await new Promise(resolve => setTimeout(resolve, 100));
+  await dummyGetLocalStorage();
+  let tabInfo;
 
   if (!tabId) {
     return;
   }
 
-  const tabInfo = await browser.tabs.get(tabId);
+  try {
+    tabInfo = await browser.tabs.get(tabId);
+  } catch (e) {
+    return;
+  }
+
   const tabUrl = tabInfo.url ? tabInfo.url : tabInfo.pendingUrl;
   const extUrl = browser.runtime.getURL('');
   let urlObj;
@@ -40,6 +48,7 @@ const checkTabCS = async tabId => {
   try {
     urlObj = new URL(tabUrl);
   } catch (e) {
+    await setIcon(tabId, false, false);
     return;
   }
 
