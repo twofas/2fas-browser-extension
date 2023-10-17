@@ -1,6 +1,6 @@
 {
   "name": "2fas-browser-extension",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "This is the official Browser Extension for the Open Source 2FAS project.",
   "engines": {
     "node": "18.16.1"
@@ -62,7 +62,7 @@
     "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-plugin-transform-remove-debugger": "^6.9.4",
     "babel-preset-minify": "^0.5.2",
-    "browserslist": "^4.21.10",
+    "browserslist": "^4.22.1",
     "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
@@ -70,7 +70,7 @@
     "css-minimizer-webpack-plugin": "^5.0.1",
     "dotenv": "^16.3.1",
     "dotenv-webpack": "^8.0.1",
-    "eslint": "8.49.0",
+    "eslint": "8.51.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-plugin-import": "^2.28.1",
