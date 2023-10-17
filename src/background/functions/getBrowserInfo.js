@@ -40,9 +40,17 @@ const getBrowserInfo = () => {
     }
   };
 
-  let browserVersion = navigator.userAgentData.brands.filter(item => !item?.brand?.includes('Brand') && !item?.brand?.includes('Chromium'))[0]?.version;
+  let browserVersion = navigator.userAgentData.brands.filter(item => {
+    if (item && item?.brand) {
+      return item?.brand?.includes('Chromium');
+    }
 
-  if (!browserVersion) {
+    return false;
+  });
+
+  if (browserVersion.length > 0) {
+    browserVersion = browserVersion[0].version;
+  } else {
     const uA = navigator.userAgent.match(userAgent[process.env.EXT_PLATFORM]);
 
     if (process.env.EXT_PLATFORM === 'Opera') {
