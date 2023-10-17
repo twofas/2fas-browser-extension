@@ -22,8 +22,6 @@ const browser = require('webextension-polyfill');
 const getOSName = require('./getOSName');
 
 const getBrowserInfo = () => {
-  let browserVersion = browser.i18n.getMessage('unknown');
-  
   const userAgent = {
     Chrome: /Chrom(?:e|ium)\/([0-9.]+)/,
     Firefox: /Firefox\/([0-9.]+)/,
@@ -42,9 +40,9 @@ const getBrowserInfo = () => {
     }
   };
 
-  try {
-    browserVersion = navigator.userAgentData.brands.filter(item => !item?.brand?.includes('Brand') && !item?.brand?.includes('Chromium'))[0]?.version;
-  } catch (e) {
+  let browserVersion = navigator.userAgentData.brands.filter(item => !item?.brand?.includes('Brand') && !item?.brand?.includes('Chromium'))[0]?.version;
+
+  if (!browserVersion) {
     const uA = navigator.userAgent.match(userAgent[process.env.EXT_PLATFORM]);
 
     if (process.env.EXT_PLATFORM === 'Opera') {
