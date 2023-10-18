@@ -17,10 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const closeWSChannel = channel => {
-  if (channel.ws.readyState === 1) {
-    channel.ws.close();
+const closeWSChannel = require('./closeWSChannel');
+
+const wsTabClosed = (tabIDChanged, tabIDws, channel, timeoutID) => {
+  if (tabIDChanged === tabIDws) {
+    clearTimeout(timeoutID);
+    closeWSChannel(channel);
   }
 };
 
-module.exports = closeWSChannel;
+module.exports = wsTabClosed;
