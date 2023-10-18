@@ -9,6 +9,7 @@ import Foundation
 import SafariServices
 
 enum ExtensionState {
+    case notDetermined
     case on
     case off
     case unknown
@@ -16,14 +17,14 @@ enum ExtensionState {
     var stateTitle: String {
         switch self {
         case .on, .off: "stateTitle".localized
-        case .unknown: "stateUnknown".localized
+        case .unknown, .notDetermined: "stateUnknown".localized
         }
     }
     
     var stateContinuation: String? {
         switch self {
         case .on, .off: "stateContinuation".localized
-        case .unknown: nil
+        case .unknown, .notDetermined: nil
         }
     }
     
@@ -31,7 +32,7 @@ enum ExtensionState {
         switch self {
         case .on: "stateOn".localized
         case .off: "stateOff".localized
-        case .unknown: nil
+        case .unknown, .notDetermined: nil
         }
     }
     
@@ -39,7 +40,7 @@ enum ExtensionState {
         switch self {
         case .on: "noteOn".localized
         case .off: "noteOff".localized
-        case .unknown: nil
+        case .unknown, .notDetermined: nil
         }
     }
 }
@@ -48,7 +49,7 @@ final class Presenter: ObservableObject {
     private let extensionBundleIdentifier = "com.twofas.org.browser.extension"
     
     @Published var somethingWentWrong = false
-    @Published var extensionState: ExtensionState = .unknown
+    @Published var extensionState: ExtensionState = .notDetermined
     
     var buttonCTA: String {
         "buttonCTA".localized
@@ -67,8 +68,10 @@ final class Presenter: ObservableObject {
             withIdentifier: extensionBundleIdentifier
         ) { [weak self] (state, error) in
             guard let state = state, error == nil else {
-                self?.extensionState = .unknown
-                self?.somethingWentWrong = true
+                DispatchQueue.main.async {
+                    self?.extensionState = .unknown
+                    self?.somethingWentWrong = true
+                }
                 return
             }
 
@@ -83,7 +86,9 @@ final class Presenter: ObservableObject {
             withIdentifier: extensionBundleIdentifier
         ) { [weak self] error in
             guard error == nil else {
-                self?.somethingWentWrong = true
+                DispatchQueue.main.async {
+                    self?.somethingWentWrong = true
+                }
                 return
             }
 

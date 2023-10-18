@@ -19,6 +19,9 @@ struct ContentView: View {
     private let circle1: CGFloat = 400
     private let circle2: CGFloat = 800
     
+    private let animDuration: CGFloat = 1
+    @State private var opacity: CGFloat = 0
+    
     var body: some View {
         ZStack {
             Group {
@@ -101,8 +104,14 @@ struct ContentView: View {
                     .buttonStyle(ActionButtonStyle())
                 }
             }
+            .opacity(opacity)
             .onAppear {
                 presenter.updateState()
+            }
+            .onChange(of: presenter.extensionState) { newValue in
+                withAnimation(.linear(duration: animDuration)) {
+                    opacity = 1.0
+                }
             }
             .padding(.init(top: 42, leading: 64, bottom: 64, trailing: 64))
         }
