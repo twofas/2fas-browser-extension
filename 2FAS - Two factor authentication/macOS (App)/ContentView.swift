@@ -41,10 +41,12 @@ struct ContentView: View {
                     HStack {
                         Image(.logoText2)
                             .foregroundColor(.mainText)
+                            .padding(.trailing, 5)
                         Image(.logoTextF)
                             .foregroundColor(.mainText)
                         Image(.logoTextA)
                             .foregroundColor(.mainText)
+                            .padding(.leading, -8)
                         Image(.logoTextS)
                             .foregroundColor(.mainText)
                     }
