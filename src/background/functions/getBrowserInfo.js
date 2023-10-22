@@ -48,7 +48,7 @@ const getBrowserInfo = () => {
     return false;
   });
 
-  if (browserVersion.length > 0) {
+  if (browserVersion && browserVersion.length > 0) {
     browserVersion = browserVersion[0].version;
   } else {
     const uA = navigator?.userAgent?.match(userAgent[process.env.EXT_PLATFORM]);
