@@ -87,6 +87,13 @@ const optionsPageProdConfig = {
         }
       },
       {
+        test: /(jpe?g|png)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: '../images/[name][ext]'
+        }
+      },
+      {
         test: /\.woff2$/,
         type: 'asset/resource',
         generator: {

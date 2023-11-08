@@ -141,10 +141,11 @@
     }
 
     img {
+      max-width: 900px;
       width: 100%;
 
-      @media (prefers-color-scheme: dark) {
-        opacity: .5;
+      @media (prefers-color-scheme: light) {
+        opacity: .92;
       }
     }
   }

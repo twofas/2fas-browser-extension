@@ -18,8 +18,8 @@
 //
 
 const closeWSChannel = channel => {
-  if (channel.readyState === 1) {
-    channel.close();
+  if (channel.ws.readyState === 1) {
+    channel.ws.close();
   }
 };
 

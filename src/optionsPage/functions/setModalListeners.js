@@ -27,6 +27,12 @@ const setModalListeners = () => {
 
   const confirmModal = document.querySelector(S.optionsPage.modal.element);
   confirmModal.addEventListener('click', modalBackdropClick);
+
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Escape') {
+      return hideConfirmModal();
+    }
+  })
 };
 
 module.exports = setModalListeners;
