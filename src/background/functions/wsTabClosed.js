@@ -17,22 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const hideConfirmModal = require('./hideConfirmModal');
-const modalBackdropClick = require('./modalBackdropClick');
+const closeWSChannel = require('./closeWSChannel');
 
-const setModalListeners = () => {
-  const confirmModalCancel = document.querySelectorAll(S.optionsPage.modal.cancel);
-  Array.from(confirmModalCancel).forEach(el => el.addEventListener('click', hideConfirmModal));
-
-  const confirmModal = document.querySelector(S.optionsPage.modal.element);
-  confirmModal.addEventListener('click', modalBackdropClick);
-
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Escape') {
-      return hideConfirmModal();
-    }
-  })
+const wsTabClosed = (tabIDChanged, tabIDws, channel, timeoutID) => {
+  if (tabIDChanged === tabIDws) {
+    clearTimeout(timeoutID);
+    closeWSChannel(channel);
+  }
 };
 
-module.exports = setModalListeners;
+module.exports = wsTabClosed;

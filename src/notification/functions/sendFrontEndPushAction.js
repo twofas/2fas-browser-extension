@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const sendMessageToTab = require('../../partials/sendMessageToTab');
+const browser = require('webextension-polyfill');
 
 const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
-  return sendMessageToTab(tabID, {
+  return browser.tabs.sendMessage(tabID, {
     action: 'notification',
     title: notificationObject.Title,
     message: notificationObject.Message,

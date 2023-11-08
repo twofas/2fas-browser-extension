@@ -25,6 +25,7 @@ const TwoFasNotification = require('../../notification');
 const closeRequest = require('./closeRequest');
 const closeWSChannel = require('./closeWSChannel');
 const wsTabChanged = require('./wsTabChanged');
+const wsTabClosed = require('./wsTabClosed');
 const storeLog = require('../../partials/storeLog');
 
 const subscribeChannel = (storage, tabID, data = {
@@ -40,7 +41,9 @@ const subscribeChannel = (storage, tabID, data = {
   return new Promise((resolve, reject) => {
     let timeoutID;
     const channel = {};
-    const tabFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
+    
+    const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
+    const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
 
     channel.connect = () => {
       channel.ws = {};
@@ -69,26 +72,26 @@ const subscribeChannel = (storage, tabID, data = {
           return reject(new Error('timeout'));
         }, (1000 * 60 * config.WebSocketTimeout) - 100);
   
-        browser.tabs.onRemoved.addListener(tabFunc);
-        browser.tabs.onUpdated.addListener(tabFunc);
+        browser.tabs.onRemoved.addListener(tabClosedFunc);
+        browser.tabs.onUpdated.addListener(tabChangedFunc);
   
         return true;
-      }
+      };
   
       channel.ws.onerror = async err => {
-        browser.tabs.onRemoved.removeListener(tabFunc);
-        browser.tabs.onUpdated.removeListener(tabFunc);
+        browser.tabs.onRemoved.removeListener(tabClosedFunc);
+        browser.tabs.onUpdated.removeListener(tabChangedFunc);
         clearTimeout(timeoutID);
         
         await storeLog('error', 11, err, 'WebSocket channel error');
         return reject(err);
-      }
+      };
   
       channel.ws.onclose = reason => {
-        browser.tabs.onRemoved.removeListener(tabFunc);
-        browser.tabs.onUpdated.removeListener(tabFunc);
+        browser.tabs.onRemoved.removeListener(tabClosedFunc);
+        browser.tabs.onUpdated.removeListener(tabChangedFunc);
         clearTimeout(timeoutID);
-      }
+      };
   
       channel.ws.onmessage = async message => {
         const data = JSON.parse(message.data);
@@ -98,8 +101,8 @@ const subscribeChannel = (storage, tabID, data = {
             handleConfigurationRequest(tabID, data);
             closeWSChannel(channel);
   
-            browser.tabs.onRemoved.removeListener(tabFunc);
-            browser.tabs.onUpdated.removeListener(tabFunc);
+            browser.tabs.onRemoved.removeListener(tabClosedFunc);
+            browser.tabs.onUpdated.removeListener(tabChangedFunc);
             clearTimeout(timeoutID);
   
             return true;
@@ -109,8 +112,8 @@ const subscribeChannel = (storage, tabID, data = {
             handleLoginRequest(tabID, data);
             closeWSChannel(channel);
   
-            browser.tabs.onRemoved.removeListener(tabFunc);
-            browser.tabs.onUpdated.removeListener(tabFunc);
+            browser.tabs.onRemoved.removeListener(tabClosedFunc);
+            browser.tabs.onUpdated.removeListener(tabChangedFunc);
             clearTimeout(timeoutID);
   
             return true;
@@ -122,14 +125,17 @@ const subscribeChannel = (storage, tabID, data = {
   
             closeWSChannel(channel);
   
-            browser.tabs.onRemoved.removeListener(tabFunc);
-            browser.tabs.onUpdated.removeListener(tabFunc);
+            browser.tabs.onRemoved.removeListener(tabClosedFunc);
+            browser.tabs.onUpdated.removeListener(tabChangedFunc);
             clearTimeout(timeoutID);
   
             return true;
           }
   
           default: {
+            browser.tabs.onRemoved.removeListener(tabClosedFunc);
+            browser.tabs.onUpdated.removeListener(tabChangedFunc);
+
             await storeLog('error', 13, data, 'subscribeChannel event default');
             throw new Error('Unknown message');
           }

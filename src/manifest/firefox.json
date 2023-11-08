@@ -3,7 +3,7 @@
   "name": "2FAS - Two Factor Authentication",
   "short_name": "2FAS",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "applications": {
     "gecko": {
       "id": "admin@2fas.com",

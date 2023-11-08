@@ -46,3 +46,4 @@ exports.setIcon = require('./setIcon');
 exports.subscribeChannel = require('./subscribeChannel');
 exports.updateBrowserInfo = require('./updateBrowserInfo');
 exports.wsTabChanged = require('./wsTabChanged');
+exports.wsTabClosed = require('./wsTabClosed');
