@@ -3,7 +3,7 @@
   "version": "1.5.0",
   "description": "This is the official Browser Extension for the Open Source 2FAS project.",
   "engines": {
-    "node": "18.16.1"
+    "node": "20.9.0"
   },
   "scripts": {
     "clean": "rimraf --glob ./public/*",
