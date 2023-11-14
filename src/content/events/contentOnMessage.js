@@ -46,13 +46,23 @@ const contentOnMessage = async (request, tabData) => {
       }
 
       if (storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
-        return { status: 'No matching requestID' };
+        // No matching requestID
+        return {
+          status: 'notification',
+          title: config.Texts.Error.UndefinedError.Title,
+          message: config.Texts.Error.UndefinedError.Message
+        };
       }
 
       const tokenInput = getTokenInput(storage[`tabData-${tabData?.id}`].lastFocusedInput || undefined);
 
       if (!tokenInput || !Array.isArray(tokenInput) || tokenInput?.length <= 0) {
-        return { status: 'elementNotFound' };
+        // elementNotFound
+        return {
+          status: 'notification',
+          title: config.Texts.Error.InputNotExist.Title,
+          message: config.Texts.Error.InputNotExist.Message
+        };
       }
 
       return inputToken(request, tokenInput[0], tabData?.url);

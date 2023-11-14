@@ -26,7 +26,7 @@ const inputFocus = async (event, tabID) => {
   if (!browser?.runtime?.id || !event || !event?.target) {
     return false;
   }
-  
+
   let storage;
   const el = event.target;
 
@@ -45,15 +45,13 @@ const inputFocus = async (event, tabID) => {
     ) {
       tabData.lastFocusedInput = el.dataset.twofasInput;
     } else {
-      const inputUUID = uuidv4();
-  
       if (typeof el?.setAttribute === 'function') {
+        const inputUUID = uuidv4();
         el.setAttribute('data-twofas-input', inputUUID);
+        tabData.lastFocusedInput = inputUUID;
       }
-  
-      tabData.lastFocusedInput = inputUUID;
     }
-  
+
     return saveToLocalStorage({ [`tabData-${tabID}`]: tabData }, storage);
   } catch (err) {
     return storeLog('error', 16, err, storage[`tabData-${tabID}`]?.url);

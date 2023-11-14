@@ -27,6 +27,8 @@
   "errorInactiveTabMessage": "Please refresh this tab to use the 2FAS Browser Extension.",
   "errorLackOfTabTitle": "Your tab has been closed",
   "errorLackOfTabMessage": "The request will be ignored",
+  "errorInputNotExistTitle": "Input element does not exists",
+  "errorInputNotExistMessage": "Please refresh and try again.",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
   "warningSelectInputTitle": "Select the text field first",

@@ -84,6 +84,10 @@ const config = {
       LackOfTab: {
         Title: browser.i18n.getMessage('errorLackOfTabTitle') || t.errorLackOfTabTitle,
         Message: browser.i18n.getMessage('errorLackOfTabMessage') || t.errorLackOfTabMessage
+      },
+      InputNotExist: {
+        Title: browser.i18n.getMessage('errorInputNotExistTitle') || t.errorInputNotExistTitle,
+        Message: browser.i18n.getMessage('errorInputNotExistMessage') || t.errorInputNotExistMessage
       }
     },
     Warning: {
