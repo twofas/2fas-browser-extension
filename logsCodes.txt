@@ -52,6 +52,8 @@
 *19 - openOptionsPage [redundant]
 39 - removedNodes - loadFromLocalStorage
 40 - removedNodes - saveToLocalStorage
+41 - hiddenNodes - loadFromLocalStorage
+42 - hiddenNodes - saveToLocalStorage
 
 // INSTALL PAGE
 20 - installPage

@@ -26,8 +26,6 @@ const createObserver = tabData => {
       return false;
     }
 
-    console.log('Mutations', mutations);
-
     mutations.forEach(async mutation => {
       if (!mutation) {
         return false;
@@ -37,8 +35,8 @@ const createObserver = tabData => {
         await addedNodes(mutation);
       }
 
-      if (mutation?.type === 'attributes') {
-        await hiddenNodes(mutation);
+      if (mutation?.type === 'attributes' && mutation?.target) {
+        await hiddenNodes(mutation, tabData);
       }
 
       if (mutation?.removedNodes && Array.from(mutation?.removedNodes).length > 0) {

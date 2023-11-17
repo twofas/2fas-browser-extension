@@ -17,8 +17,49 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hiddenNodes = mutation => {
-  return false;
+const isVisible = require('../../functions/isVisible');
+const significantInputs = require('../observerConstants/significantInputs');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
+const storeLog = require('../../../partials/storeLog');
+
+const hiddenNodes = async (mutation, tabData) => {
+  let storage;
+
+  const node = mutation.target;
+  const nodeName = node.nodeName.toLowerCase();
+
+  if (!significantInputs.includes(nodeName)) {
+    return false;
+  }
+
+  const twofasInput = node.getAttribute('data-twofas-input');
+
+  if (!twofasInput) {
+    return false;
+  }
+
+  const visible = await isVisible(node);
+  
+  if (visible) {
+    return false;
+  }
+
+  try {
+    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+  } catch (err) {
+    return storeLog('error', 41, err, tabData?.url);
+  }
+
+  if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+    return false;
+  }
+
+  if (twofasInput === storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+    delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  }
+
+  return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+    .catch(err => storeLog('error', 42, err, tabData?.url));
 };
 
 module.exports = hiddenNodes;
