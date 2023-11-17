@@ -25,7 +25,7 @@ const observe = mutationObserver => {
   document.twofasObserved = true;
 
   return mutationObserver.observe(document, {
-    attributes: false,
+    attributes: true,
     characterData: false,
     childList: true,
     subtree: true,

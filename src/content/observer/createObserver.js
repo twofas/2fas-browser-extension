@@ -18,73 +18,25 @@
 //
 
 /* global MutationObserver */
-const browser = require('webextension-polyfill');
-const { getTabData, getInputs, addInputListener } = require('../functions');
-const storeLog = require('../../partials/storeLog');
-
-const significantNodes = ['input', 'textarea', 'iframe'];
-const findSignificantChanges = node => significantNodes.includes(node.nodeName.toLowerCase());
-
-const checkChildNodes = childNodes => {
-  const cN = Array.from(childNodes);
-
-  if (cN && cN.length > 0) {
-    return cN.map(childNode => {
-      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
-        return checkChildNodes(childNode.childNodes).flat();
-      }
-
-      return findSignificantChanges(childNode);
-    });
-  }
-};
+const { addedNodes } = require('./observerFunctions');
 
 const createObserver = () => {
   return new MutationObserver(mutations => {
-    let newInputs = false;
+    if (!mutations) {
+      return false;
+    }
+
+    console.log('Mutations', mutations);
 
     mutations.forEach(mutation => {
-      if (!mutation || !mutation?.addedNodes || mutation?.addedNodes?.length <= 0) {
+      if (!mutation) {
         return false;
       }
 
-      const nodesArr = Array.from(mutation.addedNodes);
-
-      nodesArr.map(node => {
-        if (findSignificantChanges(node)) {
-          newInputs = true;
-          return node;
-        }
-
-        let newInputsArr = checkChildNodes(node.childNodes);
-
-        if (newInputsArr && Array.isArray(newInputsArr) && newInputsArr?.length > 0) {
-          newInputsArr = newInputsArr.flat().filter(x => x);
-        }
-
-        if (newInputsArr && newInputsArr?.length > 0) {
-          newInputs = true;
-        }
-
-        return node;
-      });
+      if (mutation?.addedNodes) {
+        return addedNodes(mutation);
+      }
     });
-
-    if (newInputs) {
-      let tabData;
-
-      if (!browser?.runtime?.id) {
-        return false;
-      }
-
-      return getTabData()
-        .then(res => {
-          tabData = res;
-          return getInputs();
-        })
-        .then(inputs => addInputListener(inputs, tabData?.id))
-        .catch(err => storeLog('error', 15, err, tabData?.url));
-    }
   });
 };
 

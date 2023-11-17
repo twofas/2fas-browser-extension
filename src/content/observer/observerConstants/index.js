@@ -17,19 +17,4 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.addInputListener = require('./addInputListener');
-exports.closeNotificationInfo = require('./closeNotificationInfo');
-exports.getInputs = require('./getInputs');
-exports.getTabData = require('./getTabData');
-exports.getTokenInput = require('./getTokenInput');
-exports.inputFocus = require('./inputFocus');
-exports.inputToken = require('./inputToken');
-exports.isInFrame = require('./isInFrame');
-exports.isVisible = require('./isVisible');
-exports.loadFonts = require('./loadFonts');
-exports.neverShowNotificationInfo = require('./neverShowNotificationInfo');
-exports.notification = require('./notification');
-exports.openOptionsPage = require('./openOptionsPage');
-exports.portSetup = require('./portSetup');
-exports.showNotificationInfo = require('./showNotificationInfo');
-exports.updateEventListener = require('./updateEventListener');
+exports.significantNodes = require('./significantNodes');
