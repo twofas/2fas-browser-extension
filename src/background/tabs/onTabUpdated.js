@@ -27,11 +27,11 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  if (tabID && (changeInfo.status === 'complete' || changeInfo.favIconUrl || changeInfo.isArticle)) {
+  if (tabID && (changeInfo?.status === 'complete' || changeInfo?.favIconUrl || changeInfo?.isArticle)) {
     await checkTabCS(tabID);
   }
 
-  if (!changeInfo?.url) {
+  if (changeInfo?.status !== 'complete') {
     return false;
   }
 
@@ -41,10 +41,6 @@ const onTabUpdated = async (tabID, changeInfo) => {
     storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
   } catch (err) {
     return storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
-  }
-
-  if (storage[`tabData-${tabID}`]?.url !== changeInfo.url) {
-    return false;
   }
 
   if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].requestID) {
