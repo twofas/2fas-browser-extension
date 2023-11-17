@@ -26,6 +26,7 @@ public/
 build/
 yarn.lock
 .vscode
+testFiles/
 
 # Xcode
 #
