@@ -17,35 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global MutationObserver */
-const { addedNodes, hiddenNodes, removedNodes } = require('./observerFunctions');
+const significantInputs = [
+  'input',
+  'textarea'
+];
 
-const createObserver = tabData => {
-  return new MutationObserver(mutations => {
-    if (!mutations) {
-      return false;
-    }
-
-    console.log('Mutations', mutations);
-
-    mutations.forEach(async mutation => {
-      if (!mutation) {
-        return false;
-      }
-
-      if (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) {
-        await addedNodes(mutation);
-      }
-
-      if (mutation?.type === 'attributes') {
-        await hiddenNodes(mutation);
-      }
-
-      if (mutation?.removedNodes && Array.from(mutation?.removedNodes).length > 0) {
-        await removedNodes(mutation, tabData);
-      }
-    });
-  });
-};
-
-module.exports = createObserver;
+module.exports = significantInputs;

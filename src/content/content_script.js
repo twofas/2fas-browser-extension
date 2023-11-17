@@ -60,7 +60,7 @@ const contentScriptRun = async () => {
 
   addInputListener(getInputs(), tabData?.id);
 
-  const mutationObserver = createObserver();
+  const mutationObserver = createObserver(tabData);
   observe(mutationObserver);
 
   const onMessageListener = request => {

@@ -25,11 +25,6 @@ const storeLog = require('../../../partials/storeLog');
 
 const addedNodes = mutation => {
   let newInputs = false;
-
-  if (!mutation || !mutation?.addedNodes || mutation?.addedNodes?.length <= 0) {
-    return false;
-  }
-
   const nodesArr = Array.from(mutation.addedNodes);
 
   nodesArr.map(node => {

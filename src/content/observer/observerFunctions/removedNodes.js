@@ -16,3 +16,47 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
+
+const significantInputs = require('../observerConstants/significantInputs');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
+const storeLog = require('../../../partials/storeLog');
+
+const removedNodes = async (mutation, tabData) => {
+  const ids = [];
+  let storage;
+
+  const nodes = Array.from(mutation.removedNodes);
+
+  nodes.forEach(node => {
+    const nodeName = node.nodeName.toLowerCase();
+
+    if (!significantInputs.includes(nodeName)) {
+      return false;
+    }
+  
+    const twofasInput = node.getAttribute('data-twofas-input');
+  
+    if (twofasInput) {
+      ids.push(twofasInput);
+    }
+  });
+
+  try {
+    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+  } catch (err) {
+    return storeLog('error', 39, err, tabData?.url);
+  }
+
+  if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+    return false;
+  }
+
+  if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {
+    delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  }
+
+  return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+    .catch(err => storeLog('error', 40, err, tabData?.url));
+};
+
+module.exports = removedNodes;
