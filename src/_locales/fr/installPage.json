@@ -1,0 +1,17 @@
+{
+  "installTitle": "Extension de navigateur 2FAS | Configuration",
+  "installH1": "Pour commencer, vous devez coupler cette extension avec l'application mobile 2FAS.",
+  "installAppInstalled": "J'ai installé l'app",
+  "installScan": "Scannez ce code avec votre application mobile 2FAS",
+  "installStep1": "Ouvrez l'application mobile 2FAS",
+  "installStep2": "Allez dans Paramètres → Extension web",
+  "installStep3": "Appuyez sur \"Ajouter\" et scannez le code QR.",
+  "installSuccessHeader": "L'extension de navigateur 2FAS est jumelée avec succès à votre application mobile 2FAS.",
+  "installSuccessSubheader": "Désormais, vous pouvez rapidement remplir automatiquement les formulaires à deux facteurs via confirmation de l'application mobile.",
+  "installStart": "Apprendre comment ça marche",
+  "installGoToSettings": "Accéder aux paramètres",
+  "installQuestions": "Des questions ? Lisez notre",
+  "installBackToStep1": "Retour à l'étape 1",
+  "installQRTimeoutText": "Le code QR a expiré",
+  "installQRTimeoutButton": "Cliquez ici pour régénérer"
+}
