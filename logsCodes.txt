@@ -54,6 +54,8 @@
 40 - removedNodes - saveToLocalStorage
 41 - hiddenNodes - loadFromLocalStorage
 42 - hiddenNodes - saveToLocalStorage
+43 - pageLoadComplete - loadFromLocalStorage
+44 - pageLoadComplete - saveToLocalStorage
 
 // INSTALL PAGE
 20 - installPage

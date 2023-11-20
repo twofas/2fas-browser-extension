@@ -19,45 +19,31 @@
 
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const storeLog = require('../../partials/storeLog');
-const SDK = require('../../sdk');
-const checkTabCS = require('../functions/checkTabCS');
-const sendMessageToTab = require('../../partials/sendMessageToTab');
 
-const onTabUpdated = async (tabID, changeInfo) => {
-  if (!changeInfo) {
-    return false;
-  }
-
-  if (tabID && (changeInfo?.status === 'complete' || changeInfo?.favIconUrl || changeInfo?.isArticle)) {
-    await checkTabCS(tabID);
-  }
-
-  if (changeInfo?.status !== 'complete') {
-    return false;
-  }
-
+const pageLoadComplete = async tabID => {
   let storage;
+  const activeElement = document?.activeElement;
+
+  if (!activeElement) {
+    return false;
+  }
+
+  const twofasInput = activeElement.getAttribute('data-twofas-input');
+
+  if (!twofasInput) {
+    return false;
+  }
 
   try {
     storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
   } catch (err) {
-    await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
+    await storeLog('error', 43, err, storage[`tabData-${tabID}`]?.url);
   }
 
-  if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].requestID) {
-    await new SDK().close2FARequest(storage.extensionID, storage[`tabData-${tabID}`].requestID, false);
-  }
+  storage[`tabData-${tabID}`].lastFocusedInput = twofasInput;
 
-  if (storage[`tabData-${tabID}`]) {
-    try {
-      await saveToLocalStorage({ [`tabData-${tabID}`]: {} });
-      storage = null;
-    } catch (err) {
-      await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
-    }
-  }
-
-  await sendMessageToTab(tabID, { action: 'pageLoadComplete' });
+  return saveToLocalStorage({ [`tabData-${tabID}`]: storage[`tabData-${tabID}`] })
+    .catch(err => storeLog('error', 44, err, storage[`tabData-${tabID}`]?.url));
 };
 
-module.exports = onTabUpdated;
+module.exports = pageLoadComplete;

@@ -19,7 +19,7 @@
 
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts } = require('../functions');
+const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
 const contentOnMessage = async (request, tabData) => {
@@ -38,6 +38,10 @@ const contentOnMessage = async (request, tabData) => {
       }
 
       if (!storage || !storage[`tabData-${tabData?.id}`]) {
+        if (isInFrame()) {
+          return false;
+        }
+
         return {
           status: 'notification',
           title: config.Texts.Warning.SelectInput.Title,
@@ -47,6 +51,10 @@ const contentOnMessage = async (request, tabData) => {
 
       if (storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
         // No matching requestID
+        if (isInFrame()) {
+          return false;
+        }
+
         return {
           status: 'notification',
           title: config.Texts.Error.UndefinedError.Title,
@@ -57,15 +65,14 @@ const contentOnMessage = async (request, tabData) => {
       const tokenInput = getTokenInput(storage[`tabData-${tabData?.id}`].lastFocusedInput || undefined);
 
       if (!tokenInput || !Array.isArray(tokenInput) || tokenInput?.length <= 0) {
-        // elementNotFound
-        return {
-          status: 'notification',
-          title: config.Texts.Error.InputNotExist.Title,
-          message: config.Texts.Error.InputNotExist.Message
-        };
+        return { status: 'elementNotFound' };
       }
 
       return inputToken(request, tokenInput[0], tabData?.url);
+    }
+
+    case 'pageLoadComplete': {
+      return pageLoadComplete(tabData?.id);
     }
 
     case 'notification':
