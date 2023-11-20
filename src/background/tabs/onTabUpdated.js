@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const browser = require('webextension-polyfill');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const storeLog = require('../../partials/storeLog');
 const SDK = require('../../sdk');
 const checkTabCS = require('../functions/checkTabCS');
-const sendMessageToTab = require('../../partials/sendMessageToTab');
 
 const onTabUpdated = async (tabID, changeInfo) => {
   if (!changeInfo) {
@@ -57,7 +57,8 @@ const onTabUpdated = async (tabID, changeInfo) => {
     }
   }
 
-  await sendMessageToTab(tabID, { action: 'pageLoadComplete' });
+  return browser.tabs.sendMessage(tabID, { action: 'pageLoadComplete' })
+    .catch(() => {}); // ignore error
 };
 
 module.exports = onTabUpdated;
