@@ -29,7 +29,7 @@
   "errorLackOfTabMessage": "The request will be ignored",
   "errorInputNotExistTitle": "Input element does not exists",
   "errorInputNotExistMessage": "Please refresh and try again.",
-  "errorStorageIntegrityTitle": "Extension data error",
+  "errorStorageIntegrityTitle": "Browser Extension data error",
   "errorStorageIntegrityMessage": "Please reinstall browser extension or contact with 2FAS Support on Discord",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",

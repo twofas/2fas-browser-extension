@@ -76,7 +76,8 @@ const selectors = {
     devicesList: '.js-twofas-device-list',
     content: '.js-twofas-options-content',
     toggle: '.twofas-toggle',
-    safariReset: '.js-twofas-safari-reset'
+    safariReset: '.js-twofas-safari-reset',
+    integrityError: '.js-twofas-integrity-error'
   },
   notification: {
     container: 'div.twofas-be-notifications',

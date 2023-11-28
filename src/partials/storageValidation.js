@@ -37,6 +37,7 @@ const storageValidation = storage => {
       return reject(new TypeError('Storage corrupted'));
     }
 
+    // @TODO: Future reset attempts?
     return resolve();
   });
 };

@@ -25,7 +25,7 @@ const TwoFasNotification = require('../notification');
 const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
 const subscribeChannel = require('../background/functions/subscribeChannel');
 const { delay, extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } = require('../partials');
-const { generateQRCode, installContainerHandlers } = require('./functions');
+const { generateQRCode, installContainerHandlers, showIntegrityError } = require('./functions');
 
 const installPageError = async err => {
   await storeLog('error', 20, err, 'installPage');
@@ -39,6 +39,8 @@ const init = async storage => {
     await storageValidation(storage);
   } catch (e) {
     if (e.toString().includes('Too many attempts')) {
+      hidePreloader(true);
+      showIntegrityError();
       return false;
     }
     

@@ -22,3 +22,4 @@ exports.generateQRCode = require('./generateQRCode');
 exports.installContainerHandlers = require('./installContainerHandlers');
 exports.qrTimeout = require('./qrTimeout');
 exports.setQRCode = require('./setQRCode');
+exports.showIntegrityError = require('./showIntegrityError');

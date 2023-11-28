@@ -38,7 +38,7 @@
   top: 0;
   transition: opacity .25s ease-in-out;
   width: 100%;
-  z-index: 9999;
+  z-index: 9998;
 
   @media (prefers-color-scheme: dark) {
     background-color: $backdrop-dark-color;
