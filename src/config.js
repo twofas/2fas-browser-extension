@@ -88,6 +88,10 @@ const config = {
       InputNotExist: {
         Title: browser.i18n.getMessage('errorInputNotExistTitle') || t.errorInputNotExistTitle,
         Message: browser.i18n.getMessage('errorInputNotExistMessage') || t.errorInputNotExistMessage
+      },
+      StorageIntegrity: {
+        Title: browser.i18n.getMessage('errorStorageIntegrityTitle') || t.errorStorageIntegrityTitle,
+        Message: browser.i18n.getMessage('errorStorageIntegrityMessage') || t.errorStorageIntegrityMessage
       }
     },
     Warning: {

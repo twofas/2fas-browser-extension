@@ -38,6 +38,10 @@ const init = async storage => {
   try {
     await storageValidation(storage);
   } catch (e) {
+    if (e.toString().includes('Too many attempts')) {
+      return false;
+    }
+    
     return delay(() => {
       return browser.runtime.sendMessage({ action: 'storageReset' })
         .then(() => window.location.reload())

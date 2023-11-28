@@ -33,6 +33,10 @@ const init = async storage => {
   try {
     await storageValidation(storage);
   } catch (e) {
+    if (e.toString().includes('Too many attempts')) {
+      return false;
+    }
+
     return delay(() => {
       return browser.runtime.sendMessage({ action: 'storageReset' })
         .then(() => window.location.reload())
@@ -68,7 +72,7 @@ const optionsPageError = async err => {
 };
 
 window.onload = () => {
-  loadFromLocalStorage(['extensionID', 'keys', 'browserInfo'])
+  loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt'])
     .then(data => init(data))
     .catch(err => optionsPageError(err));
 };
