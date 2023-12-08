@@ -17,18 +17,22 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.delay = require('./delay');
-exports.extNameUpdate = require('./extNameUpdate');
-exports.extPageOnMessage = require('./extPageOnMessage');
-exports.formSubmitSelectors = require('./formSubmitSelectors');
-exports.formSubmitSecondSelectors = require('./formSubmitSecondSelectors');
-exports.handleTargetBlank = require('./handleTargetBlank');
-exports.hidePreloader = require('./hidePreloader');
-exports.inputsSelectors = require('./inputsSelectors');
-exports.months = require('./months');
-exports.onTabFocused = require('./onTabFocused');
-exports.openShortcutEdit = require('./openShortcutEdit');
-exports.sendMessageToTab = require('./sendMessageToTab');
-exports.storageValidation = require('./storageValidation');
-exports.storeLog = require('./storeLog');
-exports.uniqueOnly = require('./uniqueOnly');
+const addFormElementsNumber = elements => {
+  let i = 0;
+
+  if (!Array.isArray(elements) || elements?.length <= 0) {
+    return false;
+  }
+
+  elements.map(element => {
+    if (element?.dataset?.twofasElementNumber) {
+      return false;
+    }
+
+    element.dataset.twofasElementNumber = i;
+    i++;
+    return element;
+  });
+};
+
+module.exports = addFormElementsNumber;
