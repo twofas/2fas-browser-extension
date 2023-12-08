@@ -17,23 +17,23 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const ignoreButtonSelectors = require('./ignoreButtonSelectors');
+
 const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
-    'button#btn-submit'
+    'button#btn-submit',
+    'button#btn_submit',
+    'button#submit_button',
+    'button#mfa_submit_button',
+    'button#mfa-submit-button'
   ];
 
   const linkSelectors = [
     'a#loginButton.btn.btn-primary'
   ];
 
-  const ignoreButtonSelectors = [
-    ':not([data-role="search-button"])',
-    ':not([data-role="search"])',
-    ':not(#search)'
-  ];
-
   buttonSelectors = buttonSelectors.map(selector => {
-    return selector + ignoreButtonSelectors.join('');
+    return selector + ignoreButtonSelectors().join('');
   });
 
   if (linkSelectors.length <= 0) {

@@ -17,21 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const ignoreButtonSelectors = require('./ignoreButtonSelectors');
+
 const formSubmitSelectors = () => {
   let buttonSelectors = [
-    'button[type="submit"]'
+    'button[type="submit"]',
+    'input[type="submit"]'
   ];
 
   const linkSelectors = [];
 
-  const ignoreButtonSelectors = [
-    ':not([data-role="search-button"])',
-    ':not([data-role="search"])',
-    ':not(#search)'
-  ];
-
   buttonSelectors = buttonSelectors.map(selector => {
-    return selector + ignoreButtonSelectors.join('');
+    return selector + ignoreButtonSelectors().join('');
   });
 
   if (linkSelectors.length <= 0) {
