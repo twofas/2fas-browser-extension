@@ -20,7 +20,7 @@
 import './styles/content_script.scss';
 const browser = require('webextension-polyfill');
 const { observe, createObserver } = require('./observer');
-const { getTabData, getInputs, addInputListener, portSetup, isInFrame } = require('./functions');
+const { getTabData, getInputs, addInputListener, portSetup, isInFrame, addFormElementsNumber, getFormElements } = require('./functions');
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
@@ -59,6 +59,7 @@ const contentScriptRun = async () => {
   }
 
   addInputListener(getInputs(), tabData?.id);
+  addFormElementsNumber(getFormElements());
 
   const mutationObserver = createObserver(tabData);
   observe(mutationObserver);

@@ -37,7 +37,8 @@ const onMessage = (request, sender) => {
         return resolve({
           id: sender?.tab?.id,
           url: sender?.tab?.url,
-          urlPath
+          urlPath,
+          status: sender?.tab?.status
         });
       }
 
