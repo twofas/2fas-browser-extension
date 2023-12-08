@@ -17,25 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const buttonsTexts = require('../../partials/buttonsTexts');
-
-const getFormSubmitElements = () => {
-  let submits = Array.from(
-    document.querySelectorAll(require('../../partials/formSubmitSelectors')())
-  );
-
-  if (submits.length <= 0) {
-    submits = Array.from(
-      document.querySelectorAll(require('../../partials/formSubmitSecondSelectors')())
-    );
-  }
-
-  if (submits.length <= 0) {
-    const buttons = Array.from(document.querySelectorAll('button'));
-    submits = buttons.filter(button => buttonsTexts.includes(button.innerText.toLowerCase()));
-  }
-
-  return submits;
+const ignoreButtonSelectors = () => {
+  return [
+    ':not([data-role="search-button"])',
+    ':not([data-role="search"])',
+    ':not(#search-button)',
+    ':not(#search)'
+  ]
 };
 
-module.exports = getFormSubmitElements;
+module.exports = ignoreButtonSelectors;
