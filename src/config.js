@@ -122,6 +122,10 @@ const config = {
       SafariReset: {
         Title: browser.i18n.getMessage('successSafariResetTitle') || t.successSafariResetTitle,
         Message: browser.i18n.getMessage('successSafariResetMessage') || t.successSafariResetMessage
+      },
+      DomainExcluded: {
+        Title: browser.i18n.getMessage('successDomainExcludedTitle') || t.successDomainExcludedTitle,
+        Message: browser.i18n.getMessage('successDomainExcludedMessage') || t.successDomainExcludedMessage
       }
     },
     Info: {

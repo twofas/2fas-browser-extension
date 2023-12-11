@@ -190,4 +190,12 @@
       line-height: 18px;
     }
   }
+
+  &-validation {
+    color: $theme-color;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    height: 18px !important;
+    margin-top: 5px !important;
+  }
 }

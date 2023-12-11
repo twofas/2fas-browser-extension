@@ -67,6 +67,7 @@
 31 - removeDevice - wrong deviceID or deviceName
 36 - handleSafariReset
 38 - storageValidationReload
+45 - domainModalFormSubmit
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]
