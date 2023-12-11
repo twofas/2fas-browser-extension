@@ -123,6 +123,34 @@
           </div>
         </div>
 
+        <div class="twofas-options-page-content-auto-submit-excluded-domain-list">
+          <div class="twofas-options-page-content-auto-submit-excluded-domain-list-header">
+            <h2 data-i18n="optionsExcludedDomainsHeader">Auto submit excluded domains:</h2>
+            <!-- @TODO: Add tooltip -->
+          </div>
+
+          <div class="twofas-options-page-content-auto-submit-excluded-domain-list-list">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="domain">Domain</th>
+                  <th data-i18n="optionsRemoveFromExcluded">Remove from excluded</th>
+                </tr>
+              </thead>
+              <tbody class="js-twofas-auto-submit-excluded-domain-list"></tbody>
+            </table>
+
+            <a class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude js-twofas-auto-submit-excluded-domain-add" href="#">
+              <span class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-icon">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path id="Shape" d="M11.4919 1.42856H10.4919V2.42856V10.4898H2.43066H1.43066V11.4898V14.5102V15.5102H2.43066H10.4919V23.5714V24.5714H11.4919H14.5123H15.5123V23.5714V15.5102H23.5735H24.5735V14.5102V11.4898V10.4898H23.5735H15.5123V2.42856V1.42856H14.5123H11.4919Z" fill="white" stroke="white"/>
+                </svg>
+              </span>
+              <span data-i18n="optionsExcludeAnotherDomain" class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-text">Exclude another domain</span>
+            </a>
+          </div>
+        </div>
+
         <%= require.context('html-loader!../views/optionsViews', false, OPTIONS_VIEW_REGEXP)(OPTIONS_VIEW_FILENAME).default %>
 
         <div class="twofas-options-page-content-social">
@@ -154,6 +182,7 @@
           <p><span data-i18n="version">Version</span>&nbsp&nbsp;<span class="twofas-ext-version"></span></p>
         </div>
       </div>
+
       <div data-twofas-content="intro" class="twofas-options-page-content-container js-twofas-options-content">
         <h1 class="twofas-intro-header" data-i18n="optionsIntroHeader">2FAS Extension Settings</h1>
 
@@ -177,7 +206,8 @@
     <%= require.context('html-loader!../views/pinInfoViews', false, PININFO_VIEW_REGEXP)(PININFO_VIEW_FILENAME).default %>
   </section>
 
-  <%= require('html-loader!../views/optionsPageModal.html').default %>
+  <%= require('html-loader!../views/optionsPageConfirmModal.html').default %>
+  <%= require('html-loader!../views/optionsPageDomainModal.html').default %>
 
   <div class="twofas-be-notifications"></div>
 </body>

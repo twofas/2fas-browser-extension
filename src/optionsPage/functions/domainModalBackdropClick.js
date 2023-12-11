@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hideConfirmModal = require('./hideConfirmModal');
+const hideDomainModal = require('./hideDomainModal');
 
-const modalBackdropClick = e => {
+const domainModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
 
-  if (elClassList.includes('js-twofas-options-modal')) {
-    hideConfirmModal();
+  if (elClassList.includes('js-twofas-domain-modal')) {
+    hideDomainModal();
   }
 };
 
-module.exports = modalBackdropClick;
+module.exports = domainModalBackdropClick;

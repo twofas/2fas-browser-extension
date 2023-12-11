@@ -20,9 +20,9 @@
 const S = require('../../selectors');
 
 const hideConfirmModal = () => {
-  const modalEl = document.querySelector(S.optionsPage.modal.element);
-  const headerEl = document.querySelector(S.optionsPage.modal.header);
-  const textEl = document.querySelector(S.optionsPage.modal.text);
+  const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
+  const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
+  const textEl = document.querySelector(S.optionsPage.confirmModal.text);
 
   modalEl.classList.add('hidden');
 

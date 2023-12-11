@@ -20,7 +20,8 @@
 @use "sass:color";
 @import "src/global-styles/variables";
 
-.twofas-options-modal {
+.twofas-confirm-modal,
+.twofas-domain-modal {
   // VARIABLES
   $modal-backdrop-color: rgba(#4f4f4f, .5);
   $modal-backdrop-color-dark: rgba($color, .5);
@@ -64,7 +65,8 @@
     top: 0;
 
     &:hover {
-      .twofas-options-modal-close-bg {
+      .twofas-confirm-modal-close-bg,
+      .twofas-domain-modal-close-bg {
         fill: color.adjust($modal-close-bg, $lightness: -5%);
 
         @media (prefers-color-scheme: dark) {
@@ -72,7 +74,8 @@
         }
       }
 
-      .twofas-options-modal-close-x {
+      .twofas-confirm-modal-close-x,
+      .twofas-domain-modal-close-x {
         fill: color.adjust($modal-close-x-color, $lightness: -10%);
       }
     }
@@ -123,6 +126,47 @@
 
       @media all and (max-width: 660px), all and (max-height: $op-rwd-height) {
         margin-top: 15px;
+      }
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      padding: 0 24px;
+    }
+
+    input {
+      background-color: $input-bg;
+      border: 0;
+      border-radius: 10px;
+      color: $input-color;
+      display: block;
+      flex-grow: 1;
+      font-size: 16px;
+      font-weight: 400;
+      height: 51px;
+      margin: 16px 0 0;
+      padding: 0 0 0 17px;
+  
+      @media (prefers-color-scheme: dark) {
+        background-color: $bg-dark;
+        color: $input-color-dark;
+      }
+  
+      @media all and (max-width: 660px) {
+        padding: 0 10px;
+      }
+  
+      &::-webkit-input-placeholder { /* stylelint-disable-line */
+        color: $desc-color;
+      }
+  
+      &::-moz-placeholder { /* stylelint-disable-line */
+        color: $desc-color;
+      }
+  
+      &:-ms-input-placeholder { /* stylelint-disable-line */
+        color: $desc-color;
       }
     }
 

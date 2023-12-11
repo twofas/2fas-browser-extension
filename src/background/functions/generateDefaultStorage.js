@@ -58,6 +58,7 @@ const generateDefaultStorage = browserInfo => {
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
         pinInfo: false,
         extensionVersion: config.ExtensionVersion,
+        autoSubmitExcludedDomains: [],
         attempt: attempt + 1
       });
     })
