@@ -19,26 +19,11 @@
 
 const S = require('../../selectors');
 
-const showConfirmModal = (header, text, func = null) => {
-  const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
-  const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
-  const textEl = document.querySelector(S.optionsPage.confirmModal.text);
+const hideDomainModal = () => {
+  // @TODO: Clear input
+  const modalEl = document.querySelector(S.optionsPage.domainModal.element);
 
-  headerEl.textContent = header;
-  textEl.textContent = text;
-
-  modalEl.classList.remove('hidden');
-
-  if (typeof func === 'function') {
-    const confirmEl = document.querySelector(S.optionsPage.confirmModal.confirm);
-    const newConfirmEl = confirmEl.cloneNode(true);
-    confirmEl.parentNode.replaceChild(newConfirmEl, confirmEl);
-
-    newConfirmEl.addEventListener('click', () => {
-      func();
-      modalEl.classList.add('hidden');
-    });
-  }
+  modalEl.classList.add('hidden');
 };
 
-module.exports = showConfirmModal;
+module.exports = hideDomainModal;

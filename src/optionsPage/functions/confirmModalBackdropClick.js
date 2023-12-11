@@ -17,28 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+const hideConfirmModal = require('./hideConfirmModal');
 
-const showConfirmModal = (header, text, func = null) => {
-  const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
-  const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
-  const textEl = document.querySelector(S.optionsPage.confirmModal.text);
+const confirmModalBackdropClick = e => {
+  const elClassList = Array.from(e.target.classList);
 
-  headerEl.textContent = header;
-  textEl.textContent = text;
-
-  modalEl.classList.remove('hidden');
-
-  if (typeof func === 'function') {
-    const confirmEl = document.querySelector(S.optionsPage.confirmModal.confirm);
-    const newConfirmEl = confirmEl.cloneNode(true);
-    confirmEl.parentNode.replaceChild(newConfirmEl, confirmEl);
-
-    newConfirmEl.addEventListener('click', () => {
-      func();
-      modalEl.classList.add('hidden');
-    });
+  if (elClassList.includes('js-twofas-confirm-modal')) {
+    hideConfirmModal();
   }
 };
 
-module.exports = showConfirmModal;
+module.exports = confirmModalBackdropClick;
