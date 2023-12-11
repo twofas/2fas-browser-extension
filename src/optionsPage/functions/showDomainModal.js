@@ -21,19 +21,7 @@ const S = require('../../selectors');
 
 const showDomainModal = () => {
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
-
   modalEl.classList.remove('hidden');
-
-  if (typeof func === 'function') {
-    const confirmEl = document.querySelector(S.optionsPage.domainModal.confirm);
-    const newConfirmEl = confirmEl.cloneNode(true);
-    confirmEl.parentNode.replaceChild(newConfirmEl, confirmEl);
-
-    newConfirmEl.addEventListener('click', () => {
-      // func();
-      modalEl.classList.add('hidden');
-    });
-  }
 };
 
 module.exports = showDomainModal;

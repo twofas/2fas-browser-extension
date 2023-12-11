@@ -19,6 +19,7 @@
 
 exports.confirmModalBackdropClick = require('./confirmModalBackdropClick');
 exports.domainModalBackdropClick = require('./domainModalBackdropClick');
+exports.domainModalFormSubmit = require('./domainModalFormSubmit');
 exports.generateDomainsList = require('./generateDomainsList');
 exports.generateDevicesList = require('./generateDevicesList');
 exports.generateEmptyDeviceRow = require('./generateEmptyDeviceRow');

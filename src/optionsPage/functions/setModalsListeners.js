@@ -22,6 +22,7 @@ const hideConfirmModal = require('./hideConfirmModal');
 const hideDomainModal = require('./hideDomainModal');
 const confirmModalBackdropClick = require('./confirmModalBackdropClick');
 const domainModalBackdropClick = require('./domainModalBackdropClick');
+const domainModalFormSubmit = require('./domainModalFormSubmit');
 const showDomainModal = require('./showDomainModal');
 
 const setModalsListeners = () => {
@@ -39,6 +40,9 @@ const setModalsListeners = () => {
 
   const domainModal = document.querySelector(S.optionsPage.domainModal.element);
   domainModal.addEventListener('click', domainModalBackdropClick);
+
+  const domainModalForm = document.querySelector(S.optionsPage.domainModal.form);
+  domainModalForm.addEventListener('submit', domainModalFormSubmit);
 
   window.addEventListener('keydown', e => {
     if (e.code === 'Escape') {

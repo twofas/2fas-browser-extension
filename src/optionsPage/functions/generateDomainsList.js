@@ -23,20 +23,26 @@ const browser = require('webextension-polyfill');
 const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
 const generateEmptyDomainRow = require('./generateEmptyDomainRow');
 const S = require('../../selectors');
-const disconnectSVG = require('../../images/page-icons/disconnect.svg');
+const trashSVG = require('../../images/page-icons/trash.svg');
 
 const generateDomainsList = list => {
   if (!list) {
     list = [];
   }
 
-  const tbody = document.querySelector(S.optionsPage.autoSubmit.list);
+  const newTbody = document.createElement('tbody');
+  newTbody.classList.add('js-twofas-auto-submit-excluded-domain-list');
+
+  const oldTbody = document.querySelector(S.optionsPage.autoSubmit.list);
+  oldTbody.parentNode.replaceChild(newTbody, oldTbody);
+
+  const tbody = newTbody;
 
   if (list.length === 0) {
     generateEmptyDomainRow(tbody);
   }
 
-  list.map(d => {
+  list.map(domain => {
     let t = {
       tr: null,
       td: [null, null],
@@ -46,11 +52,11 @@ const generateDomainsList = list => {
     };
 
     t.tr = createElement('tr');
-    t.tr.dataset.deviceId = d.domain;
+    t.tr.dataset.deviceId = domain;
 
     t.td[0] = createElement('td');
     t.td[0].setAttribute('data-before-i18n', browser.i18n.getMessage('domain'));
-    t.domain = createTextElement('span', d.domain);
+    t.domain = createTextElement('span', domain);
 
     t.td[0].appendChild(t.domain);
     t.tr.appendChild(t.td[0]);
@@ -58,10 +64,10 @@ const generateDomainsList = list => {
     t.td[1] = createElement('td');
     t.td[1].setAttribute('data-before-i18n', browser.i18n.getMessage('optionsRemoveFromExcluded'));
     t.button = createElement('button');
-    t.button.dataset.domain = d.domain;
+    t.button.dataset.domain = domain;
     t.button.addEventListener('click', () => { alert('elo'); });
 
-    t.svg = createSVGElement(disconnectSVG);
+    t.svg = createSVGElement(trashSVG);
     t.button.appendChild(t.svg);
 
     t.td[1].appendChild(t.button);
@@ -70,7 +76,7 @@ const generateDomainsList = list => {
     tbody.appendChild(t.tr);
     t = null;
 
-    return d;
+    return domain;
   });
 };
 

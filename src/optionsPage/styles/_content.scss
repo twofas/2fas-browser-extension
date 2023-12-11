@@ -504,13 +504,13 @@
 
           &:hover {
             svg {
-              stroke: color.adjust($theme-color, $lightness: -10%);
+              fill: color.adjust($theme-color, $lightness: -10%);
             }
           }
 
           svg {
-            stroke: $theme-color;
-            transition: .2s stroke ease-in-out;
+            fill: $theme-color;
+            transition: .2s fill ease-in-out;
           }
         }
       }
