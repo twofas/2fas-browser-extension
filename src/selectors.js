@@ -45,7 +45,8 @@ const selectors = {
     domainModal: {
       element: '.js-twofas-domain-modal',
       cancel: '.js-twofas-domain-modal-cancel',
-      confirm: '.js-twofas-domain-modal-confirm'
+      form: '.js-twofas-domain-modal-form',
+      validation: '.js-twofas-domain-modal-validation'
     },
     shortcut: {
       edit: '.js-twofas-shortcut-edit',

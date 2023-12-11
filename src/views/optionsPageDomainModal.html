@@ -32,7 +32,7 @@
     <h2 data-i18n="optionsDomainModalHeader">Exclude new domain</h2>
     <p data-i18n="optionsDomainModalText">With the form below, you can add your domain to exclusion list, ensuring it won't be subjected to the auto submit mechanism.</p>
 
-    <form action="#">
+    <form action="#" class="js-twofas-domain-modal-form">
       <input
         data-i18n="optionsDomainInputPlaceholder"
         class="js-twofas-domain-input"
@@ -40,9 +40,10 @@
         name="domain"
         placeholder="Type in domain to exclude..."
       />
+      <p class="js-twofas-domain-modal-validation"></p>
 
       <div class="twofas-domain-modal-body-buttons">
-        <button type="submit" data-i18n="add" class="btn btn-clear js-twofas-domain-modal-confirm">Add</button>
+        <button type="submit" data-i18n="add" class="btn btn-clear">Add</button>
         <button data-i18n="cancel" class="btn btn-theme js-twofas-domain-modal-cancel">Cancel</button>
       </div>
     </form>
