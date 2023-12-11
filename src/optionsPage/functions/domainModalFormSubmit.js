@@ -21,6 +21,9 @@
 const S = require('../../selectors');
 const generateDomainsList = require('./generateDomainsList');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+const TwoFasNotification = require('../../notification');
+const config = require('../../config');
+const storeLog = require('../../partials/storeLog');
 
 const isValidUrl = urlString => {
   const urlPattern = new RegExp('^(https?:\\/\\/)?' +
@@ -39,6 +42,11 @@ const domainModalFormSubmit = e => {
   const data = new FormData(e.target);
   const domain = data.get('domain').trim();
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
+
+  if (!domain || domain.length === 0) {
+    validation.innerText = 'Domain is required'; // @TODO: i18n
+    return false;
+  }
 
   if (!isValidUrl(domain)) {
     validation.innerText = 'Domain is not correct'; // @TODO: i18n
@@ -68,17 +76,13 @@ const domainModalFormSubmit = e => {
         domainModal.classList.add('hidden');
 
         generateDomainsList(res.autoSubmitExcludedDomains);
+        TwoFasNotification.show(config.Texts.Success.DomainExcluded);
       }
     })
-    .catch(err => {
-      // @TODO: check err
-      console.log(err);
+    .catch(async err => {
+      await storeLog('error', 45, err, 'domainModalFormSubmit');
+      return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
     });
-
-  /*
-    @TODO:
-    ShowPush
-  */
 };
 
 module.exports = domainModalFormSubmit;

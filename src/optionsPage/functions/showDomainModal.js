@@ -21,7 +21,10 @@ const S = require('../../selectors');
 
 const showDomainModal = () => {
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
+  const validation = document.querySelector(S.optionsPage.domainModal.validation);
+
   modalEl.classList.remove('hidden');
+  validation.innerText = '';
 };
 
 module.exports = showDomainModal;
