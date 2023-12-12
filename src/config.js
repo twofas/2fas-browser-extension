@@ -73,6 +73,10 @@ const config = {
         Title: browser.i18n.getMessage('errorRemoveDeviceBadDataTitle') || t.errorRemoveDeviceBadDataTitle,
         Message: browser.i18n.getMessage('errorRemoveDeviceBadDataMessage') || t.errorRemoveDeviceBadDataMessage
       },
+      RemoveDomainBadData: {
+        Title: browser.i18n.getMessage('errorRemoveDomainBadDataTitle') || t.errorRemoveDomainBadDataTitle,
+        Message: browser.i18n.getMessage('errorRemoveDomainBadDataMessage') || t.errorRemoveDomainBadDataMessage
+      },
       StorageCorrupted: {
         Title: browser.i18n.getMessage('errorStorageCorruptedTitle') || t.errorStorageCorruptedTitle,
         Message: browser.i18n.getMessage('errorStorageCorruptedMessage') || t.errorStorageCorruptedMessage
@@ -126,6 +130,10 @@ const config = {
       DomainExcluded: {
         Title: browser.i18n.getMessage('successDomainExcludedTitle') || t.successDomainExcludedTitle,
         Message: browser.i18n.getMessage('successDomainExcludedMessage') || t.successDomainExcludedMessage
+      },
+      DomainExcludedRemoved: {
+        Title: browser.i18n.getMessage('successDomainExcludedRemovedTitle') || t.successDomainExcludedRemovedTitle,
+        Message: browser.i18n.getMessage('successDomainExcludedRemovedMessage') || t.successDomainExcludedRemovedMessage
       }
     },
     Info: {

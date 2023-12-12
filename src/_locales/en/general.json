@@ -38,6 +38,8 @@
   "modalDisconnectDeviceText": "You are attempting to disconnect the device \"DEVICE_NAME\" from this browser extension. Are you sure?",
   "modalSafariResetHeader": "Browser Extension reset",
   "modalSafariResetText": "You are attempting to reset the 2FAS Browser Extension. Are you sure?",
+  "modalExcludeDomainHeader": "Remove domain from excluded list",
+  "modalExcludeDomainText": "You are attempting to remove domain \"DOMAIN\" from excluded list. Are you sure?",
   "noPairedDevices": "No paired devices found",
   "noExcludedDomains": "No excluded domains found",
   "deviceName": "Device name",
