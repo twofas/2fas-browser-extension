@@ -23,6 +23,7 @@ const { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } = require(
 const SDK = require('../../sdk');
 const Crypt = require('./Crypt');
 const storeLog = require('../../partials/storeLog');
+const defaultAutoSubmitExcludedDomains = require('../../defaultAutoSubmitExcludedDomains');
 
 const generateDefaultStorage = browserInfo => {
   const crypt = new Crypt();
@@ -58,7 +59,7 @@ const generateDefaultStorage = browserInfo => {
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
         pinInfo: false,
         extensionVersion: config.ExtensionVersion,
-        autoSubmitExcludedDomains: [],
+        autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
         attempt: attempt + 1
       });
     })
