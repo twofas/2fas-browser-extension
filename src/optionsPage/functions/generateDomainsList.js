@@ -17,13 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global alert */
-
 const browser = require('webextension-polyfill');
 const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
 const generateEmptyDomainRow = require('./generateEmptyDomainRow');
 const S = require('../../selectors');
 const trashSVG = require('../../images/page-icons/trash.svg');
+const removeDomain = require('./removeDomain');
 
 const generateDomainsList = list => {
   if (!list) {
@@ -52,7 +51,7 @@ const generateDomainsList = list => {
     };
 
     t.tr = createElement('tr');
-    t.tr.dataset.deviceId = domain;
+    t.tr.dataset.domain = domain;
 
     t.td[0] = createElement('td');
     t.td[0].setAttribute('data-before-i18n', browser.i18n.getMessage('domain'));
@@ -65,7 +64,7 @@ const generateDomainsList = list => {
     t.td[1].setAttribute('data-before-i18n', browser.i18n.getMessage('optionsRemoveFromExcluded'));
     t.button = createElement('button');
     t.button.dataset.domain = domain;
-    t.button.addEventListener('click', () => { alert('elo'); });
+    t.button.addEventListener('click', removeDomain);
 
     t.svg = createSVGElement(trashSVG);
     t.button.appendChild(t.svg);
