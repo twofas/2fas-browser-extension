@@ -18,12 +18,14 @@
 //
 
 /* global FormData */
+const browser = require('webextension-polyfill');
 const S = require('../../selectors');
 const generateDomainsList = require('./generateDomainsList');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const TwoFasNotification = require('../../notification');
 const config = require('../../config');
 const storeLog = require('../../partials/storeLog');
+const hideDomainModal = require('./hideDomainModal');
 
 const isValidUrl = urlString => {
   const urlPattern = new RegExp('^(https?:\\/\\/)?' +
@@ -44,12 +46,12 @@ const domainModalFormSubmit = e => {
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
 
   if (!domain || domain.length === 0) {
-    validation.innerText = 'Domain is required'; // @TODO: i18n
+    validation.innerText = browser.i18n.getMessage('optionsDomainRequired') || 'Domain is required';
     return false;
   }
 
   if (!isValidUrl(domain)) {
-    validation.innerText = 'Domain is not correct'; // @TODO: i18n
+    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
     return false;
   }
 
@@ -60,7 +62,7 @@ const domainModalFormSubmit = e => {
       const autoSubmitExcludedDomains = storage.autoSubmitExcludedDomains;
 
       if (autoSubmitExcludedDomains.includes(url)) {
-        validation.innerText = 'Domain exists on excluded list'; // @TODO: i18n
+        validation.innerText = browser.i18n.getMessage('optionsDomainExists') || 'Domain exists on excluded list';
         return false;
       }
 
@@ -70,12 +72,8 @@ const domainModalFormSubmit = e => {
     })
     .then(res => {
       if (res) {
-        validation.innerText = '';
-
-        const domainModal = document.querySelector(S.optionsPage.domainModal.element);
-        domainModal.classList.add('hidden');
-
         generateDomainsList(res.autoSubmitExcludedDomains);
+        hideDomainModal();
         TwoFasNotification.show(config.Texts.Success.DomainExcluded);
       }
     })

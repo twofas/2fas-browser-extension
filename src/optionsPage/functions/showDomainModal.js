@@ -22,9 +22,14 @@ const S = require('../../selectors');
 const showDomainModal = () => {
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
+  const inputEl = document.querySelector(S.optionsPage.domainModal.input);
 
   modalEl.classList.remove('hidden');
   validation.innerText = '';
+
+  setTimeout(() => {
+    inputEl.focus();
+  }, 200);
 };
 
 module.exports = showDomainModal;
