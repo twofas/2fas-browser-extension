@@ -18,6 +18,8 @@
 //
 
 const getFormSubmitElements = require('./getFormSubmitElements');
+const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+const storeLog = require('../../partials/storeLog');
 
 const closest = (counts, goal) => {
   return counts.indexOf(
@@ -28,32 +30,44 @@ const closest = (counts, goal) => {
 };
 
 const clickSubmit = (inputElement, siteURL) => {
-  // @TODO: check URL
+  return loadFromLocalStorage(['autoSubmitExcludedDomains'])
+    .then(storage => {
+      const domains = storage.autoSubmitExcludedDomains;
+      const url = new URL(siteURL);
+      const hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
 
-  const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
-  const submits = getFormSubmitElements();
+      if (domains.includes(hostname)) {
+        return false;
+      }
 
-  if (submits.length === 0) {
-    return false;
-  } else if (submits.length === 1) {
-    try {
-      submits[0].click();
-    } catch (e) {}
-  } else {
-    const submitsNumbers = [];
+      const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
+      const submits = getFormSubmitElements();
 
-    submits.forEach(submit => {
-      submitsNumbers.push(parseInt(submit?.dataset?.twofasElementNumber || -999));
-    });
+      if (submits.length === 0) {
+        return false;
+      } else if (submits.length === 1) {
+        try {
+          submits[0].click();
+        } catch (e) {}
+      } else {
+        const submitsNumbers = [];
 
-    const submitElement = submits[closest(submitsNumbers, inputNumber)];
+        submits.forEach(submit => {
+          submitsNumbers.push(parseInt(submit?.dataset?.twofasElementNumber || -999));
+        });
+
+        const submitElement = submits[closest(submitsNumbers, inputNumber)];
     
-    if (submitElement) {
-      try {
-        submitElement.click();
-      } catch (e) {}
-    }
-  }
+        if (submitElement) {
+          try {
+            submitElement.click();
+          } catch (e) {}
+        }
+      }
+    })
+    .catch(async err => {
+      await storeLog('error', 46, err, 'clickSubmit');
+    });
 };
 
 module.exports = clickSubmit;

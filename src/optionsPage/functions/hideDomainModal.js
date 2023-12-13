@@ -20,10 +20,13 @@
 const S = require('../../selectors');
 
 const hideDomainModal = () => {
-  // @TODO: Clear input
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
+  const inputEl = document.querySelector(S.optionsPage.domainModal.input);
+  const validationEl = document.querySelector(S.optionsPage.domainModal.validation);
 
   modalEl.classList.add('hidden');
+  inputEl.value = '';
+  validationEl.innerText = '';
 };
 
 module.exports = hideDomainModal;
