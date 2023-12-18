@@ -47,6 +47,7 @@ const createContextMenus = () => {
           };
         }
       
+        browser.contextMenus.removeAll();
         browser.contextMenus.create(options);
       }
     })
