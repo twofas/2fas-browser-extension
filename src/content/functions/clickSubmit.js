@@ -20,6 +20,7 @@
 const getFormSubmitElements = require('./getFormSubmitElements');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const storeLog = require('../../partials/storeLog');
+const delay = require('../../partials/delay');
 
 const closest = (counts, goal) => {
   return counts.indexOf(
@@ -30,7 +31,8 @@ const closest = (counts, goal) => {
 };
 
 const clickSubmit = (inputElement, siteURL) => {
-  return loadFromLocalStorage(['autoSubmitExcludedDomains'])
+  return delay(() => {}, 500)
+    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains']))
     .then(storage => {
       const domains = storage.autoSubmitExcludedDomains;
       const url = new URL(siteURL);
