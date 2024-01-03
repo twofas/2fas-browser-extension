@@ -17,25 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+const findSignificantChanges = require('./findSignificantChanges');
 
-.twofas-options-page {
-  background-color: $bg;
-  color: $color;
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  min-height: 100vh;
-  width: 100%;
+const checkChildNodes = childNodes => {
+  const cN = Array.from(childNodes);
 
-  @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    color: $color-2;
+  if (cN && cN.length > 0) {
+    return cN.map(childNode => {
+      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
+        return checkChildNodes(childNode.childNodes).flat();
+      }
+
+      return findSignificantChanges(childNode);
+    });
   }
+};
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-    flex-direction: column;
-  }
-
-  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
-}
+module.exports = checkChildNodes;

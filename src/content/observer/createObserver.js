@@ -18,73 +18,31 @@
 //
 
 /* global MutationObserver */
-const browser = require('webextension-polyfill');
-const { getTabData, getInputs, addInputListener } = require('../functions');
-const storeLog = require('../../partials/storeLog');
+const { addedNodes, hiddenNodes, removedNodes } = require('./observerFunctions');
 
-const significantNodes = ['input', 'textarea', 'iframe'];
-const findSignificantChanges = node => significantNodes.includes(node.nodeName.toLowerCase());
-
-const checkChildNodes = childNodes => {
-  const cN = Array.from(childNodes);
-
-  if (cN && cN.length > 0) {
-    return cN.map(childNode => {
-      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
-        return checkChildNodes(childNode.childNodes).flat();
-      }
-
-      return findSignificantChanges(childNode);
-    });
-  }
-};
-
-const createObserver = () => {
+const createObserver = tabData => {
   return new MutationObserver(mutations => {
-    let newInputs = false;
-
-    mutations.forEach(mutation => {
-      if (!mutation || !mutation?.addedNodes || mutation?.addedNodes?.length <= 0) {
-        return false;
-      }
-
-      const nodesArr = Array.from(mutation.addedNodes);
-
-      nodesArr.map(node => {
-        if (findSignificantChanges(node)) {
-          newInputs = true;
-          return node;
-        }
-
-        let newInputsArr = checkChildNodes(node.childNodes);
-
-        if (newInputsArr && Array.isArray(newInputsArr) && newInputsArr?.length > 0) {
-          newInputsArr = newInputsArr.flat().filter(x => x);
-        }
-
-        if (newInputsArr && newInputsArr?.length > 0) {
-          newInputs = true;
-        }
-
-        return node;
-      });
-    });
-
-    if (newInputs) {
-      let tabData;
-
-      if (!browser?.runtime?.id) {
-        return false;
-      }
-
-      return getTabData()
-        .then(res => {
-          tabData = res;
-          return getInputs();
-        })
-        .then(inputs => addInputListener(inputs, tabData?.id))
-        .catch(err => storeLog('error', 15, err, tabData?.url));
+    if (!mutations) {
+      return false;
     }
+
+    mutations.forEach(async mutation => {
+      if (!mutation) {
+        return false;
+      }
+
+      if (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) {
+        await addedNodes(mutation);
+      }
+
+      if (mutation?.type === 'attributes' && mutation?.target) {
+        await hiddenNodes(mutation, tabData);
+      }
+
+      if (mutation?.removedNodes && Array.from(mutation?.removedNodes).length > 0) {
+        await removedNodes(mutation, tabData);
+      }
+    });
   });
 };
 

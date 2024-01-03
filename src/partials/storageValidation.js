@@ -28,10 +28,16 @@ const storageValidation = storage => {
       !storage?.keys?.privateKey ||
       !storage?.extensionID
     ) {
+      if (storage?.attempt && storage?.attempt > 5) {
+        TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+        return reject(new TypeError('Too many attempts'));
+      }
+
       TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
       return reject(new TypeError('Storage corrupted'));
     }
 
+    // @TODO: Future reset attempts?
     return resolve();
   });
 };

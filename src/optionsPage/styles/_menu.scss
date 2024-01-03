@@ -169,7 +169,8 @@
 
             .icon-intro,
             .icon-newpage,
-            .icon-support {
+            .icon-support,
+            .icon-check-ext {
               opacity: .6;
               stroke: $menu-hover-color;
 
@@ -211,7 +212,8 @@
 
             &.icon-intro,
             &.icon-newpage,
-            &.icon-support {
+            &.icon-support,
+            &.icon-check-ext {
               stroke: $menu-color;
             }
 

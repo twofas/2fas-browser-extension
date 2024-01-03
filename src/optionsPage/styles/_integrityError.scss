@@ -17,25 +17,48 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+@import "../../global-styles/variables";
 
-.twofas-options-page {
-  background-color: $bg;
-  color: $color;
-  display: flex;
-  flex-direction: row;
+&-integrity-error {
+  align-items: center;
+  background-color: $color-2;
+  display: none;
+  flex-direction: column;
+  gap: 20px 0;
   height: 100%;
-  min-height: 100vh;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  top: 0;
   width: 100%;
+  z-index: 9999;
+
+  &.show-integrity-error {
+    display: flex;
+  }
 
   @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    color: $color-2;
+    background-color: $bg-dark;
   }
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-    flex-direction: column;
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
   }
 
-  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    max-width: 450px;
+    text-align: center;
+  }
+
+  p {
+    color: $theme-color;
+    font-size: 80px;
+    font-weight: 700;
+    margin: 20px 0;
+  }
 }

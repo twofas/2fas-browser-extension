@@ -25,6 +25,8 @@ node_modules/
 public/
 build/
 yarn.lock
+.vscode
+testFiles/
 
 # Xcode
 #

@@ -19,15 +19,23 @@
 
 const config = require('../../config');
 const browser = require('webextension-polyfill');
-const { clearLocalStorage, saveToLocalStorage } = require('../../localStorage');
+const { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const SDK = require('../../sdk');
 const Crypt = require('./Crypt');
 const storeLog = require('../../partials/storeLog');
 
 const generateDefaultStorage = browserInfo => {
   const crypt = new Crypt();
+  let attempt = 0;
 
-  return clearLocalStorage()
+  return loadFromLocalStorage('attempt')
+    .then(res => {
+      if (res?.attempt && Number.isInteger(res?.attempt)) {
+        attempt = res.attempt;
+      }
+
+      return clearLocalStorage();
+    })
     .then(() => crypt.generateKeys())
     .then(keys => Promise.all([
       crypt.exportKey('spki', keys.publicKey),
@@ -49,7 +57,8 @@ const generateDefaultStorage = browserInfo => {
         incognito: false,
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
         pinInfo: false,
-        extensionVersion: config.ExtensionVersion
+        extensionVersion: config.ExtensionVersion,
+        attempt: attempt + 1
       });
     })
     .then(storage => {

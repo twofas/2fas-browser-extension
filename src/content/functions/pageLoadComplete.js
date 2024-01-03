@@ -17,25 +17,33 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+const storeLog = require('../../partials/storeLog');
 
-.twofas-options-page {
-  background-color: $bg;
-  color: $color;
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  min-height: 100vh;
-  width: 100%;
+const pageLoadComplete = async tabID => {
+  let storage;
+  const activeElement = document?.activeElement;
 
-  @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    color: $color-2;
+  if (!activeElement) {
+    return false;
   }
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-    flex-direction: column;
+  const twofasInput = activeElement.getAttribute('data-twofas-input');
+
+  if (!twofasInput) {
+    return false;
   }
 
-  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
-}
+  try {
+    storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
+  } catch (err) {
+    await storeLog('error', 43, err, storage[`tabData-${tabID}`]?.url);
+  }
+
+  storage[`tabData-${tabID}`].lastFocusedInput = twofasInput;
+
+  return saveToLocalStorage({ [`tabData-${tabID}`]: storage[`tabData-${tabID}`] })
+    .catch(err => storeLog('error', 44, err, storage[`tabData-${tabID}`]?.url));
+};
+
+module.exports = pageLoadComplete;

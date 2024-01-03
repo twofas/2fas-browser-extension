@@ -17,25 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+const significantInputs = [
+  'input',
+  'textarea'
+];
 
-.twofas-options-page {
-  background-color: $bg;
-  color: $color;
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  min-height: 100vh;
-  width: 100%;
-
-  @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    color: $color-2;
-  }
-
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-    flex-direction: column;
-  }
-
-  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
-}
+module.exports = significantInputs;

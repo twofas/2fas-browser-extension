@@ -51,3 +51,4 @@ exports.setPinInfo = require('./setPinInfo');
 exports.setPushRadio = require('./setPushRadio');
 exports.setShortcutBox = require('./setShortcutBox');
 exports.showConfirmModal = require('./showConfirmModal');
+exports.showIntegrityError = require('./showIntegrityError');
