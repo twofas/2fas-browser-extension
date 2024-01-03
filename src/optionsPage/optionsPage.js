@@ -25,7 +25,7 @@ const TwoFasNotification = require('../notification');
 const SDK = require('../sdk');
 const extPageOnMessage = require('../partials/extPageOnMessage');
 const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink } = require('./functions');
+const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError } = require('./functions');
 
 const init = async storage => {
   i18n();
@@ -33,6 +33,12 @@ const init = async storage => {
   try {
     await storageValidation(storage);
   } catch (e) {
+    if (e.toString().includes('Too many attempts')) {
+      showIntegrityError();
+      hidePreloader();
+      return false;
+    }
+
     return delay(() => {
       return browser.runtime.sendMessage({ action: 'storageReset' })
         .then(() => window.location.reload())
@@ -68,7 +74,7 @@ const optionsPageError = async err => {
 };
 
 window.onload = () => {
-  loadFromLocalStorage(['extensionID', 'keys', 'browserInfo'])
+  loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt'])
     .then(data => init(data))
     .catch(err => optionsPageError(err));
 };

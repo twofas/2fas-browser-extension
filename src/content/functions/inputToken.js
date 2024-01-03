@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global Event */
+/* global Event, KeyboardEvent */
 const delay = require('../../partials/delay');
 
 const inputToken = (request, inputElement, siteURL) => {
@@ -58,6 +58,12 @@ const inputToken = (request, inputElement, siteURL) => {
 
           document.activeElement.value += request.token[i];
           document.activeElement.dispatchEvent(inputEvent);
+
+          // NORTON FIX
+          if (siteURL.includes('login.norton')) {
+            document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: request.token[i] }));
+          }
+          // END NORTON FIX
         }, 100 * i)
       );
     }

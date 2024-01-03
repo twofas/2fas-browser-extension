@@ -23,7 +23,7 @@ const t = require('./_locales/en/notifications.json');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.4.6',
+  ExtensionVersion: '1.5.0',
 
   Texts: {
     Error: {
@@ -84,6 +84,14 @@ const config = {
       LackOfTab: {
         Title: browser.i18n.getMessage('errorLackOfTabTitle') || t.errorLackOfTabTitle,
         Message: browser.i18n.getMessage('errorLackOfTabMessage') || t.errorLackOfTabMessage
+      },
+      InputNotExist: {
+        Title: browser.i18n.getMessage('errorInputNotExistTitle') || t.errorInputNotExistTitle,
+        Message: browser.i18n.getMessage('errorInputNotExistMessage') || t.errorInputNotExistMessage
+      },
+      StorageIntegrity: {
+        Title: browser.i18n.getMessage('errorStorageIntegrityTitle') || t.errorStorageIntegrityTitle,
+        Message: browser.i18n.getMessage('errorStorageIntegrityMessage') || t.errorStorageIntegrityMessage
       }
     },
     Warning: {

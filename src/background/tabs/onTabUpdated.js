@@ -17,6 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const browser = require('webextension-polyfill');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const storeLog = require('../../partials/storeLog');
 const SDK = require('../../sdk');
@@ -27,11 +28,11 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  if (tabID && (changeInfo.status === 'complete' || changeInfo.favIconUrl || changeInfo.isArticle)) {
+  if (tabID && (changeInfo?.status === 'complete' || changeInfo?.favIconUrl || changeInfo?.isArticle)) {
     await checkTabCS(tabID);
   }
 
-  if (!changeInfo?.url) {
+  if (changeInfo?.status !== 'complete') {
     return false;
   }
 
@@ -40,11 +41,7 @@ const onTabUpdated = async (tabID, changeInfo) => {
   try {
     storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
   } catch (err) {
-    return storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
-  }
-
-  if (storage[`tabData-${tabID}`]?.url !== changeInfo.url) {
-    return false;
+    await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
   }
 
   if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].requestID) {
@@ -52,10 +49,16 @@ const onTabUpdated = async (tabID, changeInfo) => {
   }
 
   if (storage[`tabData-${tabID}`]) {
-    return saveToLocalStorage({ [`tabData-${tabID}`]: {} })
-      .then(() => { storage = null; })
-      .catch(err => storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url));
+    try {
+      await saveToLocalStorage({ [`tabData-${tabID}`]: {} });
+      storage = null;
+    } catch (err) {
+      await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
+    }
   }
+
+  return browser.tabs.sendMessage(tabID, { action: 'pageLoadComplete' })
+    .catch(() => {}); // ignore error
 };
 
 module.exports = onTabUpdated;

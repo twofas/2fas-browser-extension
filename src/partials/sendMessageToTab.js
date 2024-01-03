@@ -23,6 +23,24 @@ const TwoFasNotification = require('../notification');
 
 const sendMessageToTab = (tabID, message) => {
   return browser.tabs.sendMessage(tabID, message)
+    .then(res => {
+      if (!res) {
+        return false;
+      }
+
+      switch (res?.status) {
+        case 'notification': {
+          return TwoFasNotification.show({
+            Title: res.title,
+            Message: res.message
+          }, tabID);
+        }
+
+        default: {
+          return false;
+        }
+      }
+    })
     .catch(err => {
       if (err.toString().includes('Receiving end does not exist')) {
         return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
