@@ -28,14 +28,9 @@ const storeLog = require('../../partials/storeLog');
 const hideDomainModal = require('./hideDomainModal');
 
 const isValidUrl = urlString => {
-  const urlPattern = new RegExp('^(https?:\\/\\/)?' +
-  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
-  '((\\d{1,3}\\.){3}\\d{1,3}))' +
-  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-  '(\\?[;&a-z\\d%_.~+=-]*)?' +
-  '(\\#[-a-z\\d_]*)?$', 'i');
-  return !!urlPattern.test(urlString);
-}
+  const urlRegex = /^(((http|https):\/\/|)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}(:[0-9]{1,5})?(\/.*)?)$/;
+  return urlRegex.test(urlString);
+};
 
 const domainModalFormSubmit = e => {
   e.preventDefault();
