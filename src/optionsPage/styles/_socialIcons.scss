@@ -37,6 +37,24 @@ svg {
   &.social-youtube {
     height: 22px;
     width: 22px;
+
+    .social-youtube-icon {
+      fill: #f00;
+    }
+
+    .social-youtube-play {
+      fill: $color-2;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .social-youtube-icon {
+        fill: $color-2;
+      }
+
+      .social-youtube-play {
+        fill: $dark;
+      }
+    }
   }
 
   &.social-discord {
