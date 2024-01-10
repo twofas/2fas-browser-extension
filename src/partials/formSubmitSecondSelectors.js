@@ -25,7 +25,8 @@ const formSubmitSecondSelectors = () => {
     'button#btn_submit',
     'button#submit_button',
     'button#mfa_submit_button',
-    'button#mfa-submit-button'
+    'button#mfa-submit-button',
+    'button.q-btn.q-btn-primary'
   ];
 
   const linkSelectors = [
