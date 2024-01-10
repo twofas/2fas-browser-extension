@@ -36,6 +36,7 @@
   "optionsSafariResetDesc": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
   "optionsSafariReset": "Reset Browser Extension",
   "optionsDomainRequired": "Domain is required",
+  "optionsDomainTooLong": "Domain is too long",
   "optionsDomainIncorrect": "Domain is not correct",
   "optionsDomainExists": "Domain exists on excluded list"
 }

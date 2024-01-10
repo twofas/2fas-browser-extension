@@ -40,8 +40,13 @@ const domainModalFormSubmit = e => {
   const domain = data.get('domain').trim();
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
 
-  if (!domain || domain.length === 0) {
+  if (!domain || domain.length <= 0) {
     validation.innerText = browser.i18n.getMessage('optionsDomainRequired') || 'Domain is required';
+    return false;
+  }
+
+  if (domain.length > 256) {
+    validation.innerText = browser.i18n.getMessage('optionsDomainTooLong') || 'Domain is too long';
     return false;
   }
 
