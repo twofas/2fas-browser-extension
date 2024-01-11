@@ -25,7 +25,7 @@ const storeLog = require('../../../partials/storeLog');
 
 const addedNodes = mutation => {
   let newInputs = false;
-  const nodesArr = Array.from(mutation.addedNodes);
+  const nodesArr = Array.from(mutation.addedNodes).concat(mutation.target);
 
   nodesArr.map(node => {
     if (findSignificantChanges(node)) {

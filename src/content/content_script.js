@@ -28,6 +28,14 @@ const storeLog = require('../partials/storeLog');
 let tabData;
 let storage;
 
+const ready = fn => {
+  if (document.readyState !== 'loading') {
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
+};
+
 const contentScriptRun = async () => {
   portSetup();
 
