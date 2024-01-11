@@ -34,11 +34,11 @@ const clickSubmit = (inputElement, siteURL) => {
   return delay(() => {}, 500)
     .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains']))
     .then(storage => {
-      const domains = storage.autoSubmitExcludedDomains;
+      const domains = storage.autoSubmitExcludedDomains || [];
       const url = new URL(siteURL);
       const hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
 
-      if (domains.includes(hostname)) {
+      if (domains && domains?.includes(hostname)) {
         return false;
       }
 
