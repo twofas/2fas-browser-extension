@@ -18,6 +18,7 @@
 //
 
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
+const config = require('../config');
 const SDK = require('../sdk');
 
 const logURL = url => {
@@ -70,7 +71,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   try {
-    storage = await loadFromLocalStorage(['logging', 'extensionID', 'extensionVersion', 'browserInfo']);
+    storage = await loadFromLocalStorage(['logging', 'extensionID', 'browserInfo']);
   } catch (err) {
     console.error(err);
   }
@@ -98,7 +99,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   c.errorType = errObj?.constructor?.name || '';
-  c.extensionVersion = storage.extensionVersion;
+  c.extensionVersion = config.ExtensionVersion;
   c.browserInfo = storage.browserInfo;
   c.url = logURL(url);
 
