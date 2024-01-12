@@ -36,7 +36,13 @@ const createObserver = tabData => {
         return false;
       }
 
-      if (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) {
+      console.log(mutation);
+
+      if (
+        (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) ||
+        (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
+        (mutation?.attirbuteName === 'style' && mutation?.target)
+      ) {
         await addedNodes(mutation);
       }
 
