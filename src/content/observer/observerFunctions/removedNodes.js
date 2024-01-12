@@ -20,6 +20,7 @@
 const significantInputs = require('../observerConstants/significantInputs');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
+const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 
 const removedNodes = async (mutation, tabData) => {
   const ids = [];
@@ -49,6 +50,11 @@ const removedNodes = async (mutation, tabData) => {
 
   if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
     return false;
+  }
+
+  if (ids.length > 0) {
+    clearFormElementsNumber();
+    addFormElementsNumber(getFormElements());
   }
 
   if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {

@@ -17,28 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const updateEventListener = (input, func) => {
-  const removeListener = () => {
-    if (typeof input.removeEventListener === 'function') {
-      input.removeEventListener('focus', func);
+const clearFormElementsNumber = () => {
+  const elements = Array.from(document.querySelectorAll('*[data-twofas-element-number]'));
+  elements.forEach(element => {
+    if (typeof element?.removeAttribute === 'function') {
+      element.removeAttribute('data-twofas-element-number');
     }
-  };
-
-  removeListener();
-
-  if (typeof input.addEventListener === 'function') {
-    input.addEventListener('focus', func);
-  }
-
-  if (input && input?.dataset) {
-    input.dataset.twofasInputListener = 'true';
-  }
-
-  if (input === document.activeElement || input.matches(':focus')) {
-    func({ target: input });
-  }
-
-  window.addEventListener('onbeforeunload', removeListener, { once: true });
+  });
 };
 
-module.exports = updateEventListener;
+module.exports = clearFormElementsNumber;

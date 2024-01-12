@@ -19,6 +19,7 @@
 
 exports.addFormElementsNumber = require('./addFormElementsNumber');
 exports.addInputListener = require('./addInputListener');
+exports.clearFormElementsNumber = require('./clearFormElementsNumber');
 exports.clickSubmit = require('./clickSubmit');
 exports.closeNotificationInfo = require('./closeNotificationInfo');
 exports.getFormElements = require('./getFormElements');

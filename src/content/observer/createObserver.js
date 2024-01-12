@@ -27,7 +27,12 @@ const createObserver = tabData => {
     }
 
     mutations.forEach(async mutation => {
-      if (!mutation) {
+      if (
+        !mutation ||
+        mutation.attributeName === 'data-twofas-element-number' ||
+        mutation.attributeName === 'data-twofas-input' ||
+        mutation.target.className === 'twofas-be-notification visible'
+      ) {
         return false;
       }
 

@@ -22,6 +22,7 @@ const findSignificantChanges = require('./findSignificantChanges');
 const getChildNodes = require('./getChildNodes');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
+const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 
 const hiddenNodes = async (mutation, tabData) => {
   let storage;
@@ -38,6 +39,11 @@ const hiddenNodes = async (mutation, tabData) => {
 
   let hiddenInputs = [mutation.target, ...getChildNodes(mutation.target.childNodes).flat()];
   hiddenInputs = hiddenInputs.filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'));
+
+  if (hiddenInputs.length > 0) {
+    clearFormElementsNumber();
+    addFormElementsNumber(getFormElements());
+  }
 
   return hiddenInputs.map(async node => {
     const visible = await isVisible(node);
