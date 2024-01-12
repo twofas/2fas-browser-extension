@@ -23,6 +23,7 @@ const buttonsTexts = [
   'sign in',
   'verify code',
   'verify',
+  'submit',
   'potwierdź',
   'wyślij',
   'zaloguj',

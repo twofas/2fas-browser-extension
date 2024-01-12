@@ -19,11 +19,17 @@
 
 const ignoreButtonSelectors = () => {
   return [
-    ':not([data-role="search-button"])',
-    ':not([data-role="search"])',
+    ':not([data-role*="search"])',
     ':not(#search-button)',
-    ':not(#search)'
-  ]
+    ':not(#search)',
+    ':not([class*="dropdown"])',
+    ':not([class*="cancel"])',
+    ':not([disabled])',
+    ':not([style*="display:none"])',
+    ':not([style*="opacity:0"])',
+    ':not([style*="visibility:hidden"])',
+    ':not([class*="twofas"])'
+  ];
 };
 
 module.exports = ignoreButtonSelectors;
