@@ -27,6 +27,7 @@ exports.handleTargetBlank = require('./handleTargetBlank');
 exports.hidePreloader = require('./hidePreloader');
 exports.i18n = require('./i18n');
 exports.ignoreButtonSelectors = require('./ignoreButtonSelectors');
+exports.ignoreButtonTexts = require('./ignoreButtonTexts');
 exports.inputsSelectors = require('./inputsSelectors');
 exports.months = require('./months');
 exports.onTabFocused = require('./onTabFocused');

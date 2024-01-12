@@ -18,6 +18,7 @@
 //
 
 const buttonsTexts = require('../../partials/buttonsTexts');
+const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
 
 const getFormSubmitElements = () => {
   let submits = Array.from(
@@ -35,7 +36,7 @@ const getFormSubmitElements = () => {
     submits = buttons.filter(button => buttonsTexts.includes(button.innerText.toLowerCase()));
   }
 
-  return submits;
+  return submits.filter(button => !ignoreButtonTexts().includes(button.innerText.toLowerCase()));
 };
 
 module.exports = getFormSubmitElements;

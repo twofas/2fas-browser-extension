@@ -24,8 +24,16 @@ const delay = require('../../partials/delay');
 
 const closest = (counts, goal) => {
   return counts.indexOf(
-    counts.reduce((prev, curr) => {
-      return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+    counts.reduce((a, b) => {
+      const aDiff = Math.abs(a - goal);
+      const bDiff = Math.abs(b - goal);
+  
+      if (aDiff === bDiff) {
+        // Choose largest vs smallest (> vs <)
+        return a > b ? a : b;
+      } else {
+        return bDiff < aDiff ? b : a;
+      }
     })
   );
 };

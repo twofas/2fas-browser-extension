@@ -17,13 +17,43 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getInputs = require('./getInputs');
-const getFormSubmitElements = require('./getFormSubmitElements');
+const buttonsTexts = require('../../partials/buttonsTexts');
+const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
 
 const getFormElements = () => {
-  const inputs = getInputs();
-  const formSubmitElements = getFormSubmitElements();
-  return inputs.concat(formSubmitElements);
+  const inputsSelector = require('../../partials/inputsSelectors')();
+  let submits = require('../../partials/formSubmitSelectors')();
+  let submitTextCheck = false;
+
+  let submitsLength = document.querySelectorAll(submits).length;
+  if (submitsLength <= 0) {
+    submits = require('../../partials/formSubmitSecondSelectors')();
+  }
+
+  submitsLength = document.querySelectorAll(submits).length;
+  if (submitsLength <= 0) {
+    submits = 'button';
+    submitTextCheck = true;
+  }
+
+  const query = inputsSelector.concat(',', submits);
+  let elements = Array.from(document.querySelectorAll(query));
+
+  if (submitTextCheck) {
+    elements = elements.filter(element => {
+      if (element.nodeName.toLowerCase() === 'input') {
+        return true;
+      }
+
+      if (element.nodeName.toLowerCase() === 'button') {
+        return buttonsTexts.includes(element.innerText.toLowerCase())
+      }
+
+      return false;
+    })
+  }
+
+  return elements.filter(element => !ignoreButtonTexts().includes(element.innerText.toLowerCase()));
 };
 
 module.exports = getFormElements;

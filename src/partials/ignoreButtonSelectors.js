@@ -24,6 +24,7 @@ const ignoreButtonSelectors = () => {
     ':not(#search)',
     ':not([class*="dropdown"])',
     ':not([class*="cancel"])',
+    ':not([class*="hidden"])',
     ':not([disabled])',
     ':not([style*="display:none"])',
     ':not([style*="opacity:0"])',
