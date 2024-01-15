@@ -73,7 +73,25 @@ const ignoreButtonTexts = () => {
     'annulla',
     'anuluj',
     'i̇ptal',
-    'відміна'
+    'відміна',
+    'register',
+    'registre',
+    'registrieren',
+    'daftar',
+    'registrati',
+    'zarejestruj',
+    'rejestracja',
+    'registro',
+    'kayıt olmak',
+    'зареєструватися',
+    'sign up',
+    'aanmelden',
+    's\'inscrire',
+    'mendaftar',
+    'iscrizione',
+    'inscrever-se',
+    'inscribirse',
+    'üye olmak'
   ];
 };
 
