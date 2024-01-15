@@ -21,11 +21,7 @@ const ignoreButtonSelectors = require('./ignoreButtonSelectors');
 
 const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
-    'button#btn-submit',
-    'button#btn_submit',
-    'button#submit_button',
-    'button#mfa_submit_button',
-    'button#mfa-submit-button',
+    'button[id*="submit"]',
     'button.q-btn.q-btn-primary'
   ];
 

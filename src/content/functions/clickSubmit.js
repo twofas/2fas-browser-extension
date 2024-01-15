@@ -21,6 +21,7 @@ const getFormSubmitElements = require('./getFormSubmitElements');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const storeLog = require('../../partials/storeLog');
 const delay = require('../../partials/delay');
+const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
 
 const closest = (counts, goal) => {
   return counts.indexOf(
@@ -52,9 +53,18 @@ const clickSubmit = (inputElement, siteURL) => {
 
       const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
       const submits = getFormSubmitElements();
+      const form = inputElement.closest('form');
 
       if (submits.length === 0) {
         return false;
+      } else if (form) {
+        const formSubmit = form.querySelector('button[type="submit"], input[type="submit"]');
+  
+        if (formSubmit && !ignoreButtonTexts().includes(formSubmit.innerText.toLowerCase())) {
+          try {
+            formSubmit.click();
+          } catch (e) {}
+        }
       } else if (submits.length === 1) {
         try {
           submits[0].click();
