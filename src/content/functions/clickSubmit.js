@@ -57,32 +57,40 @@ const clickSubmit = (inputElement, siteURL) => {
 
       if (submits.length === 0) {
         return false;
-      } else if (form) {
-        const formSubmit = form.querySelector('button[type="submit"], input[type="submit"]');
-  
-        if (formSubmit && !ignoreButtonTexts().includes(formSubmit.innerText.toLowerCase())) {
-          try {
-            formSubmit.click();
-          } catch (e) {}
-        }
-      } else if (submits.length === 1) {
+      }
+      
+      if (submits.length === 1) {
         try {
           submits[0].click();
         } catch (e) {}
-      } else {
-        const submitsNumbers = [];
 
-        submits.forEach(submit => {
-          submitsNumbers.push(parseInt(submit?.dataset?.twofasElementNumber || -999));
-        });
-
-        const submitElement = submits[closest(submitsNumbers, inputNumber)];
-    
-        if (submitElement) {
+        return true;
+      }
+      
+      if (form) {
+        const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
+  
+        if (formSubmit && formSubmit.length === 1 && !ignoreButtonTexts().includes(formSubmit[0].innerText.toLowerCase())) {
           try {
-            submitElement.click();
+            formSubmit[0].click();
           } catch (e) {}
+
+          return true;
         }
+      }
+      
+      const submitsNumbers = [];
+
+      submits.forEach(submit => {
+        submitsNumbers.push(parseInt(submit?.dataset?.twofasElementNumber || -999));
+      });
+
+      const submitElement = submits[closest(submitsNumbers, inputNumber)];
+  
+      if (submitElement) {
+        try {
+          submitElement.click();
+        } catch (e) {}
       }
     })
     .catch(async err => {

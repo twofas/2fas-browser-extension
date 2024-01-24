@@ -32,7 +32,7 @@ const getFormSubmitElements = () => {
   }
 
   if (submits.length <= 0) {
-    const buttons = Array.from(document.querySelectorAll('button'));
+    const buttons = Array.from(document.querySelectorAll('input[type="button"],button'));
     submits = buttons.filter(button => buttonsTexts.includes(button.innerText.toLowerCase()));
   }
 
