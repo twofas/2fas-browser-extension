@@ -19,7 +19,10 @@
 
 const S = require('../../selectors');
 
-const showDomainModal = () => {
+const showDomainModal = e => {
+  e.preventDefault();
+  e.stopPropagation();
+  
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
   const inputEl = document.querySelector(S.optionsPage.domainModal.input);
