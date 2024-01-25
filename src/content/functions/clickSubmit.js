@@ -70,7 +70,7 @@ const clickSubmit = (inputElement, siteURL) => {
       if (form) {
         const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
   
-        if (formSubmit && formSubmit.length === 1 && !ignoreButtonTexts().includes(formSubmit[0].innerText.toLowerCase())) {
+        if (formSubmit && formSubmit.length === 1 && !ignoreButtonTexts().includes(formSubmit[0].innerText.trim().toLowerCase())) {
           try {
             formSubmit[0].click();
           } catch (e) {}

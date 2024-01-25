@@ -33,10 +33,10 @@ const getFormSubmitElements = () => {
 
   if (submits.length <= 0) {
     const buttons = Array.from(document.querySelectorAll('input[type="button"],button'));
-    submits = buttons.filter(button => buttonsTexts.includes(button.innerText.toLowerCase()));
+    submits = buttons.filter(button => buttonsTexts.includes(button.innerText.trim().toLowerCase()));
   }
 
-  return submits.filter(button => !ignoreButtonTexts().includes(button.innerText.toLowerCase()));
+  return submits.filter(button => !ignoreButtonTexts().includes(button.innerText.trim().toLowerCase()));
 };
 
 module.exports = getFormSubmitElements;

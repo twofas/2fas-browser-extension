@@ -46,14 +46,14 @@ const getFormElements = () => {
       }
 
       if (element.nodeName.toLowerCase() === 'button') {
-        return buttonsTexts.includes(element.innerText.toLowerCase())
+        return buttonsTexts.includes(element.innerText.trim().toLowerCase())
       }
 
       return false;
     })
   }
 
-  return elements.filter(element => !ignoreButtonTexts().includes(element.innerText.toLowerCase()));
+  return elements.filter(element => !ignoreButtonTexts().includes(element.innerText.trim().toLowerCase()));
 };
 
 module.exports = getFormElements;
