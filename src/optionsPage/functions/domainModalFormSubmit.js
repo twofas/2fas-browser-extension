@@ -59,7 +59,11 @@ const domainModalFormSubmit = e => {
 
   return loadFromLocalStorage('autoSubmitExcludedDomains')
     .then(storage => {
-      const autoSubmitExcludedDomains = storage.autoSubmitExcludedDomains;
+      let autoSubmitExcludedDomains = storage?.autoSubmitExcludedDomains;
+
+      if (!autoSubmitExcludedDomains) {
+        autoSubmitExcludedDomains = [];
+      }
 
       if (autoSubmitExcludedDomains.includes(url)) {
         validation.innerText = browser.i18n.getMessage('optionsDomainExists') || 'Domain exists on excluded list';

@@ -44,6 +44,10 @@ const removeDomain = function (e) {
     () => {
       return loadFromLocalStorage(['autoSubmitExcludedDomains'])
         .then(data => {
+          if (!data.autoSubmitExcludedDomains) {
+            data.autoSubmitExcludedDomains = [];
+          }
+
           const newExcludedList = data.autoSubmitExcludedDomains.filter(d => d !== domain);
           return saveToLocalStorage({ autoSubmitExcludedDomains: newExcludedList }, {});
         })
