@@ -17,22 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const hideConfirmModal = require('./hideConfirmModal');
-const modalBackdropClick = require('./modalBackdropClick');
-
-const setModalListeners = () => {
-  const confirmModalCancel = document.querySelectorAll(S.optionsPage.modal.cancel);
-  Array.from(confirmModalCancel).forEach(el => el.addEventListener('click', hideConfirmModal));
-
-  const confirmModal = document.querySelector(S.optionsPage.modal.element);
-  confirmModal.addEventListener('click', modalBackdropClick);
-
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Escape') {
-      return hideConfirmModal();
-    }
-  })
+const ignoreButtonSelectors = () => {
+  return [
+    ':not([data-role*="search"])',
+    ':not(#search-button)',
+    ':not(#search)',
+    ':not([class*="dropdown"])',
+    ':not([class*="cancel"])',
+    ':not([class*="hidden"])',
+    ':not([disabled])',
+    ':not([style*="display:none"])',
+    ':not([style*="opacity:0"])',
+    ':not([style*="visibility:hidden"])',
+    ':not([class*="twofas"])'
+  ];
 };
 
-module.exports = setModalListeners;
+module.exports = ignoreButtonSelectors;

@@ -17,61 +17,27 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
+const browser = require('webextension-polyfill');
+const { createElement, createTextElement } = require('../../partials/DOMElements');
 
-svg {
-  &.social-twitter,
-  &.social-github {
-    height: 18px;
-    width: 18px;
-  }
+const generateEmptyDomainRow = tbody => {
+  let t = {
+    tr: null,
+    td: null,
+    noExcludedDomains: null
+  };
 
-  &.social-twitter {
-    fill: #10141c;
+  t.tr = createElement('tr');
+  t.td = createElement('td');
+  t.td.setAttribute('colspan', '2');
 
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
+  t.noExcludedDomains = createTextElement('p', browser.i18n.getMessage('noExcludedDomains'));
 
-  &.social-youtube {
-    height: 22px;
-    width: 22px;
+  t.td.appendChild(t.noExcludedDomains);
+  t.tr.appendChild(t.td);
+  tbody.appendChild(t.tr);
 
-    .social-youtube-icon {
-      fill: #f00;
-    }
+  t = null;
+};
 
-    .social-youtube-play {
-      fill: $color-2;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .social-youtube-icon {
-        fill: $color-2;
-      }
-
-      .social-youtube-play {
-        fill: $dark-color;
-      }
-    }
-  }
-
-  &.social-discord {
-    fill: #5865f2;
-    height: 20px;
-    width: 20px;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-github {
-    fill: #24292f;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-}
+module.exports = generateEmptyDomainRow;

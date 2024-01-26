@@ -20,12 +20,12 @@
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
 const checkChildNodes = require('./checkChildNodes');
-const { getTabData, getInputs, addInputListener } = require('../../functions');
+const { getTabData, getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const storeLog = require('../../../partials/storeLog');
 
 const addedNodes = mutation => {
   let newInputs = false;
-  const nodesArr = Array.from(mutation.addedNodes);
+  const nodesArr = Array.from(mutation.addedNodes).concat(mutation.target);
 
   nodesArr.map(node => {
     if (findSignificantChanges(node)) {
@@ -59,6 +59,8 @@ const addedNodes = mutation => {
         return getInputs();
       })
       .then(inputs => addInputListener(inputs, tabData?.id))
+      .then(clearFormElementsNumber)
+      .then(() => addFormElementsNumber(getFormElements()))
       .catch(err => storeLog('error', 15, err, tabData?.url));
   }
 };

@@ -17,61 +17,27 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
+const ignoreButtonSelectors = require('./ignoreButtonSelectors');
 
-svg {
-  &.social-twitter,
-  &.social-github {
-    height: 18px;
-    width: 18px;
+const formSubmitSecondSelectors = () => {
+  let buttonSelectors = [
+    'button[id*="submit"]',
+    'button.q-btn.q-btn-primary'
+  ];
+
+  const linkSelectors = [
+    'a#loginButton.btn.btn-primary'
+  ];
+
+  buttonSelectors = buttonSelectors.map(selector => {
+    return selector + ignoreButtonSelectors().join('');
+  });
+
+  if (linkSelectors.length <= 0) {
+    return buttonSelectors.join(',');
   }
 
-  &.social-twitter {
-    fill: #10141c;
+  return buttonSelectors.join(',') + ',' + linkSelectors.join(',');
+};
 
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-youtube {
-    height: 22px;
-    width: 22px;
-
-    .social-youtube-icon {
-      fill: #f00;
-    }
-
-    .social-youtube-play {
-      fill: $color-2;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .social-youtube-icon {
-        fill: $color-2;
-      }
-
-      .social-youtube-play {
-        fill: $dark-color;
-      }
-    }
-  }
-
-  &.social-discord {
-    fill: #5865f2;
-    height: 20px;
-    width: 20px;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-github {
-    fill: #24292f;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-}
+module.exports = formSubmitSecondSelectors;

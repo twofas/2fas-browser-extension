@@ -17,7 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.extNameUpdate = require('../../partials/extNameUpdate');
+exports.confirmModalBackdropClick = require('./confirmModalBackdropClick');
+exports.domainModalBackdropClick = require('./domainModalBackdropClick');
+exports.domainModalFormSubmit = require('./domainModalFormSubmit');
+exports.generateDomainsList = require('./generateDomainsList');
 exports.generateDevicesList = require('./generateDevicesList');
 exports.generateEmptyDeviceRow = require('./generateEmptyDeviceRow');
 exports.generateEmptyShortcutBox = require('./generateEmptyShortcutBox');
@@ -32,10 +35,13 @@ exports.handlePinInfo = require('./handlePinInfo');
 exports.handlePinInfoNext = require('./handlePinInfoNext');
 exports.handlePinInfoPrev = require('./handlePinInfoPrev');
 exports.handlePushChange = require('./handlePushChange');
+exports.hideDomainModal = require('./hideDomainModal');
 exports.hideConfirmModal = require('./hideConfirmModal');
-exports.modalBackdropClick = require('./modalBackdropClick');
+exports.confirmModalBackdropClick = require('./confirmModalBackdropClick');
 exports.removeDevice = require('./removeDevice');
 exports.removeDeviceFromDOM = require('./removeDeviceFromDOM');
+exports.removeDomain = require('./removeDomain');
+exports.removeDomainFromDOM = require('./removeDomainFromDOM');
 exports.sendTestNotification = require('./sendTestNotification');
 exports.setAdvanced = require('./setAdvanced');
 exports.setExtName = require('./setExtName');
@@ -46,9 +52,10 @@ exports.setPinInfoBtns = require('./setPinInfoBtns');
 exports.setHamburger = require('./setHamburger');
 exports.setLoggingToggle = require('./setLoggingToggle');
 exports.setMenuLinks = require('./setMenuLinks');
-exports.setModalListeners = require('./setModalListeners');
+exports.setModalsListeners = require('./setModalsListeners');
 exports.setPinInfo = require('./setPinInfo');
 exports.setPushRadio = require('./setPushRadio');
 exports.setShortcutBox = require('./setShortcutBox');
+exports.showDomainModal = require('./showDomainModal');
 exports.showConfirmModal = require('./showConfirmModal');
 exports.showIntegrityError = require('./showIntegrityError');

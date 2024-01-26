@@ -17,61 +17,22 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
+const addFormElementsNumber = elements => {
+  let i = 0;
 
-svg {
-  &.social-twitter,
-  &.social-github {
-    height: 18px;
-    width: 18px;
+  if (!Array.isArray(elements) || elements?.length <= 0) {
+    return false;
   }
 
-  &.social-twitter {
-    fill: #10141c;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-youtube {
-    height: 22px;
-    width: 22px;
-
-    .social-youtube-icon {
-      fill: #f00;
+  elements.map(element => {
+    if (element?.dataset?.twofasElementNumber) {
+      return false;
     }
 
-    .social-youtube-play {
-      fill: $color-2;
-    }
+    element.dataset.twofasElementNumber = i;
+    i++;
+    return element;
+  });
+};
 
-    @media (prefers-color-scheme: dark) {
-      .social-youtube-icon {
-        fill: $color-2;
-      }
-
-      .social-youtube-play {
-        fill: $dark-color;
-      }
-    }
-  }
-
-  &.social-discord {
-    fill: #5865f2;
-    height: 20px;
-    width: 20px;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-github {
-    fill: #24292f;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-}
+module.exports = addFormElementsNumber;

@@ -35,12 +35,19 @@ const selectors = {
     }
   },
   optionsPage: {
-    modal: {
-      element: '.js-twofas-options-modal',
-      cancel: '.js-twofas-options-modal-cancel',
-      confirm: '.js-twofas-options-modal-confirm',
-      header: '.js-twofas-options-modal-header',
-      text: '.js-twofas-options-modal-text'
+    confirmModal: {
+      element: '.js-twofas-confirm-modal',
+      cancel: '.js-twofas-confirm-modal-cancel',
+      confirm: '.js-twofas-confirm-modal-confirm',
+      header: '.js-twofas-confirm-modal-header',
+      text: '.js-twofas-confirm-modal-text'
+    },
+    domainModal: {
+      element: '.js-twofas-domain-modal',
+      cancel: '.js-twofas-domain-modal-cancel',
+      form: '.js-twofas-domain-modal-form',
+      input: '.js-twofas-domain-modal-input',
+      validation: '.js-twofas-domain-modal-validation'
     },
     shortcut: {
       edit: '.js-twofas-shortcut-edit',
@@ -67,6 +74,11 @@ const selectors = {
     hamburger: {
       element: '.js-twofas-options-menu-hamburger',
       content: '.js-twofas-options-menu-content'
+    },
+    autoSubmit: {
+      list: '.js-twofas-auto-submit-excluded-domain-list',
+      exclude: '.js-twofas-auto-submit-excluded-domain-exclude',
+      add: '.js-twofas-auto-submit-excluded-domain-add'
     },
     menuLink: '.js-twofas-menu-link',
     extVersion: 'span.twofas-ext-version',
