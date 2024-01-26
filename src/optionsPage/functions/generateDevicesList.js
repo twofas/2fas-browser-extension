@@ -45,7 +45,7 @@ const generateDevicesList = list => {
       platform: null,
       button: null,
       svg: null
-    }
+    };
 
     t.tr = createElement('tr');
     t.tr.dataset.deviceId = device.id;

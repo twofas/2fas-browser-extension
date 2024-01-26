@@ -17,61 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
-
-svg {
-  &.social-twitter,
-  &.social-github {
-    height: 18px;
-    width: 18px;
-  }
-
-  &.social-twitter {
-    fill: #10141c;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
+const clearFormElementsNumber = () => {
+  const elements = Array.from(document.querySelectorAll('*[data-twofas-element-number]'));
+  elements.forEach(element => {
+    if (typeof element?.removeAttribute === 'function') {
+      element.removeAttribute('data-twofas-element-number');
     }
-  }
+  });
+};
 
-  &.social-youtube {
-    height: 22px;
-    width: 22px;
-
-    .social-youtube-icon {
-      fill: #f00;
-    }
-
-    .social-youtube-play {
-      fill: $color-2;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .social-youtube-icon {
-        fill: $color-2;
-      }
-
-      .social-youtube-play {
-        fill: $dark-color;
-      }
-    }
-  }
-
-  &.social-discord {
-    fill: #5865f2;
-    height: 20px;
-    width: 20px;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-
-  &.social-github {
-    fill: #24292f;
-
-    @media (prefers-color-scheme: dark) {
-      fill: $color-2;
-    }
-  }
-}
+module.exports = clearFormElementsNumber;

@@ -27,11 +27,22 @@ const createObserver = tabData => {
     }
 
     mutations.forEach(async mutation => {
-      if (!mutation) {
+      if (
+        !mutation ||
+        mutation.attributeName === 'data-twofas-element-number' ||
+        mutation.attributeName === 'data-twofas-input' ||
+        mutation.target.className === 'twofas-be-notification visible' ||
+        mutation.target.nodeName.toLowerCase() === 'g' ||
+        mutation.target.nodeName.toLowerCase() === 'path'
+      ) {
         return false;
       }
 
-      if (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) {
+      if (
+        (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) ||
+        (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
+        (mutation?.attirbuteName === 'style' && mutation?.target)
+      ) {
         await addedNodes(mutation);
       }
 

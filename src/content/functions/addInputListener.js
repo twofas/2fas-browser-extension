@@ -28,7 +28,7 @@ const addInputListener = (elements, tabID) => {
   }
 
   elements.map(input => {
-    if (input?.dataset?.twofasInputListener === 'true') {
+    if (input?.dataset?.twofasInputListener === 'true' && input?.dataset.twofasInput) {
       return false;
     }
 

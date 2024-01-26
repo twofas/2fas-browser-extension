@@ -1,0 +1,51 @@
+<!--
+
+  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
+  Copyright © 2023 Two Factor Authentication Service, Inc.
+  Contributed by Grzegorz Zając. All rights reserved.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>
+
+-->
+
+<div class="twofas-domain-modal hidden js-twofas-domain-modal">
+  <div class="twofas-domain-modal-body">
+    <button class="twofas-domain-modal-close js-twofas-domain-modal-cancel">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect class="twofas-domain-modal-close-bg" width="56" height="56" />
+        <rect class="twofas-domain-modal-close-x" x="16" y="18.1213" width="3" height="30" rx="1.5" transform="rotate(-45 16 18.1213)" />
+        <rect class="twofas-domain-modal-close-x" x="37.2134" y="16" width="3" height="30" rx="1.5" transform="rotate(45 37.2134 16)" />
+      </svg>
+    </button>
+
+    <h2 data-i18n="optionsDomainModalHeader">Exclude new domain</h2>
+    <p data-i18n="optionsDomainModalText">With the form below, you can add your domain to exclusion list, ensuring it won't be subjected to the auto submit mechanism.</p>
+
+    <form action="#" class="js-twofas-domain-modal-form">
+      <input
+        data-i18n="optionsDomainInputPlaceholder"
+        class="js-twofas-domain-modal-input"
+        type="text"
+        name="domain"
+        placeholder="Type in domain to exclude..."
+      />
+      <p class="twofas-domain-modal-validation js-twofas-domain-modal-validation"></p>
+
+      <div class="twofas-domain-modal-body-buttons">
+        <button type="submit" data-i18n="add" class="btn btn-clear">Add</button>
+        <button data-i18n="cancel" class="btn btn-theme js-twofas-domain-modal-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

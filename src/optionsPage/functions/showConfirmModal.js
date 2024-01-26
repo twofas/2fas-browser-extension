@@ -20,9 +20,9 @@
 const S = require('../../selectors');
 
 const showConfirmModal = (header, text, func = null) => {
-  const modalEl = document.querySelector(S.optionsPage.modal.element);
-  const headerEl = document.querySelector(S.optionsPage.modal.header);
-  const textEl = document.querySelector(S.optionsPage.modal.text);
+  const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
+  const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
+  const textEl = document.querySelector(S.optionsPage.confirmModal.text);
 
   headerEl.textContent = header;
   textEl.textContent = text;
@@ -30,7 +30,7 @@ const showConfirmModal = (header, text, func = null) => {
   modalEl.classList.remove('hidden');
 
   if (typeof func === 'function') {
-    const confirmEl = document.querySelector(S.optionsPage.modal.confirm);
+    const confirmEl = document.querySelector(S.optionsPage.confirmModal.confirm);
     const newConfirmEl = confirmEl.cloneNode(true);
     confirmEl.parentNode.replaceChild(newConfirmEl, confirmEl);
 

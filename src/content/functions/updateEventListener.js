@@ -24,10 +24,6 @@ const updateEventListener = (input, func) => {
     }
   };
 
-  if (input === document.activeElement) {
-    func({ target: input });
-  }
-
   removeListener();
 
   if (typeof input.addEventListener === 'function') {
@@ -36,6 +32,10 @@ const updateEventListener = (input, func) => {
 
   if (input && input?.dataset) {
     input.dataset.twofasInputListener = 'true';
+  }
+
+  if (input === document.activeElement || input.matches(':focus')) {
+    func({ target: input });
   }
 
   window.addEventListener('onbeforeunload', removeListener, { once: true });

@@ -17,14 +17,23 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hideConfirmModal = require('./hideConfirmModal');
+const generateEmptyDomainRow = require('./generateEmptyDomainRow');
+const S = require('../../selectors');
 
-const modalBackdropClick = e => {
-  const elClassList = Array.from(e.target.classList);
+const removeDomainFromDOM = domain => {
+  const tr = document.querySelector(`tr[data-domain="${domain}"]`);
 
-  if (elClassList.includes('js-twofas-options-modal')) {
-    hideConfirmModal();
+  if (tr && typeof tr.remove === 'function') {
+    tr.remove();
   }
+
+  const tbody = document.querySelector(S.optionsPage.autoSubmit.list);
+
+  if (tbody.childElementCount === 0) {
+    generateEmptyDomainRow(tbody);
+  }
+
+  return true;
 };
 
-module.exports = modalBackdropClick;
+module.exports = removeDomainFromDOM;
