@@ -30,17 +30,14 @@ const addedNodes = (mutation, tabData) => {
 
   let newInputs = false;
   let inputs = [];
-  const addedNodes = Array.from(mutation?.addedNodes);
+
+  const addedNodes = Array.from(mutation?.addedNodes).filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
 
   if (!addedNodes || addedNodes.length <= 0) {
     return false;
   }
 
   for (const node in addedNodes) {
-    if (notObservedNodes.includes(addedNodes[node].nodeName.toLowerCase())) {
-      break;
-    }
-
     if (findSignificantChanges(addedNodes[node])) {
       newInputs = true;
     }
@@ -48,15 +45,13 @@ const addedNodes = (mutation, tabData) => {
 
   if (!newInputs) {
     for (const node in addedNodes) {
-      if (notObservedNodes.includes(addedNodes[node].nodeName.toLowerCase())) {
-        break;
-      }
-
-      inputs.concat(getInputs(addedNodes[node]));
+      inputs.push(...getInputs(addedNodes[node]));
     }
 
     inputs = inputs.filter(node => !node.hasAttribute('data-twofas-input'));
     newInputs = inputs.length > 0;
+  } else {
+    inputs = getInputs();
   }
 
   if (newInputs) {
