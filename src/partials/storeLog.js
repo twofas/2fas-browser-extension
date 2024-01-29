@@ -34,7 +34,8 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   let c = { logID };
   let storage;
 
-  console.error(logID, { errObj }, url);
+  console.error(logID, url);
+  console.dir(errObj);
 
   switch (true) {
     case errObj instanceof Event: {
