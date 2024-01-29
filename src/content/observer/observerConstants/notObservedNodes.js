@@ -17,16 +17,56 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const significantNodes = require('../observerConstants/significantNodes');
+const notObservedNodes = [
+  'g',
+  'path',
+  'head',
+  'style',
+  'script',
+  'title',
+  '#cdata-section',
+  '#comment',
+  '#text',
+  'abbr',
+  'address',
+  'area',
+  'audio',
+  'b',
+  'bdi',
+  'bdo',
+  'blockquote',
+  'br',
+  'canvas',
+  'caption',
+  'cite',
+  'code',
+  'dialog',
+  'em',
+  'hr',
+  'i',
+  'img',
+  'ins',
+  'legend',
+  'map',
+  'mark',
+  'meta',
+  'option',
+  'picture',
+  'pre',
+  'progress',
+  'q',
+  'search',
+  'select',
+  'small',
+  'source',
+  'strong',
+  'sub',
+  'sup',
+  'summary',
+  'track',
+  'u',
+  'var',
+  'video'
+];
 
-const checkChildNodes = node => {
-  const cN = Array.from(node.querySelectorAll(significantNodes.join(',')));
-
-  if (!cN || cN.length <= 0) {
-    return false;
-  }
-
-  return cN.length > 0;
-};
-
-module.exports = checkChildNodes;
+module.exports = notObservedNodes;

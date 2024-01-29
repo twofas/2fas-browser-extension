@@ -19,3 +19,4 @@
 
 exports.significantNodes = require('./significantNodes');
 exports.significantInputs = require('./significantInputs');
+exports.notObservedNodes = require('./notObservedNodes');

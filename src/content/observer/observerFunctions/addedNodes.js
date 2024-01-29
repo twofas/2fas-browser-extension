@@ -20,48 +20,33 @@
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
 const checkChildNodes = require('./checkChildNodes');
-const { getTabData, getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
+const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const storeLog = require('../../../partials/storeLog');
 
-const addedNodes = mutation => {
+const addedNodes = (mutation, tabData) => {
+  if (!mutation?.target || !browser?.runtime?.id) {
+    return false
+  }
+
   let newInputs = false;
-  const nodesArr = Array.from(mutation.addedNodes).concat(mutation.target);
 
-  nodesArr.map(node => {
-    if (findSignificantChanges(node)) {
-      newInputs = true;
-      return node;
-    }
+  if (findSignificantChanges(mutation.target)) {
+    newInputs = true;
+  }
 
-    let newInputsArr = checkChildNodes(node.childNodes);
-
-    if (newInputsArr && Array.isArray(newInputsArr) && newInputsArr?.length > 0) {
-      newInputsArr = newInputsArr.flat().filter(x => x);
-    }
-
-    if (newInputsArr && newInputsArr?.length > 0) {
-      newInputs = true;
-    }
-
-    return node;
-  });
+  if (!newInputs) {
+    newInputs = checkChildNodes(mutation.target);
+  }
 
   if (newInputs) {
-    let tabData;
-
-    if (!browser?.runtime?.id) {
-      return false;
+    try {
+      const inputs = getInputs();
+      addInputListener(inputs, tabData?.id);
+      clearFormElementsNumber();
+      addFormElementsNumber(getFormElements());
+    } catch (err) {
+      return storeLog('error', 15, err, tabData?.url);
     }
-
-    return getTabData()
-      .then(res => {
-        tabData = res;
-        return getInputs();
-      })
-      .then(inputs => addInputListener(inputs, tabData?.id))
-      .then(clearFormElementsNumber)
-      .then(() => addFormElementsNumber(getFormElements()))
-      .catch(err => storeLog('error', 15, err, tabData?.url));
   }
 };
 
