@@ -43,9 +43,7 @@ const contentScriptRun = async () => {
 
   try {
     storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-  } catch (err) {
-    return storeLog('error', 33, err, tabData?.url);
-  }
+  } catch (err) {}
 
   const storageTabData = storage[`tabData-${tabData?.id}`] ? storage[`tabData-${tabData?.id}`] : {};
 

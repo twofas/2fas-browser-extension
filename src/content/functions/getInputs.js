@@ -17,9 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getInputs = () => {
+const getInputs = (node = null) => {
+  const el = node || document;
+
   return Array.from(
-    document.querySelectorAll(require('../../partials/inputsSelectors')())
+    el.querySelectorAll(require('../../partials/inputsSelectors')())
   );
 };
 

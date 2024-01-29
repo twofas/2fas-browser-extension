@@ -42,27 +42,29 @@ const removedNodes = async (mutation, tabData) => {
     }
   });
 
-  try {
-    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-  } catch (err) {
-    return storeLog('error', 39, err, tabData?.url);
-  }
-
-  if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
-    return false;
-  }
-
   if (ids.length > 0) {
     clearFormElementsNumber();
     addFormElementsNumber(getFormElements());
+
+    try {
+      storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+    } catch (err) {
+      return storeLog('error', 39, err, tabData?.url);
+    }
+  
+    if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+      return false;
+    }
+
+    if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {
+      delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+    }
+  
+    return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+      .catch(err => storeLog('error', 40, err, tabData?.url));
   }
 
-  if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {
-    delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
-  }
-
-  return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
-    .catch(err => storeLog('error', 40, err, tabData?.url));
+  return false;
 };
 
 module.exports = removedNodes;

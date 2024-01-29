@@ -18,13 +18,9 @@
 //
 
 const observe = mutationObserver => {
-  if (document.twofasObserved) {
-    return true;
-  }
+  const el = document?.body || document;
 
-  document.twofasObserved = true;
-
-  return mutationObserver.observe(document, {
+  return mutationObserver.observe(el, {
     attributes: true,
     characterData: false,
     childList: true,

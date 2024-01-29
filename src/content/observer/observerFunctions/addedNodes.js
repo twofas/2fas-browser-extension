@@ -19,9 +19,9 @@
 
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
-const checkChildNodes = require('./checkChildNodes');
 const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const storeLog = require('../../../partials/storeLog');
+const notObservedNodes = require('../observerConstants/notObservedNodes');
 
 const addedNodes = (mutation, tabData) => {
   if (!mutation?.target || !browser?.runtime?.id) {
@@ -29,18 +29,38 @@ const addedNodes = (mutation, tabData) => {
   }
 
   let newInputs = false;
+  let inputs = [];
+  const addedNodes = Array.from(mutation?.addedNodes);
 
-  if (findSignificantChanges(mutation.target)) {
-    newInputs = true;
+  if (!addedNodes || addedNodes.length <= 0) {
+    return false;
+  }
+
+  for (const node in addedNodes) {
+    if (notObservedNodes.includes(addedNodes[node].nodeName.toLowerCase())) {
+      break;
+    }
+
+    if (findSignificantChanges(addedNodes[node])) {
+      newInputs = true;
+    }
   }
 
   if (!newInputs) {
-    newInputs = checkChildNodes(mutation.target);
+    for (const node in addedNodes) {
+      if (notObservedNodes.includes(addedNodes[node].nodeName.toLowerCase())) {
+        break;
+      }
+
+      inputs.concat(getInputs(addedNodes[node]));
+    }
+
+    inputs = inputs.filter(node => !node.hasAttribute('data-twofas-input'));
+    newInputs = inputs.length > 0;
   }
 
   if (newInputs) {
     try {
-      const inputs = getInputs();
       addInputListener(inputs, tabData?.id);
       clearFormElementsNumber();
       addFormElementsNumber(getFormElements());

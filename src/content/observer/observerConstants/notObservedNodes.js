@@ -20,6 +20,7 @@
 const notObservedNodes = [
   'g',
   'path',
+  'body',
   'head',
   'style',
   'script',

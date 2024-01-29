@@ -17,6 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+exports.notObservedAttributes = require('./notObservedAttributes');
+exports.notObservedNodes = require('./notObservedNodes');
 exports.significantNodes = require('./significantNodes');
 exports.significantInputs = require('./significantInputs');
-exports.notObservedNodes = require('./notObservedNodes');
