@@ -17,20 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const findSignificantChanges = require('./findSignificantChanges');
+const significantNodes = require('../observerConstants/significantNodes');
 
-const checkChildNodes = childNodes => {
-  const cN = Array.from(childNodes);
+const checkChildNodes = node => {
+  const cN = Array.from(node.querySelectorAll(significantNodes.join(',')));
 
-  if (cN && cN.length > 0) {
-    return cN.map(childNode => {
-      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
-        return checkChildNodes(childNode.childNodes).flat();
-      }
-
-      return findSignificantChanges(childNode);
-    });
+  if (!cN || cN.length <= 0) {
+    return false;
   }
+
+  return cN.length > 0;
 };
 
 module.exports = checkChildNodes;

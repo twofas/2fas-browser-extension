@@ -17,20 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getChildNodes = childNodes => {
-  const cN = Array.from(childNodes);
-
-  if (cN && cN.length > 0) {
-    return cN.map(childNode => {
-      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
-        return getChildNodes(childNode.childNodes).flat();
-      }
-
-      return childNode;
-    });
-  } else {
-    return [];
-  }
+const getChildNodes = node => {
+  return Array.from(node.getElementsByTagName('*'));
 };
 
 module.exports = getChildNodes;

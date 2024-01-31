@@ -17,12 +17,58 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getInputs = (node = null) => {
-  const el = node || document;
+const notObservedNodes = [
+  'g',
+  'path',
+  'body',
+  'head',
+  'link',
+  'style',
+  'script',
+  'title',
+  '#cdata-section',
+  '#comment',
+  '#text',
+  'abbr',
+  'address',
+  'area',
+  'audio',
+  'b',
+  'bdi',
+  'bdo',
+  'blockquote',
+  'br',
+  'canvas',
+  'caption',
+  'cite',
+  'code',
+  'dialog',
+  'em',
+  'hr',
+  'i',
+  'img',
+  'ins',
+  'legend',
+  'map',
+  'mark',
+  'meta',
+  'option',
+  'picture',
+  'pre',
+  'progress',
+  'q',
+  'search',
+  'select',
+  'small',
+  'source',
+  'strong',
+  'sub',
+  'sup',
+  'summary',
+  'track',
+  'u',
+  'var',
+  'video'
+];
 
-  return Array.from(
-    el.querySelectorAll(require('../../partials/inputsSelectors')())
-  );
-};
-
-module.exports = getInputs;
+module.exports = notObservedNodes;
