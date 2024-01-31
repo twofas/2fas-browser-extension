@@ -18,17 +18,10 @@
 //
 
 const inputsSelectors = require('../../partials/inputsSelectors');
-let i = 0;
 
 const getInputs = (node = null) => {
   const el = node || document;
-
-  console.time(i);
-  const r = Array.from(el.querySelectorAll(inputsSelectors()));
-  console.timeEnd(i);
-  i++;
-
-  return r;
+  return Array.from(el.querySelectorAll(inputsSelectors()));
 };
 
 module.exports = getInputs;

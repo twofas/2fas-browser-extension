@@ -19,22 +19,6 @@
 
 const inputsSelectors = () => {
   const inputSelectors = [
-    ':not([type="button"])',
-    ':not([type="checkbox"])',
-    ':not([type="color"])',
-    ':not([type="date"])',
-    ':not([type="datetime"])',
-    ':not([type="datetime-local"])',
-    ':not([type="file"])',
-    ':not([type="hidden"])',
-    ':not([type="image"])',
-    ':not([type="month"])',
-    ':not([type="radio"])',
-    ':not([type="range"])',
-    ':not([type="reset"])',
-    ':not([type="submit"])',
-    ':not([type="time"])',
-    ':not([type="week"])',
     ':not(read-only)',
     ':not(readonly)',
     ':not([read-only])',
@@ -43,7 +27,7 @@ const inputsSelectors = () => {
     ':not(-moz-read-only)',
     ':not(disabled)',
     ':not([disabled])'
-  ];
+  ].join('');
 
   const textAreaSelectors = [
     ':not([type="hidden"])',
@@ -54,9 +38,9 @@ const inputsSelectors = () => {
     ':not(-moz-read-only)',
     ':not(disabled)',
     ':not([disabled])'
-  ];
+  ].join('');
 
-  return 'input' + inputSelectors.join('') + ', textarea' + textAreaSelectors.join('');
+  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},textarea${textAreaSelectors}`;
 };
 
 module.exports = inputsSelectors;
