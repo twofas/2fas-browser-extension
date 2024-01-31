@@ -17,8 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global MutationObserver */
-const { addedNodes, hiddenNodes, removedNodes } = require('./observerFunctions');
+/* global MutationObserver, HTMLElement */
+const addedNodes = require('./observerFunctions/addedNodes');
+const hiddenNodes = require('./observerFunctions/hiddenNodes');
+const removedNodes = require('./observerFunctions/removedNodes');
+const notObservedNodes = require('./observerConstants/notObservedNodes');
+const notObservedAttributes = require('./observerConstants/notObservedAttributes');
 
 const createObserver = tabData => {
   return new MutationObserver(mutations => {
@@ -27,13 +31,14 @@ const createObserver = tabData => {
     }
 
     mutations.forEach(async mutation => {
+      const mutationNodeName = mutation.target.nodeName.toLowerCase();
+
       if (
         !mutation ||
-        mutation.attributeName === 'data-twofas-element-number' ||
-        mutation.attributeName === 'data-twofas-input' ||
-        mutation.target.className === 'twofas-be-notification visible' ||
-        mutation.target.nodeName.toLowerCase() === 'g' ||
-        mutation.target.nodeName.toLowerCase() === 'path'
+        !(mutation?.target instanceof HTMLElement) ||
+        mutation?.target?.className === 'twofas-be-notification visible' ||
+        notObservedAttributes.includes(mutation?.attributeName) ||
+        notObservedNodes.includes(mutationNodeName)
       ) {
         return false;
       }
@@ -43,7 +48,7 @@ const createObserver = tabData => {
         (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
         (mutation?.attirbuteName === 'style' && mutation?.target)
       ) {
-        await addedNodes(mutation);
+        await addedNodes(mutation, tabData);
       }
 
       if (mutation?.type === 'attributes' && mutation?.target) {

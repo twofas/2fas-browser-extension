@@ -27,40 +27,46 @@ const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = requ
 const hiddenNodes = async (mutation, tabData) => {
   let storage;
 
-  try {
-    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-  } catch (err) {
-    return storeLog('error', 41, err, tabData?.url);
-  }
-
-  if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+  if (!mutation?.target) {
     return false;
   }
 
-  let hiddenInputs = [mutation.target, ...getChildNodes(mutation.target.childNodes).flat()];
+  let hiddenInputs = [mutation.target, ...getChildNodes(mutation.target)];
   hiddenInputs = hiddenInputs.filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'));
 
   if (hiddenInputs.length > 0) {
     clearFormElementsNumber();
     addFormElementsNumber(getFormElements());
-  }
 
-  return hiddenInputs.map(async node => {
-    const visible = await isVisible(node);
-
-    if (node.getAttribute('data-twofas-input') === storage[`tabData-${tabData?.id}`].lastFocusedInput && !visible) {
-      delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
-
-      if (document?.activeElement && document?.activeElement?.getAttribute('data-twofas-input')) {
-        storage[`tabData-${tabData?.id}`].lastFocusedInput = document.activeElement.getAttribute('data-twofas-input');
-      }
-
-      return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
-        .catch(err => storeLog('error', 42, err, tabData?.url));
+    try {
+      storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+    } catch (err) {
+      return storeLog('error', 41, err, tabData?.url);
+    }
+  
+    if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+      return false;
     }
 
-    return false;
-  });
+    return hiddenInputs.map(async node => {
+      const visible = await isVisible(node);
+  
+      if (node.getAttribute('data-twofas-input') === storage[`tabData-${tabData?.id}`].lastFocusedInput && !visible) {
+        delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  
+        if (document?.activeElement && document?.activeElement?.getAttribute('data-twofas-input')) {
+          storage[`tabData-${tabData?.id}`].lastFocusedInput = document.activeElement.getAttribute('data-twofas-input');
+        }
+  
+        return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+          .catch(err => storeLog('error', 42, err, tabData?.url));
+      }
+  
+      return false;
+    });
+  }
+
+  return false;
 };
 
 module.exports = hiddenNodes;
