@@ -26,7 +26,7 @@ const removedNodes = async (mutation, tabData) => {
   const ids = [];
   let storage;
 
-  const nodes = Array.from(mutation.removedNodes);
+  const nodes = Array.from(mutation.removedNodes).concat(mutation?.target);
 
   nodes.forEach(node => {
     const nodeName = node.nodeName.toLowerCase();

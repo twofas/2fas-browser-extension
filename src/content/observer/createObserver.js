@@ -43,13 +43,13 @@ const createObserver = tabData => {
         return false;
       }
 
-      if (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) {
-        await addedNodes(mutation, tabData);
+      if (
+        (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) ||
+        (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
+        (mutation?.attirbuteName === 'style' && mutation?.target)
+      ) {
+        addedNodes(mutation, tabData);
       }
-
-      // @TODO: Handle this case
-      // (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
-      // (mutation?.attirbuteName === 'style' && mutation?.target)
 
       if (mutation?.type === 'attributes' && mutation?.target) {
         await hiddenNodes(mutation, tabData);

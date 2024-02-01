@@ -32,7 +32,7 @@ processInterval = setInterval(() => {
   requestAnimationFrame(() => process(queue));
 }, 200);
 
-window.addEventListener('beforeunload', async () => {
+window.addEventListener('beforeunload', () => {
   clearInterval(processInterval);
 }, { once: true });
 
@@ -42,7 +42,6 @@ const process = nodes => {
   }
 
   const addedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
-  console.log(nodes.length, addedNodes.length);
 
   let newInputs = false;
   let inputs = [];
