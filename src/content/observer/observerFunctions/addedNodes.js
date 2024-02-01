@@ -17,25 +17,35 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global requestAnimationFrame */
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
 const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const storeLog = require('../../../partials/storeLog');
 const notObservedNodes = require('../observerConstants/notObservedNodes');
 
-const addedNodes = (mutation, tabData) => {
-  if (!mutation?.target || !browser?.runtime?.id) {
-    return false
+let queue = [];
+let tabData = null;
+let processInterval = null;
+
+processInterval = setInterval(() => {
+  requestAnimationFrame(() => process(queue));
+}, 200);
+
+window.addEventListener('beforeunload', async () => {
+  clearInterval(processInterval);
+}, { once: true });
+
+const process = nodes => {
+  if (nodes.length <= 0 || !tabData) {
+    return false;
   }
+
+  const addedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+  console.log(nodes.length, addedNodes.length);
 
   let newInputs = false;
   let inputs = [];
-
-  const addedNodes = Array.from(mutation?.addedNodes).filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
-
-  if (!addedNodes || addedNodes.length <= 0) {
-    return false;
-  }
 
   for (const node in addedNodes) {
     if (findSignificantChanges(addedNodes[node])) {
@@ -62,6 +72,29 @@ const addedNodes = (mutation, tabData) => {
     } catch (err) {
       return storeLog('error', 15, err, tabData?.url);
     }
+  }
+
+  queue = [];
+};
+
+const addedNodes = (mutation, tabInfo) => {
+  if (!mutation?.target || !browser?.runtime?.id) {
+    return false
+  }
+
+  const newNodes =
+    Array.from(mutation?.addedNodes)
+      .concat(mutation?.target)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
+
+  if (!newNodes || newNodes.length <= 0) {
+    return false;
+  }
+
+  queue.push(...newNodes);
+
+  if (!tabData) {
+    tabData = tabInfo;
   }
 };
 
