@@ -17,6 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const defaultAutoSubmitExcludedDomains = [];
+const defaultAutoSubmitExcludedDomains = [
+  // Discourse problem
+  // https://github.com/twofas/2fas-browser-extension/issues/42
+  // https://meta.discourse.org/t/totp-modal-problem-cooperation-with-2fas-browser-extension/293760
+  'community.bitwarden.com',
+  'forum.torproject.org',
+  'community.home-assistant.io',
+  'meta.discourse.org',
+  'forum.mssociety.org.uk',
+  'forum.asana.com',
+  'dev.epicgames.com'
+];
 
 module.exports = defaultAutoSubmitExcludedDomains;
