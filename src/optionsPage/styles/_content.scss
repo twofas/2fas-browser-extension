@@ -542,6 +542,8 @@
       }
 
       &.import-default {
+        display: none;
+        
         @media all and (max-width: 600px) {
           flex-direction: row-reverse;
         }
