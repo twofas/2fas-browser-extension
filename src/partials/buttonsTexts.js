@@ -72,7 +72,32 @@ const buttonsTexts = [
   'підтвердьте',
   'надіслати',
   'увійти',
-  'підтвердьте код'
+  'підтвердьте код',
+  'next',
+  'volgende',
+  'suivant',
+  'nächster',
+  'επόμενος',
+  'berikutnya',
+  'prossimo',
+  'następny',
+  'dalej',
+  'próximo',
+  'siguiente',
+  'sonraki',
+  'наступний',
+  'next step',
+  'volgende stap',
+  'prochaine étape',
+  'nächster Schritt',
+  'επόμενο βήμα',
+  'langkah selanjutnya',
+  'prossimo passo',
+  'następny krok',
+  'próximo passo',
+  'siguiente paso',
+  'sonraki adım',
+  'наступний крок'
 ];
 
 module.exports = buttonsTexts;
