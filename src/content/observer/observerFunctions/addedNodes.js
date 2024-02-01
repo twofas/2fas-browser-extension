@@ -26,18 +26,9 @@ const notObservedNodes = require('../observerConstants/notObservedNodes');
 
 let queue = [];
 let tabData = null;
-let processInterval = null;
-
-processInterval = setInterval(() => {
-  requestAnimationFrame(() => process(queue));
-}, 200);
-
-window.addEventListener('beforeunload', () => {
-  clearInterval(processInterval);
-}, { once: true });
 
 const process = nodes => {
-  if (nodes.length <= 0 || !tabData) {
+  if (!nodes || nodes.length <= 0 || !tabData) {
     return false;
   }
 
@@ -78,7 +69,7 @@ const process = nodes => {
 
 const addedNodes = (mutation, tabInfo) => {
   if (!mutation?.target || !browser?.runtime?.id) {
-    return false
+    return false;
   }
 
   const newNodes =
@@ -95,6 +86,8 @@ const addedNodes = (mutation, tabInfo) => {
   if (!tabData) {
     tabData = tabInfo;
   }
+
+  return requestAnimationFrame(() => process(queue));
 };
 
 module.exports = addedNodes;
