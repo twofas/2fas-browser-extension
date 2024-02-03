@@ -9,6 +9,12 @@
   "optionsDonate": "捐助",
   "optionsPairedHeader": "已配對的裝置：",
   "optionsAddAnotherDevice": "增加另一個裝置",
+  "optionsExcludedDomainsHeader": "自動提交的已排除網域：",
+  "optionsRemoveFromExcluded": "在排除清單中刪除",
+  "optionsExcludeAnotherDomain": "排除另一個網域",
+  "optionsDomainModalHeader": "排除新的網域",
+  "optionsDomainModalText": "使用下面的表單，你可以將你的網域新增到排除清單中，確保它不會受到自動提交機制的影響。",
+  "optionsDomainInputPlaceholder": "輸入要排除的網域…",
   "optionsLogsLabel": "批准 2FAS 瀏覽器擴充功能日誌",
   "optionsLogsDesc": "批准來自你的瀏覽器與 2FAS 瀏覽器擴充功能錯誤相關的匿名日誌，以幫助我們改進瀏覽器擴充功能。",
   "optionsContextMenuLabel": "在內容選單顯示 2FAS 瀏覽器擴充功能選項",
@@ -28,5 +34,9 @@
   "optionsPinSafariToolbarCustomization": "自訂工具列",
   "optionsDangerZone": "危險區域",
   "optionsSafariResetDesc": "透過重設擴充功能，你將清除所有 2FAS 瀏覽器擴充功能設定和已配對的裝置。如果你絕對確定並意識到會丟失所有 2FAS 瀏覽器擴充功能設定和已配對的裝置，請執行此操作！此操作不可逆轉！",
-  "optionsSafariReset": "重設瀏覽器擴充功能"
+  "optionsSafariReset": "重設瀏覽器擴充功能",
+  "optionsDomainRequired": "必須填寫網域",
+  "optionsDomainTooLong": "網域太長",
+  "optionsDomainIncorrect": "網域不正確",
+  "optionsDomainExists": "網域已在排除清單中"
 }

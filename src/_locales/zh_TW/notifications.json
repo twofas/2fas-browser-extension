@@ -21,6 +21,8 @@
   "errorConfigFirstMessage": "請先配置 2FAS 擴充功能。",
   "errorRemoveDeviceBadDataTitle": "裝置數據錯誤",
   "errorRemoveDeviceBadDataMessage": "請重新載入並重試。",
+  "errorRemoveDomainBadDataTitle": "網域數據錯誤",
+  "errorRemoveDomainBadDataMessage": "請重新載入並重試。",
   "errorStorageCorruptedTitle": "擴充功能儲存已損壞",
   "errorStorageCorruptedMessage": "我們將嘗試為您修正問題。請稍等。",
   "errorInactiveTabTitle": "非活動分頁",
@@ -43,6 +45,10 @@
   "successDeviceDisconnectedMessage": "裝置已斷開連接",
   "successSafariResetTitle": "成功",
   "successSafariResetMessage": "瀏覽器擴充功能配置已刪除",
+  "successDomainExcludedTitle": "成功",
+  "successDomainExcludedMessage": "網域已增加至排除清單",
+  "successDomainExcludedRemovedTitle": "成功",
+  "successDomainExcludedRemovedMessage": "網域已在排除清單中刪除",
   "infoNativeNotificationsTitle": "2FAS 通知",
   "infoNativeNotificationsMessage": "從現在開始，你將會收到瀏覽器通知，而不是 2FAS 通知。如果你想更改，請前往",
   "infoEnabledNativeNotifications": "擴充功能選項",
@@ -51,5 +57,5 @@
   "infoBrowserActionWithoutTabTitle": "資訊",
   "infoBrowserActionWithoutTabMessage": "2FAS 擴充功能不支援在瀏覽器外使用",
   "infoTestTitle": "2FAS 通知",
-  "infoTestMessage": "你好！ 這只是一個測試"
+  "infoTestMessage": "你好！這只是一個測試"
 }
