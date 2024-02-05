@@ -22,7 +22,8 @@ const ignoreButtonSelectors = require('./ignoreButtonSelectors');
 const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
     'button[id*="submit"]',
-    'button.q-btn.q-btn-primary'
+    'button.q-btn.q-btn-primary',
+    'button[type="button"][form="login-form"]#login-button.btn.btn-large.btn-primary.btn-icon-text'
   ];
 
   const linkSelectors = [
