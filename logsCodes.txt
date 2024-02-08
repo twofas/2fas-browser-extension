@@ -69,6 +69,7 @@
 36 - handleSafariReset
 38 - storageValidationReload
 45 - domainModalFormSubmit
+47 - handleImportDefaultExcludedDomains
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]

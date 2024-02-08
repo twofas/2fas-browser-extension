@@ -20,7 +20,7 @@
 const notObservedAttributes = [
   // 2FAS
   'data-twofas-element-number',
-  'data-twofas-input',
+  'data-twofas-input-listener',
   // CUSTOM
   'data-ng-animate',
   // GLOBAL ATTRIBUTES

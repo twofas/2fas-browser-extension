@@ -460,6 +460,14 @@
                 padding-bottom: 10px;
               }
             }
+
+            &[colspan="2"] {
+              @media all and (max-width: 660px) {
+                &::before {
+                  content: '';
+                }
+              }
+            }
           }
         }
       }
@@ -533,6 +541,29 @@
         }
       }
 
+      &.import-default {
+        display: none;
+        
+        @media all and (max-width: 600px) {
+          flex-direction: row-reverse;
+        }
+
+        .twofas-options-page-content-auto-submit-excluded-domain-list-exclude-icon {
+          margin-left: 11px;
+          margin-right: 0;
+
+          @media all and (max-width: 600px) {
+            margin-left: 0;
+            margin-right: 11px;
+          }
+
+          svg {
+            height: 16px;
+            width: 16px;
+          }
+        }
+      }
+
       &-icon {
         align-items: center;
         background-color: $theme-color;
@@ -560,6 +591,21 @@
         letter-spacing: .8125px;
         text-transform: uppercase;
         transition: color .2s ease-in-out;
+      }
+    }
+
+    &-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 0 20px;
+      justify-content: space-between;
+      width: 100%;
+
+      @media all and (max-width: 600px) {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px 0;
+        justify-content: flex-start;
       }
     }
   }
