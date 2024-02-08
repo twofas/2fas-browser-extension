@@ -25,7 +25,7 @@ const TwoFasNotification = require('../notification');
 const SDK = require('../sdk');
 const extPageOnMessage = require('../partials/extPageOnMessage');
 const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList } = require('./functions');
+const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains } = require('./functions');
 
 const init = async storage => {
   i18n();
@@ -49,6 +49,7 @@ const init = async storage => {
   return new SDK().getAllPairedDevices(storage.extensionID)
     .then(generateDevicesList)
     .then(() => generateDomainsList(storage.autoSubmitExcludedDomains))
+    .then(setImportDefaultExcludedDomains)
     .then(setPinInfo)
     .then(() => setExtName(storage.browserInfo.name))
     .then(() => setExtNameUpdateForm(storage))

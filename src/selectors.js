@@ -78,7 +78,8 @@ const selectors = {
     autoSubmit: {
       list: '.js-twofas-auto-submit-excluded-domain-list',
       exclude: '.js-twofas-auto-submit-excluded-domain-exclude',
-      add: '.js-twofas-auto-submit-excluded-domain-add'
+      add: '.js-twofas-auto-submit-excluded-domain-add',
+      importDefault: '.js-twofas-auto-submit-excluded-domain-import-default'
     },
     menuLink: '.js-twofas-menu-link',
     extVersion: 'span.twofas-ext-version',

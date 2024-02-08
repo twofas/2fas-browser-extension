@@ -17,16 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const significantNodes = require('../observerConstants/significantNodes');
+const S = require('../../selectors');
+const handleImportDefaultExcludedDomains = require('./handleImportDefaultExcludedDomains');
 
-const checkChildNodes = node => {
-  const cN = Array.from(node.querySelectorAll(significantNodes.join(',')));
-
-  if (!cN || cN.length <= 0) {
-    return false;
-  }
-
-  return cN.length > 0;
+const setImportDefaultExcludedDomains = () => {
+  const importDefaultListBtn = document.querySelector(S.optionsPage.autoSubmit.importDefault);
+  importDefaultListBtn.addEventListener('click', handleImportDefaultExcludedDomains);
 };
 
-module.exports = checkChildNodes;
+module.exports = setImportDefaultExcludedDomains;

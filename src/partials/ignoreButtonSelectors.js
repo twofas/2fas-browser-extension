@@ -25,11 +25,16 @@ const ignoreButtonSelectors = () => {
     ':not([class*="dropdown"])',
     ':not([class*="cancel"])',
     ':not([class*="hidden"])',
+    ':not([class*="checkbox"])',
+    ':not([class*="mail"])',
+    ':not([class*="phone"])',
     ':not([disabled])',
     ':not([style*="display:none"])',
     ':not([style*="opacity:0"])',
     ':not([style*="visibility:hidden"])',
-    ':not([class*="twofas"])'
+    ':not([class*="twofas"])',
+    ':not(#terminate_session_submit)',
+    ':not(#signin-button)'
   ];
 };
 

@@ -19,15 +19,17 @@
 
 const buttonsTexts = require('../../partials/buttonsTexts');
 const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
+const formSubmitSelectors = require('../../partials/formSubmitSelectors');
+const formSubmitSecondSelectors = require('../../partials/formSubmitSecondSelectors');
 
 const getFormSubmitElements = () => {
   let submits = Array.from(
-    document.querySelectorAll(require('../../partials/formSubmitSelectors')())
+    document.querySelectorAll(formSubmitSelectors())
   );
 
   if (submits.length <= 0) {
     submits = Array.from(
-      document.querySelectorAll(require('../../partials/formSubmitSecondSelectors')())
+      document.querySelectorAll(formSubmitSecondSelectors())
     );
   }
 

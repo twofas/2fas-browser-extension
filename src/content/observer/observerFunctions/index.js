@@ -18,7 +18,6 @@
 //
 
 exports.addedNodes = require('./addedNodes');
-exports.checkChildNodes = require('./checkChildNodes');
 exports.getChildNodes = require('./getChildNodes');
 exports.hiddenNodes = require('./hiddenNodes');
 exports.removedNodes = require('./removedNodes');

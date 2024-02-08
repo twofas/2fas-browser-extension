@@ -17,12 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getInputs = (node = null) => {
-  const el = node || document;
+const inputsSelectors = require('../../partials/inputsSelectors')();
 
-  return Array.from(
-    el.querySelectorAll(require('../../partials/inputsSelectors')())
-  );
+const getInputs = node => {
+  const el = node || document;
+  return Array.from(el.querySelectorAll(inputsSelectors));
 };
 
 module.exports = getInputs;

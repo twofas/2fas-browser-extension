@@ -17,18 +17,28 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global requestAnimationFrame */
+const browser = require('webextension-polyfill');
 const significantInputs = require('../observerConstants/significantInputs');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
 const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
+const notObservedNodes = require('../observerConstants/notObservedNodes');
 
-const removedNodes = async (mutation, tabData) => {
+let queue = [];
+let tabData = null;
+
+const process = async nodes => {
+  if (!nodes || nodes.length <= 0 || !tabData) {
+    return false;
+  }
+
   const ids = [];
   let storage;
 
-  const nodes = Array.from(mutation.removedNodes);
+  const removedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
 
-  nodes.forEach(node => {
+  removedNodes.forEach(node => {
     const nodeName = node.nodeName.toLowerCase();
 
     if (!significantInputs.includes(nodeName)) {
@@ -42,29 +52,54 @@ const removedNodes = async (mutation, tabData) => {
     }
   });
 
-  if (ids.length > 0) {
-    clearFormElementsNumber();
-    addFormElementsNumber(getFormElements());
+  queue = [];
 
-    try {
-      storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-    } catch (err) {
-      return storeLog('error', 39, err, tabData?.url);
-    }
-  
-    if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
-      return false;
-    }
-
-    if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {
-      delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
-    }
-  
-    return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
-      .catch(err => storeLog('error', 40, err, tabData?.url));
+  if (ids.length <= 0) {
+    return false;
   }
 
-  return false;
+  clearFormElementsNumber();
+  addFormElementsNumber(getFormElements());
+
+  try {
+    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+  } catch (err) {
+    return storeLog('error', 39, err, tabData?.url);
+  }
+  
+  if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
+    return false;
+  }
+
+  if (ids.includes(storage[`tabData-${tabData?.id}`].lastFocusedInput)) {
+    delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  }
+  
+  return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+    .catch(err => storeLog('error', 40, err, tabData?.url));
+};
+
+const removedNodes = async (mutation, tabInfo) => {
+  if (!mutation?.target || !browser?.runtime?.id) {
+    return false;
+  }
+
+  const nodes =
+    Array.from(mutation?.removedNodes)
+      .concat(mutation?.target)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
+
+  if (!nodes || nodes.length <= 0) {
+    return false;
+  }
+
+  queue.push(...nodes);
+
+  if (!tabData) {
+    tabData = tabInfo;
+  }
+
+  return requestAnimationFrame(() => process(queue));
 };
 
 module.exports = removedNodes;
