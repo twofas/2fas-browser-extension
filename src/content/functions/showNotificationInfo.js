@@ -87,7 +87,7 @@ const showNotificationInfo = () => {
 
   n.buttonsContainer = createElement('div', 'twofas-be-notification-buttons');
   n.buttonNever = createTextElement('button', browser.i18n.getMessage('neverShowAgain'), 'twofas-never');
-  n.buttonClose = createTextElement('button', browser.i18n.getMessage('close'), '');
+  n.buttonClose = createTextElement('button', browser.i18n.getMessage('close'), 'twofas-close');
 
   n.buttonNever.addEventListener('click', () => neverShowNotificationInfo(n));
   n.buttonClose.addEventListener('click', () => closeNotificationInfo(n));

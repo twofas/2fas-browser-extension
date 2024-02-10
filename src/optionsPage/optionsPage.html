@@ -63,7 +63,7 @@
             </li>
             <li>
               <a href='https://www.youtube.com/@2fas' target='_blank' rel='noopener noreferrer' class="twofas-new-tab-link">
-                <svg class="social-youtube" viewBox="0 -38 256 256" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M250.346 28.075c-2.988-11.043-11.614-19.669-22.657-22.657-19.866-5.418-99.821-5.418-99.821-5.418s-79.955.164-99.821 5.582c-11.043 2.988-19.669 11.614-22.657 22.657-6.009 35.299-8.34 89.084.164 122.97 2.988 11.043 11.614 19.669 22.657 22.657 19.866 5.418 99.821 5.418 99.821 5.418s79.955 0 99.821-5.418c11.043-2.988 19.669-11.614 22.657-22.657 6.337-35.348 8.291-89.1-.164-123.135z" fill="#f00"/><path fill="#fff" d="M102.421 128.06l66.329-38.418-66.329-38.418z"/></svg>
+                <svg class="social-youtube" viewBox="0 -38 256 256" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M250.346 28.075c-2.988-11.043-11.614-19.669-22.657-22.657-19.866-5.418-99.821-5.418-99.821-5.418s-79.955.164-99.821 5.582c-11.043 2.988-19.669 11.614-22.657 22.657-6.009 35.299-8.34 89.084.164 122.97 2.988 11.043 11.614 19.669 22.657 22.657 19.866 5.418 99.821 5.418 99.821 5.418s79.955 0 99.821-5.418c11.043-2.988 19.669-11.614 22.657-22.657 6.337-35.348 8.291-89.1-.164-123.135z" class="social-youtube-icon"/><path d="M102.421 128.06l66.329-38.418-66.329-38.418z" class="social-youtube-play"/></svg>
               </a>
             </li>
             <li>
@@ -123,6 +123,45 @@
           </div>
         </div>
 
+        <div class="twofas-options-page-content-auto-submit-excluded-domain-list">
+          <div class="twofas-options-page-content-auto-submit-excluded-domain-list-header">
+            <h2 data-i18n="optionsExcludedDomainsHeader">Auto submit excluded domains:</h2>
+          </div>
+
+          <div class="twofas-options-page-content-auto-submit-excluded-domain-list-list">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="domain">Domain</th>
+                  <th data-i18n="optionsRemoveFromExcluded">Remove from excluded</th>
+                </tr>
+              </thead>
+              <tbody class="js-twofas-auto-submit-excluded-domain-list"></tbody>
+            </table>
+
+            <div class="twofas-options-page-content-auto-submit-excluded-domain-list-buttons">
+              <a class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude js-twofas-auto-submit-excluded-domain-add" href="#">
+                <span class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-icon">
+                  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path id="Shape" d="M11.4919 1.42856H10.4919V2.42856V10.4898H2.43066H1.43066V11.4898V14.5102V15.5102H2.43066H10.4919V23.5714V24.5714H11.4919H14.5123H15.5123V23.5714V15.5102H23.5735H24.5735V14.5102V11.4898V10.4898H23.5735H15.5123V2.42856V1.42856H14.5123H11.4919Z" fill="white" stroke="white"/>
+                  </svg>
+                </span>
+                <span data-i18n="optionsExcludeAnotherDomain" class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-text">Exclude domain</span>
+              </a>
+
+              <a class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude import-default js-twofas-auto-submit-excluded-domain-import-default" href="#">
+                <span data-i18n="optionsExcludeImportDefault" class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-text">Import default list</span>
+                <span class="twofas-options-page-content-auto-submit-excluded-domain-list-exclude-icon">
+                  <svg viewBox="0 0 19 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.80577 25.8655H16.2891C18.8013 25.8655 20.0948 24.5506 20.0948 22.0287V11.3966C20.0948 9.76883 19.8853 9.02188 18.8655 7.9829L12.7101 1.7314C11.7309 0.730858 10.9167 0.5 9.45444 0.5H3.80577C1.30523 0.5 0 1.82445 0 4.34632V22.0287C0 24.5602 1.29562 25.8655 3.80577 25.8655ZM3.98905 23.5695C2.85795 23.5695 2.29592 22.9777 2.29592 21.886V4.48905C2.29592 3.40694 2.85795 2.79592 3.99866 2.79592H8.99414V9.22273C8.99414 10.8997 9.81257 11.7106 11.482 11.7106H17.7989V21.886C17.7989 22.9777 17.2369 23.5695 16.0983 23.5695H3.98905ZM11.6993 9.68586C11.2137 9.68586 11.0189 9.47937 11.0189 8.99586V3.11491L17.4799 9.68586H11.6993Z" fill="white"/>
+                    <path d="M11.0646 13.9803C11.0646 13.4239 10.5996 13.0055 10.0474 13.0055C9.49521 13.0055 9.03021 13.4239 9.03021 13.9803V17.5867L9.11529 19.4124L8.21622 18.4677L7.31762 17.5456C7.14301 17.3509 6.87372 17.2339 6.62364 17.2339C6.09044 17.2339 5.7063 17.6117 5.7063 18.1269C5.7063 18.4238 5.81388 18.6399 6.03302 18.8314L9.27091 21.7977C9.5381 22.0414 9.76779 22.1509 10.0474 22.1509C10.327 22.1509 10.5567 22.0414 10.8239 21.7977L14.0618 18.8314C14.2809 18.6399 14.3885 18.4238 14.3885 18.1269C14.3885 17.6117 13.9969 17.2339 13.4733 17.2339C13.2136 17.2339 12.9476 17.3509 12.7772 17.5456L11.8807 18.4677L10.9795 19.4124L11.0646 17.5867V13.9803Z" fill="white"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         <%= require.context('html-loader!../views/optionsViews', false, OPTIONS_VIEW_REGEXP)(OPTIONS_VIEW_FILENAME).default %>
 
         <div class="twofas-options-page-content-social">
@@ -134,7 +173,7 @@
             </li>
             <li>
               <a href='https://www.youtube.com/@2fas' target='_blank' rel='noopener noreferrer' class="twofas-new-tab-link">
-                <svg class="social-youtube" viewBox="0 -38 256 256" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M250.346 28.075c-2.988-11.043-11.614-19.669-22.657-22.657-19.866-5.418-99.821-5.418-99.821-5.418s-79.955.164-99.821 5.582c-11.043 2.988-19.669 11.614-22.657 22.657-6.009 35.299-8.34 89.084.164 122.97 2.988 11.043 11.614 19.669 22.657 22.657 19.866 5.418 99.821 5.418 99.821 5.418s79.955 0 99.821-5.418c11.043-2.988 19.669-11.614 22.657-22.657 6.337-35.348 8.291-89.1-.164-123.135z" fill="#f00"/><path fill="#fff" d="M102.421 128.06l66.329-38.418-66.329-38.418z"/></svg>
+                <svg class="social-youtube" viewBox="0 -38 256 256" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M250.346 28.075c-2.988-11.043-11.614-19.669-22.657-22.657-19.866-5.418-99.821-5.418-99.821-5.418s-79.955.164-99.821 5.582c-11.043 2.988-19.669 11.614-22.657 22.657-6.009 35.299-8.34 89.084.164 122.97 2.988 11.043 11.614 19.669 22.657 22.657 19.866 5.418 99.821 5.418 99.821 5.418s79.955 0 99.821-5.418c11.043-2.988 19.669-11.614 22.657-22.657 6.337-35.348 8.291-89.1-.164-123.135z" class="social-youtube-icon"/><path d="M102.421 128.06l66.329-38.418-66.329-38.418z" class="social-youtube-play"/></svg>
               </a>
             </li>
             <li>
@@ -154,6 +193,7 @@
           <p><span data-i18n="version">Version</span>&nbsp&nbsp;<span class="twofas-ext-version"></span></p>
         </div>
       </div>
+
       <div data-twofas-content="intro" class="twofas-options-page-content-container js-twofas-options-content">
         <h1 class="twofas-intro-header" data-i18n="optionsIntroHeader">2FAS Extension Settings</h1>
 
@@ -177,7 +217,8 @@
     <%= require.context('html-loader!../views/pinInfoViews', false, PININFO_VIEW_REGEXP)(PININFO_VIEW_FILENAME).default %>
   </section>
 
-  <%= require('html-loader!../views/optionsPageModal.html').default %>
+  <%= require('html-loader!../views/optionsPageConfirmModal.html').default %>
+  <%= require('html-loader!../views/optionsPageDomainModal.html').default %>
 
   <div class="twofas-be-notifications"></div>
 </body>

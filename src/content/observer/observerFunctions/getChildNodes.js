@@ -17,20 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const findSignificantChanges = require('./findSignificantChanges');
-
-const checkChildNodes = childNodes => {
-  const cN = Array.from(childNodes);
-
-  if (cN && cN.length > 0) {
-    return cN.map(childNode => {
-      if (childNode?.childNodes && childNode?.childNodes?.length > 0) {
-        return checkChildNodes(childNode.childNodes).flat();
-      }
-
-      return findSignificantChanges(childNode);
-    });
-  }
+const getChildNodes = node => {
+  return Array.from(node.getElementsByTagName('*'));
 };
 
-module.exports = checkChildNodes;
+module.exports = getChildNodes;

@@ -23,7 +23,7 @@ const t = require('./_locales/en/notifications.json');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.5.0',
+  ExtensionVersion: '1.6.2',
 
   Texts: {
     Error: {
@@ -72,6 +72,10 @@ const config = {
       RemoveDeviceBadData: {
         Title: browser.i18n.getMessage('errorRemoveDeviceBadDataTitle') || t.errorRemoveDeviceBadDataTitle,
         Message: browser.i18n.getMessage('errorRemoveDeviceBadDataMessage') || t.errorRemoveDeviceBadDataMessage
+      },
+      RemoveDomainBadData: {
+        Title: browser.i18n.getMessage('errorRemoveDomainBadDataTitle') || t.errorRemoveDomainBadDataTitle,
+        Message: browser.i18n.getMessage('errorRemoveDomainBadDataMessage') || t.errorRemoveDomainBadDataMessage
       },
       StorageCorrupted: {
         Title: browser.i18n.getMessage('errorStorageCorruptedTitle') || t.errorStorageCorruptedTitle,
@@ -122,6 +126,14 @@ const config = {
       SafariReset: {
         Title: browser.i18n.getMessage('successSafariResetTitle') || t.successSafariResetTitle,
         Message: browser.i18n.getMessage('successSafariResetMessage') || t.successSafariResetMessage
+      },
+      DomainExcluded: {
+        Title: browser.i18n.getMessage('successDomainExcludedTitle') || t.successDomainExcludedTitle,
+        Message: browser.i18n.getMessage('successDomainExcludedMessage') || t.successDomainExcludedMessage
+      },
+      DomainExcludedRemoved: {
+        Title: browser.i18n.getMessage('successDomainExcludedRemovedTitle') || t.successDomainExcludedRemovedTitle,
+        Message: browser.i18n.getMessage('successDomainExcludedRemovedMessage') || t.successDomainExcludedRemovedMessage
       }
     },
     Info: {

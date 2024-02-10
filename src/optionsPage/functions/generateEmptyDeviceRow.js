@@ -25,7 +25,7 @@ const generateEmptyDeviceRow = tbody => {
     tr: null,
     td: null,
     noDevice: null
-  }
+  };
 
   t.tr = createElement('tr');
   t.td = createElement('td');

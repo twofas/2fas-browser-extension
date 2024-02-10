@@ -9,6 +9,13 @@
   "optionsDonate": "Donate",
   "optionsPairedHeader": "Paired devices:",
   "optionsAddAnotherDevice": "Add another device",
+  "optionsExcludedDomainsHeader": "Auto submit excluded domains:",
+  "optionsRemoveFromExcluded": "Remove from excluded",
+  "optionsExcludeAnotherDomain": "Exclude domain",
+  "optionsExcludeImportDefault": "Import default list",
+  "optionsDomainModalHeader": "Exclude new domain",
+  "optionsDomainModalText": "With the form below, you can add your domain to exclusion list, ensuring it won't be subjected to the auto submit mechanism.",
+  "optionsDomainInputPlaceholder": "Type in domain to exclude...",
   "optionsLogsLabel": "Approve 2FAS Browser Extension logs",
   "optionsLogsDesc": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
   "optionsContextMenuLabel": "Show 2FAS Browser Extension option in context menu",
@@ -28,5 +35,9 @@
   "optionsPinSafariToolbarCustomization": "Toolbar customization",
   "optionsDangerZone": "Danger Zone",
   "optionsSafariResetDesc": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
-  "optionsSafariReset": "Reset Browser Extension"
+  "optionsSafariReset": "Reset Browser Extension",
+  "optionsDomainRequired": "Domain is required",
+  "optionsDomainTooLong": "Domain is too long",
+  "optionsDomainIncorrect": "Domain is not correct",
+  "optionsDomainExists": "Domain exists on excluded list"
 }

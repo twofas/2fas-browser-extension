@@ -19,8 +19,7 @@
 
 const significantNodes = [
   'input',
-  'textarea',
-  'iframe'
+  'textarea'
 ];
 
 module.exports = significantNodes;

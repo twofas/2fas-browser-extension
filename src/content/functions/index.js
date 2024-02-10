@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+exports.addFormElementsNumber = require('./addFormElementsNumber');
 exports.addInputListener = require('./addInputListener');
+exports.clearFormElementsNumber = require('./clearFormElementsNumber');
+exports.clickSubmit = require('./clickSubmit');
 exports.closeNotificationInfo = require('./closeNotificationInfo');
+exports.getFormElements = require('./getFormElements');
+exports.getFormSubmitElements = require('./getFormSubmitElements');
 exports.getInputs = require('./getInputs');
 exports.getTabData = require('./getTabData');
 exports.getTokenInput = require('./getTokenInput');

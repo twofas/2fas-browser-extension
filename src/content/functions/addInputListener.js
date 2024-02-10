@@ -21,14 +21,14 @@ const updateEventListener = require('./updateEventListener');
 const inputFocus = require('./inputFocus');
 
 const addInputListener = (elements, tabID) => {
-  let func = event => inputFocus(event, tabID);
-
   if (!Array.isArray(elements) || elements?.length <= 0) {
     return false;
   }
+  
+  let func = event => inputFocus(event, tabID);
 
   elements.map(input => {
-    if (input?.dataset?.twofasInputListener === 'true') {
+    if (input?.dataset?.twofasInputListener === 'true' && input?.dataset.twofasInput) {
       return false;
     }
 

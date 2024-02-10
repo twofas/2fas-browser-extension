@@ -117,7 +117,7 @@ class SDK {
   storeLog (extID, level, message, context) {
     const levels = ['info', 'warning', 'error', 'debug'];
 
-    if (!levels.includes(level)) {
+    if (!level || !levels.includes(level)) {
       return Promise.reject(new Error('Invalid log level'));
     }
 

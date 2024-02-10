@@ -19,6 +19,8 @@
 
 /* global Event, KeyboardEvent */
 const delay = require('../../partials/delay');
+const getTabData = require('./getTabData');
+const clickSubmit = require('./clickSubmit');
 
 const inputToken = (request, inputElement, siteURL) => {
   return new Promise(resolve => {
@@ -69,9 +71,15 @@ const inputToken = (request, inputElement, siteURL) => {
     }
 
     return Promise.all(promises)
-      .then(() => {
+      .then(async () => {
         clearEvent = null;
         inputEvent = null;
+
+        const tab = await getTabData();
+
+        if (tab.status === 'complete') {
+          clickSubmit(inputElement, siteURL);
+        }
 
         return resolve({
           status: 'completed',

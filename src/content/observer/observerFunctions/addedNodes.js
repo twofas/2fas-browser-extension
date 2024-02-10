@@ -17,50 +17,77 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global requestAnimationFrame */
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
-const checkChildNodes = require('./checkChildNodes');
-const { getTabData, getInputs, addInputListener } = require('../../functions');
+const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const storeLog = require('../../../partials/storeLog');
+const notObservedNodes = require('../observerConstants/notObservedNodes');
 
-const addedNodes = mutation => {
+let queue = [];
+let tabData = null;
+
+const process = nodes => {
+  if (!nodes || nodes.length <= 0 || !tabData) {
+    return false;
+  }
+
+  const addedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+
   let newInputs = false;
-  const nodesArr = Array.from(mutation.addedNodes);
+  let inputs = [];
 
-  nodesArr.map(node => {
-    if (findSignificantChanges(node)) {
-      newInputs = true;
-      return node;
-    }
-
-    let newInputsArr = checkChildNodes(node.childNodes);
-
-    if (newInputsArr && Array.isArray(newInputsArr) && newInputsArr?.length > 0) {
-      newInputsArr = newInputsArr.flat().filter(x => x);
-    }
-
-    if (newInputsArr && newInputsArr?.length > 0) {
+  for (const node in addedNodes) {
+    if (findSignificantChanges(addedNodes[node])) {
       newInputs = true;
     }
+  }
 
-    return node;
-  });
+  if (!newInputs) {
+    for (const node in addedNodes) {
+      inputs.push(...getInputs(addedNodes[node]));
+    }
+
+    inputs = inputs.filter(node => !node.hasAttribute('data-twofas-input'));
+    newInputs = inputs.length > 0;
+  } else {
+    inputs = getInputs();
+  }
 
   if (newInputs) {
-    let tabData;
-
-    if (!browser?.runtime?.id) {
-      return false;
+    try {
+      addInputListener(inputs, tabData?.id);
+      clearFormElementsNumber();
+      addFormElementsNumber(getFormElements());
+    } catch (err) {
+      return storeLog('error', 15, err, tabData?.url);
     }
-
-    return getTabData()
-      .then(res => {
-        tabData = res;
-        return getInputs();
-      })
-      .then(inputs => addInputListener(inputs, tabData?.id))
-      .catch(err => storeLog('error', 15, err, tabData?.url));
   }
+
+  queue = [];
+};
+
+const addedNodes = (mutation, tabInfo) => {
+  if (!mutation?.target || !browser?.runtime?.id) {
+    return false;
+  }
+
+  const newNodes =
+    Array.from(mutation?.addedNodes)
+      .concat(mutation?.target)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
+
+  if (!newNodes || newNodes.length <= 0) {
+    return false;
+  }
+
+  queue.push(...newNodes);
+
+  if (!tabData) {
+    tabData = tabInfo;
+  }
+
+  return requestAnimationFrame(() => process(queue));
 };
 
 module.exports = addedNodes;

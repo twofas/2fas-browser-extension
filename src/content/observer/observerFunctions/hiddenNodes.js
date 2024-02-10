@@ -17,49 +17,79 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global requestAnimationFrame */
+const browser = require('webextension-polyfill');
 const isVisible = require('../../functions/isVisible');
-const significantInputs = require('../observerConstants/significantInputs');
+const findSignificantChanges = require('./findSignificantChanges');
+const getChildNodes = require('./getChildNodes');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
+const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 
-const hiddenNodes = async (mutation, tabData) => {
+let queue = [];
+let tabData = null;
+
+const process = async nodes => {
+  if (!nodes || nodes.length <= 0 || !tabData) {
+    return false;
+  }
+
+  const hiddenNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+
   let storage;
 
-  const node = mutation.target;
-  const nodeName = node.nodeName.toLowerCase();
-
-  if (!significantInputs.includes(nodeName)) {
-    return false;
-  }
-
-  const twofasInput = node.getAttribute('data-twofas-input');
-
-  if (!twofasInput) {
-    return false;
-  }
-
-  const visible = await isVisible(node);
-  
-  if (visible) {
-    return false;
-  }
+  clearFormElementsNumber();
+  addFormElementsNumber(getFormElements());
 
   try {
     storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
   } catch (err) {
     return storeLog('error', 41, err, tabData?.url);
   }
-
+  
   if (!storage[`tabData-${tabData?.id}`] || !storage[`tabData-${tabData?.id}`].lastFocusedInput) {
     return false;
   }
 
-  if (twofasInput === storage[`tabData-${tabData?.id}`].lastFocusedInput) {
-    delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  return hiddenNodes.map(async node => {
+    const visible = await isVisible(node);
+  
+    if (node.getAttribute('data-twofas-input') === storage[`tabData-${tabData?.id}`].lastFocusedInput && !visible) {
+      delete storage[`tabData-${tabData?.id}`].lastFocusedInput;
+  
+      if (document?.activeElement && document?.activeElement?.getAttribute('data-twofas-input')) {
+        storage[`tabData-${tabData?.id}`].lastFocusedInput = document.activeElement.getAttribute('data-twofas-input');
+      }
+  
+      return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
+        .catch(err => storeLog('error', 42, err, tabData?.url));
+    }
+
+    queue = [];
+  });
+};
+
+const hiddenNodes = async (mutation, tabInfo) => {
+  if (!mutation?.target || !browser?.runtime?.id) {
+    return false;
   }
 
-  return saveToLocalStorage({ [`tabData-${tabData?.id}`]: storage[`tabData-${tabData?.id}`] })
-    .catch(err => storeLog('error', 42, err, tabData?.url));
+  const hiddenInputs =
+    Array.from([...getChildNodes(mutation.target)])
+      .concat(mutation.target)
+      .filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'));
+
+  if (!hiddenInputs || hiddenInputs.length <= 0) {
+    return false;
+  }
+
+  queue.push(...hiddenInputs);
+
+  if (!tabData) {
+    tabData = tabInfo;
+  }
+
+  return requestAnimationFrame(() => process(queue));
 };
 
 module.exports = hiddenNodes;
