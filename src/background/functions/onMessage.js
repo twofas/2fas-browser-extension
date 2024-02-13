@@ -31,8 +31,14 @@ const onMessage = (request, sender) => {
         }
 
         const url = sender?.tab?.url || sender.url;
-        let urlPath = new URL(url);
-        urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
+        let urlPath;
+
+        try {
+          urlPath = new URL(url);
+          urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
+        } catch (err) {
+          urlPath = url;
+        }
 
         return resolve({
           id: sender?.tab?.id,

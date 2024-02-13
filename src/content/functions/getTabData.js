@@ -24,7 +24,7 @@ const delay = require('../../partials/delay');
 const getTabData = () => {
   return browser.runtime.sendMessage({ action: 'getTabData' })
     .catch(err => {
-      if (err && typeof err.toString === 'function') {
+      if (err && typeof err?.toString === 'function') {
         if (err.toString() === 'Error: Could not establish connection. Receiving end does not exist.') {
           return delay(() => browser.runtime.sendMessage({ action: 'getTabData' }).catch(err => storeLog('error', 14, err, 'getTabData - second try')), 100);
         }
