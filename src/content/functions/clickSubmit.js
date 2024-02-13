@@ -59,14 +59,6 @@ const clickSubmit = (inputElement, siteURL) => {
         return false;
       }
       
-      if (submits.length === 1) {
-        try {
-          submits[0].click();
-        } catch (e) {}
-
-        return true;
-      }
-      
       if (form) {
         const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
   
