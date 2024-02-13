@@ -62,10 +62,19 @@ const clickSubmit = (inputElement, siteURL) => {
       if (form) {
         const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
   
-        if (formSubmit && formSubmit.length === 1 && !ignoreButtonTexts().includes(formSubmit[0].innerText.trim().toLowerCase())) {
-          try {
-            formSubmit[0].click();
-          } catch (e) {}
+        if (formSubmit && formSubmit.length === 1) {
+          const formSubmitText = formSubmit[0]?.innerText;
+
+          if (
+            formSubmitText &&
+            typeof formSubmitText.trim === 'function' &&
+            typeof formSubmitText.toLowerCase === 'function' &&
+            !ignoreButtonTexts().includes(formSubmitText.trim().toLowerCase())
+          ) {
+            try {
+              formSubmit[0].click();
+            } catch (e) {}
+          }
 
           return true;
         }
