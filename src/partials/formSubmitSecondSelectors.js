@@ -23,7 +23,10 @@ const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
     'button[id*="submit"]',
     'button.q-btn.q-btn-primary',
-    'button[type="button"][form="login-form"]#login-button.btn.btn-large.btn-primary.btn-icon-text'
+    'button[type="button"][form="login-form"]#login-button.btn.btn-large.btn-primary.btn-icon-text',
+    'button[data-action="totp-submit"]',
+    'input[type="submit"][data-action="totp-submit"]',
+    'input[type="button"][data-action="totp-submit"]'
   ];
 
   const linkSelectors = [
