@@ -21,6 +21,7 @@ const config = require('../../../config');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const SDK = require('../../../sdk');
 const storeLog = require('../../../partials/storeLog');
+const getBrowserInfo = require('../getBrowserInfo');
 
 const updateBrowserExtension = async browserInfo => {
   let data;
@@ -38,7 +39,8 @@ const updateBrowserExtension = async browserInfo => {
     data?.browserInfo?.name !== browserInfo.name
   ) {
     let bI = browserInfo;
-    bI.name = data?.browserInfo?.name || bI.name;
+    const defaultBrowserInfo = getBrowserInfo();
+    bI.name = data?.browserInfo?.name || bI.name || defaultBrowserInfo.name;
 
     return new SDK().updateBrowserExtension(data.extensionID, bI)
       .then(() => saveToLocalStorage({ browserInfo: bI, extensionVersion: config.ExtensionVersion }))
