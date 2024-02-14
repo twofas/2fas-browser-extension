@@ -24,7 +24,6 @@ const { getTabData, getInputs, addInputListener, portSetup, isInFrame, addFormEl
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
-const delay = require('../partials/delay');
 
 let tabData;
 let storage;
@@ -36,20 +35,19 @@ const contentScriptRun = async () => {
     return false;
   }
 
-  try {
-    let tabAttempt = 0;
-
-    do {
-      tabData = await getTabData();
-
-      if (tabData?.status === 'complete') {
-        break;
+  const onMessageListener = request => {
+    if (request?.action === 'contentScript') {
+      if (isInFrame()) {
+        return false;
       }
-
-      tabAttempt++;
-      await delay(() => {}, 200);
     }
-    while (tabAttempt < 10)
+
+    return contentOnMessage(request, tabData);
+  };
+  browser.runtime.onMessage.addListener(onMessageListener);
+
+  try {
+    tabData = await getTabData();
   } catch (e) {
     throw new Error(e);
   }
@@ -74,17 +72,6 @@ const contentScriptRun = async () => {
 
   const mutationObserver = createObserver(tabData);
   observe(mutationObserver);
-
-  const onMessageListener = request => {
-    if (request?.action === 'contentScript') {
-      if (isInFrame()) {
-        return false;
-      }
-    }
-
-    return contentOnMessage(request, tabData);
-  };
-  browser.runtime.onMessage.addListener(onMessageListener);
 
   window.addEventListener('beforeunload', async () => {
     mutationObserver.disconnect();
