@@ -24,6 +24,7 @@ const { getTabData, getInputs, addInputListener, portSetup, isInFrame, addFormEl
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
+const delay = require('../partials/delay');
 
 let tabData;
 let storage;
@@ -36,7 +37,19 @@ const contentScriptRun = async () => {
   }
 
   try {
-    tabData = await getTabData();
+    let tabAttempt = 0;
+
+    do {
+      tabData = await getTabData();
+
+      if (tabData?.status === 'complete') {
+        break;
+      }
+
+      tabAttempt++;
+      await delay(() => {}, 200);
+    }
+    while (tabAttempt < 10)
   } catch (e) {
     throw new Error(e);
   }

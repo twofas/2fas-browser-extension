@@ -17,33 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
+const addInputListener = require('../functions/addInputListener');
+const getInputs = require('../functions/getInputs');
+const addFormElementsNumber = require('../functions/addFormElementsNumber');
+const getFormElements = require('../functions/getFormElements');
 
 const pageLoadComplete = async tabID => {
-  let storage;
-  const activeElement = document?.activeElement;
-
-  if (!activeElement) {
-    return false;
-  }
-
-  const twofasInput = activeElement.getAttribute('data-twofas-input');
-
-  if (!twofasInput) {
-    return false;
-  }
-
-  try {
-    storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
-  } catch (err) {
-    await storeLog('error', 43, err, storage[`tabData-${tabID}`]?.url);
-  }
-
-  storage[`tabData-${tabID}`].lastFocusedInput = twofasInput;
-
-  return saveToLocalStorage({ [`tabData-${tabID}`]: storage[`tabData-${tabID}`] })
-    .catch(err => storeLog('error', 44, err, storage[`tabData-${tabID}`]?.url));
+  addInputListener(getInputs(), tabID);
+  addFormElementsNumber(getFormElements());
 };
 
 module.exports = pageLoadComplete;

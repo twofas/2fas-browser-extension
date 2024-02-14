@@ -23,6 +23,7 @@ const notObservedAttributes = [
   'data-twofas-input-listener',
   // CUSTOM
   'data-ng-animate',
+  'data-submitting',
   // GLOBAL ATTRIBUTES
   'href',
   'acceskey',
