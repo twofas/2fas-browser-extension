@@ -26,7 +26,9 @@ const inputsSelectors = () => {
     ':not(list)',
     ':not(-moz-read-only)',
     ':not(disabled)',
-    ':not([disabled])'
+    ':not([disabled])',
+    ':not([role="button"])',
+    ':not([role="submit"])'
   ].join('');
 
   const textAreaSelectors = [
@@ -40,7 +42,7 @@ const inputsSelectors = () => {
     ':not([disabled])'
   ].join('');
 
-  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},textarea${textAreaSelectors}`;
+  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},textarea${textAreaSelectors}`;
 };
 
 module.exports = inputsSelectors;
