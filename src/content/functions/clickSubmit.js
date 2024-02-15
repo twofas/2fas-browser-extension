@@ -41,10 +41,14 @@ const closest = (counts, goal) => {
 
 const clickSubmit = (inputElement, siteURL) => {
   return delay(() => {}, 500)
-    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains']))
+    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']))
     .then(storage => {
+      if (!storage?.autoSubmitEnabled) {
+        return false;
+      }
+
       const domains = storage.autoSubmitExcludedDomains || [];
-      const url = new URL(siteURL);
+      const url = new URL(siteURL); // @TODO try catch
       const hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
 
       if (domains && domains?.includes(hostname)) {
