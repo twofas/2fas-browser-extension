@@ -10,7 +10,7 @@
   "optionsPairedHeader": "Paired devices:",
   "optionsAddAnotherDevice": "Add another device",
   "optionsAutoSubmitSwitchHeader": "[EXPERIMENTAL] Auto submit:",
-  "optionsAutoSubmitSwitchLabel": "Enable automatic submission of 2fa forms",
+  "optionsAutoSubmitSwitchLabel": "Enable auto submit for 2FA forms",
   "optionsExcludedDomainsHeader": "[EXPERIMENTAL] Auto submit excluded domains:",
   "optionsRemoveFromExcluded": "Remove from excluded",
   "optionsExcludeAnotherDomain": "Exclude domain",
