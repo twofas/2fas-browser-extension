@@ -48,12 +48,16 @@ const clickSubmit = (inputElement, siteURL) => {
       }
 
       const domains = storage.autoSubmitExcludedDomains || [];
-      const url = new URL(siteURL); // @TODO try catch
-      const hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
+      let url, hostname;
+      
+      try {
+        url = new URL(siteURL);
+        hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
 
-      if (domains && domains?.includes(hostname)) {
-        return false;
-      }
+        if (domains && domains?.includes(hostname)) {
+          return false;
+        }
+      } catch (err) {}
 
       const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
       const submits = getFormSubmitElements();
@@ -78,6 +82,10 @@ const clickSubmit = (inputElement, siteURL) => {
             try {
               formSubmit[0].click();
             } catch (e) {}
+          } else {
+            try {
+              formSubmit[0].click();
+            } catch (e) {}
           }
 
           return true;
@@ -91,7 +99,7 @@ const clickSubmit = (inputElement, siteURL) => {
       });
 
       const submitElement = submits[closest(submitsNumbers, inputNumber)];
-  
+
       if (submitElement) {
         try {
           submitElement.click();

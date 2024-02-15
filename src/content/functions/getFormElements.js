@@ -55,7 +55,7 @@ const getFormElements = () => {
         ) {
           return buttonsTexts.includes(elementText.trim().toLowerCase())
         } else {
-          return false;
+          return true;
         }
       }
 
@@ -73,7 +73,7 @@ const getFormElements = () => {
     ) {
       return !ignoreButtonTexts().includes(elementText.trim().toLowerCase());
     } else {
-      return false;
+      return true;
     }
   });
 };
