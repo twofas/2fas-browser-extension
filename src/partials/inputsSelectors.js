@@ -31,6 +31,11 @@ const inputsSelectors = () => {
     ':not([role="submit"])'
   ].join('');
 
+  // ONLY DETAILED
+  const passwordSelectors = [
+    'input[type="password"]#security-code'
+  ].join(',');
+
   const textAreaSelectors = [
     ':not([type="hidden"])',
     ':not(read-only)',
@@ -42,7 +47,7 @@ const inputsSelectors = () => {
     ':not([disabled])'
   ].join('');
 
-  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},textarea${textAreaSelectors}`;
+  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},${passwordSelectors},textarea${textAreaSelectors}`;
 };
 
 module.exports = inputsSelectors;
