@@ -27,7 +27,9 @@ const formSubmitSecondSelectors = () => {
     'button[data-action="totp-submit"]', // Discourse
     'input[type="submit"][data-action="totp-submit"]', // Discourse
     'input[type="button"][data-action="totp-submit"]', // Discourse
-    'div[role="button"][syno-id="otp-panel-next-btn"]' // Synology
+    'div[role="button"][syno-id="otp-panel-next-btn"]', // Synology
+    'button[data-e2e="btn-mfa-verfiy"]', // Binance
+    'button.mfa-verify-button' // Binance
   ];
 
   const linkSelectors = [
