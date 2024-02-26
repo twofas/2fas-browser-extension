@@ -28,7 +28,15 @@ const inputsSelectors = () => {
     ':not(disabled)',
     ':not([disabled])',
     ':not([role="button"])',
-    ':not([role="submit"])'
+    ':not([role="submit"])',
+    ':not([data-e2e="input-username"])',
+    ':not([data-e2e="input-password"])',
+    ':not([data-e2e="input-search-language"])',
+    ':not([id="vendor-search-handler"])',
+    ':not([name="vendor-search-handler"])',
+    ':not([id="username"])',
+    ':not([name="username"])',
+    ':not([placeholder="Search"])'
   ].join('');
 
   // ONLY DETAILED
