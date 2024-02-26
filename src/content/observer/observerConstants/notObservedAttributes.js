@@ -125,7 +125,8 @@ const notObservedAttributes = [
   'aria-valuemax',
   'aria-valuemin',
   'aria-valuenow',
-  'aria-valuetext'
+  'aria-valuetext',
+  'value'
 ];
 
 module.exports = notObservedAttributes;
