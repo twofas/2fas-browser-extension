@@ -43,7 +43,8 @@ const inputsSelectors = () => {
   const passwordSelectors = [
     'input[type="password"]#security-code', // OneLogin
     'input#mfacode', // AWS
-    'input[type="password"]#challenge' // AWS
+    'input[type="password"]#challenge', // AWS
+    'input[type="password"]#otp' // IBM Cloud
   ].join(',');
 
   const textAreaSelectors = [
