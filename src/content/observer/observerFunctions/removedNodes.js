@@ -21,6 +21,7 @@
 const browser = require('webextension-polyfill');
 const significantInputs = require('../observerConstants/significantInputs');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
+const getChildNodes = require('./getChildNodes');
 const storeLog = require('../../../partials/storeLog');
 const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const notObservedNodes = require('../observerConstants/notObservedNodes');
@@ -86,7 +87,9 @@ const removedNodes = async (mutation, tabInfo) => {
 
   const nodes =
     Array.from(mutation?.removedNodes)
+      .concat(...(Array.from(mutation?.removedNodes).map(node => getChildNodes(node))))
       .concat(mutation?.target)
+      .concat(...getChildNodes(mutation.target))
       .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
 
   if (!nodes || nodes.length <= 0) {
