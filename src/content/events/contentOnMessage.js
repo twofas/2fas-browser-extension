@@ -62,13 +62,14 @@ const contentOnMessage = async (request, tabData) => {
         };
       }
 
-      const tokenInput = getTokenInput(storage[`tabData-${tabData?.id}`].lastFocusedInput || undefined);
+      const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
+      const tokenInput = getTokenInput(lastFocusedInput);
 
-      if (!tokenInput || !Array.isArray(tokenInput) || tokenInput?.length <= 0) {
+      if (!tokenInput) {
         return { status: 'elementNotFound' };
       }
 
-      return inputToken(request, tokenInput[0], tabData?.url);
+      return inputToken(request, tokenInput, tabData?.url);
     }
 
     case 'pageLoadComplete': {

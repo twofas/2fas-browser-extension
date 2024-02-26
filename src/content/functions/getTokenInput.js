@@ -18,7 +18,11 @@
 //
 
 const getTokenInputs = inputID => {
-  return Array.from(document.querySelectorAll(`*[data-twofas-input="${inputID}"]`));
+  if (!inputID) {
+    return false;
+  }
+
+  return document.querySelector(`*[data-twofas-input="${inputID}"]`);
 };
 
 module.exports = getTokenInputs;
