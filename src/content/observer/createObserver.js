@@ -36,7 +36,7 @@ const createObserver = tabData => {
       if (
         !mutation ||
         !(mutation?.target instanceof HTMLElement) ||
-        mutation?.target?.className === 'twofas-be-notification visible' ||
+        mutation?.target?.classList?.contains('twofas-be-notification') ||
         notObservedAttributes.includes(mutation?.attributeName) ||
         notObservedNodes.includes(mutationNodeName)
       ) {

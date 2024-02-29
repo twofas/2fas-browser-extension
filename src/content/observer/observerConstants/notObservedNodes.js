@@ -68,7 +68,9 @@ const notObservedNodes = [
   'track',
   'u',
   'var',
-  'video'
+  'video',
+  // custom
+  'tool-tip'
 ];
 
 module.exports = notObservedNodes;

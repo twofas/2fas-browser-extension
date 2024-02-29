@@ -35,6 +35,17 @@ const contentScriptRun = async () => {
     return false;
   }
 
+  const onMessageListener = request => {
+    if (request?.action === 'contentScript') {
+      if (isInFrame()) {
+        return false;
+      }
+    }
+
+    return contentOnMessage(request, tabData);
+  };
+  browser.runtime.onMessage.addListener(onMessageListener);
+
   try {
     tabData = await getTabData();
   } catch (e) {
@@ -61,17 +72,6 @@ const contentScriptRun = async () => {
 
   const mutationObserver = createObserver(tabData);
   observe(mutationObserver);
-
-  const onMessageListener = request => {
-    if (request?.action === 'contentScript') {
-      if (isInFrame()) {
-        return false;
-      }
-    }
-
-    return contentOnMessage(request, tabData);
-  };
-  browser.runtime.onMessage.addListener(onMessageListener);
 
   window.addEventListener('beforeunload', async () => {
     mutationObserver.disconnect();

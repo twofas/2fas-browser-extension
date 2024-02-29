@@ -17,12 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getTokenInputs = inputID => {
-  if (!inputID) {
-    return false;
-  }
+const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
 
-  return document.querySelector(`*[data-twofas-input="${inputID}"]`);
+const handleAutoSubmitChange = e => {
+  return saveToLocalStorage({ autoSubmitEnabled: e.currentTarget.checked });
 };
 
-module.exports = getTokenInputs;
+module.exports = handleAutoSubmitChange;

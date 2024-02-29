@@ -21,6 +21,7 @@
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
 const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
+const getChildNodes = require('./getChildNodes');
 const storeLog = require('../../../partials/storeLog');
 const notObservedNodes = require('../observerConstants/notObservedNodes');
 
@@ -74,7 +75,9 @@ const addedNodes = (mutation, tabInfo) => {
 
   const newNodes =
     Array.from(mutation?.addedNodes)
+      .concat(...(Array.from(mutation?.addedNodes).map(node => getChildNodes(node))))
       .concat(mutation?.target)
+      .concat(...getChildNodes(mutation.target))
       .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
 
   if (!newNodes || newNodes.length <= 0) {

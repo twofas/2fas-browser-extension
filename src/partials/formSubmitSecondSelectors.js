@@ -23,11 +23,17 @@ const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
     'button[id*="submit"]',
     'button.q-btn.q-btn-primary',
-    'button[type="button"][form="login-form"]#login-button.btn.btn-large.btn-primary.btn-icon-text'
+    'button[type="button"][form="login-form"]#login-button.btn.btn-large.btn-primary.btn-icon-text', // Discourse
+    'button[data-action="totp-submit"]', // Discourse
+    'input[type="submit"][data-action="totp-submit"]', // Discourse
+    'input[type="button"][data-action="totp-submit"]', // Discourse
+    'div[role="button"][syno-id="otp-panel-next-btn"]', // Synology
+    'button[data-e2e="btn-mfa-verfiy"]', // Binance
+    'button.mfa-verify-button' // Binance
   ];
 
   const linkSelectors = [
-    'a#loginButton.btn.btn-primary'
+    'a#loginButton.btn.btn-primary' // iFirma
   ];
 
   buttonSelectors = buttonSelectors.map(selector => {

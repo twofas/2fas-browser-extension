@@ -46,14 +46,36 @@ const getFormElements = () => {
       }
 
       if (element.nodeName.toLowerCase() === 'button') {
-        return buttonsTexts.includes(element.innerText.trim().toLowerCase())
+        const elementText = element?.innerText;
+
+        if (
+          elementText &&
+          typeof elementText.trim === 'function' &&
+          typeof elementText.toLowerCase === 'function'
+        ) {
+          return buttonsTexts.includes(elementText.trim().toLowerCase())
+        } else {
+          return true;
+        }
       }
 
       return false;
     })
   }
 
-  return elements.filter(element => !ignoreButtonTexts().includes(element.innerText.trim().toLowerCase()));
+  return elements.filter(element => {
+    const elementText = element?.innerText;
+
+    if (
+      elementText &&
+      typeof elementText.trim === 'function' &&
+      typeof elementText.toLowerCase === 'function'
+    ) {
+      return !ignoreButtonTexts().includes(elementText.trim().toLowerCase());
+    } else {
+      return true;
+    }
+  });
 };
 
 module.exports = getFormElements;

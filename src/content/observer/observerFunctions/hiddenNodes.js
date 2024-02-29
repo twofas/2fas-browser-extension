@@ -51,7 +51,7 @@ const process = async nodes => {
     return false;
   }
 
-  return hiddenNodes.map(async node => {
+  return hiddenNodes.forEach(async node => {
     const visible = await isVisible(node);
   
     if (node.getAttribute('data-twofas-input') === storage[`tabData-${tabData?.id}`].lastFocusedInput && !visible) {

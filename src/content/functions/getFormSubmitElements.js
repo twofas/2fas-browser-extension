@@ -35,10 +35,34 @@ const getFormSubmitElements = () => {
 
   if (submits.length <= 0) {
     const buttons = Array.from(document.querySelectorAll('input[type="button"],button'));
-    submits = buttons.filter(button => buttonsTexts.includes(button.innerText.trim().toLowerCase()));
+    submits = buttons.filter(button => {
+      const buttonText = button?.innerText;
+
+      if (
+        buttonText &&
+        typeof buttonText.trim === 'function' &&
+        typeof buttonText.toLowerCase === 'function'
+      ) {
+        return buttonsTexts.includes(buttonText.trim().toLowerCase())
+      } else {
+        return true;
+      }
+    });
   }
 
-  return submits.filter(button => !ignoreButtonTexts().includes(button.innerText.trim().toLowerCase()));
+  return submits.filter(button => {
+    const buttonText = button?.innerText;
+
+    if (
+      buttonText &&
+      typeof buttonText.trim === 'function' &&
+      typeof buttonText.toLowerCase === 'function'
+    ) {
+      return !ignoreButtonTexts().includes(button.innerText.trim().toLowerCase());
+    } else {
+      return true;
+    }
+  });
 };
 
 module.exports = getFormSubmitElements;
