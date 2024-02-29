@@ -17,12 +17,31 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getTokenInputs = inputID => {
-  if (!inputID) {
-    return false;
-  }
+const S = require('../../selectors');
+const handleAutoSubmitChange = require('./handleAutoSubmitChange');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 
-  return document.querySelector(`*[data-twofas-input="${inputID}"]`);
+const setAutoSubmitSwitch = () => {
+  return loadFromLocalStorage(['autoSubmitEnabled'])
+    .then(storage => {
+      if (!('autoSubmitEnabled' in storage)) {
+        return saveToLocalStorage({ autoSubmitEnabled: false }, storage);
+      }
+
+      return storage;
+    })
+    .then(storage => {
+      const autoSubmitToggle = document.querySelector(S.optionsPage.autoSubmit.toggle);
+
+      if (autoSubmitToggle) {
+        autoSubmitToggle.checked = storage.autoSubmitEnabled;
+      }
+
+      autoSubmitToggle.addEventListener('change', handleAutoSubmitChange);
+
+      return Promise.resolve();
+    })
+    .catch(() => {});
 };
 
-module.exports = getTokenInputs;
+module.exports = setAutoSubmitSwitch;

@@ -336,9 +336,13 @@
     }
   }
 
-  &-auto-submit-excluded-domain-list {
+  &-auto-submit-switch {
     margin-top: 34px;
+  }
 
+  &-auto-submit-excluded-domain-list {
+    margin-top: 10px;
+    
     table {
       border-collapse: collapse;
       border: 0;

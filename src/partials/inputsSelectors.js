@@ -26,8 +26,26 @@ const inputsSelectors = () => {
     ':not(list)',
     ':not(-moz-read-only)',
     ':not(disabled)',
-    ':not([disabled])'
+    ':not([disabled])',
+    ':not([role="button"])',
+    ':not([role="submit"])',
+    ':not([data-e2e="input-username"])',
+    ':not([data-e2e="input-password"])',
+    ':not([data-e2e="input-search-language"])',
+    ':not([id="vendor-search-handler"])',
+    ':not([name="vendor-search-handler"])',
+    ':not([id="username"])',
+    ':not([name="username"])',
+    ':not([placeholder="Search"])'
   ].join('');
+
+  // ONLY DETAILED
+  const passwordSelectors = [
+    'input[type="password"]#security-code', // OneLogin
+    'input#mfacode', // AWS
+    'input[type="password"]#challenge', // AWS
+    'input[type="password"]#otp' // IBM Cloud
+  ].join(',');
 
   const textAreaSelectors = [
     ':not([type="hidden"])',
@@ -40,7 +58,7 @@ const inputsSelectors = () => {
     ':not([disabled])'
   ].join('');
 
-  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},textarea${textAreaSelectors}`;
+  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},${passwordSelectors},textarea${textAreaSelectors}`;
 };
 
 module.exports = inputsSelectors;

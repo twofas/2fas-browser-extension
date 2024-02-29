@@ -23,6 +23,7 @@ const notObservedAttributes = [
   'data-twofas-input-listener',
   // CUSTOM
   'data-ng-animate',
+  'data-submitting',
   // GLOBAL ATTRIBUTES
   'href',
   'acceskey',
@@ -124,7 +125,8 @@ const notObservedAttributes = [
   'aria-valuemax',
   'aria-valuemin',
   'aria-valuenow',
-  'aria-valuetext'
+  'aria-valuetext',
+  'value'
 ];
 
 module.exports = notObservedAttributes;

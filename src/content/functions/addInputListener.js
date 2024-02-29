@@ -29,7 +29,11 @@ const addInputListener = (elements, tabID) => {
 
   elements.map(input => {
     if (input?.dataset?.twofasInputListener === 'true' && input?.dataset.twofasInput) {
-      return false;
+      if (input === document.activeElement || input.matches(':focus')) {
+        return func({ target: input });
+      } else {
+        return false;
+      }
     }
 
     return updateEventListener(input, func);
