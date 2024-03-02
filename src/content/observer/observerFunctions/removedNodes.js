@@ -96,7 +96,7 @@ const removedNodes = (mutation, tabInfo) => {
     return false;
   }
 
-  queue.push(...Array.from(mutation.target));
+  queue.push(mutation.target);
   queue.push(...Array.from(mutation.removedNodes));
 
   if (!tabData) {

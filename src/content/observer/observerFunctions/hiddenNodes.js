@@ -85,7 +85,7 @@ const hiddenNodes = (mutation, tabInfo) => {
     return false;
   }
 
-  queue.push(...Array.from(mutation.target));
+  queue.push(mutation.target);
 
   if (!tabData) {
     tabData = tabInfo;
