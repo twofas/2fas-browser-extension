@@ -17,7 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global requestAnimationFrame */
 const browser = require('webextension-polyfill');
 const isVisible = require('../../functions/isVisible');
 const findSignificantChanges = require('./findSignificantChanges');
@@ -25,16 +24,28 @@ const getChildNodes = require('./getChildNodes');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
 const storeLog = require('../../../partials/storeLog');
 const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
+const uniqueOnly = require('../../../partials/uniqueOnly');
 
 let queue = [];
 let tabData = null;
+let timeout;
 
 const process = async nodes => {
+  if (document.readyState !== 'complete') {
+    timeout = window.requestAnimationFrame(() => process(nodes));
+  }
+
   if (!nodes || nodes.length <= 0 || !tabData) {
     return false;
   }
 
-  const hiddenNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+  const hiddenNodes =
+    nodes
+      .filter(uniqueOnly)
+      .filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'))
+      .flatMap(getChildNodes)
+      .filter(uniqueOnly)
+      .filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'));
 
   let storage;
 
@@ -69,27 +80,22 @@ const process = async nodes => {
   });
 };
 
-const hiddenNodes = async (mutation, tabInfo) => {
+const hiddenNodes = (mutation, tabInfo) => {
   if (!mutation?.target || !browser?.runtime?.id) {
     return false;
   }
 
-  const hiddenInputs =
-    Array.from([...getChildNodes(mutation.target)])
-      .concat(mutation.target)
-      .filter(node => findSignificantChanges(node) && node.getAttribute('data-twofas-input'));
-
-  if (!hiddenInputs || hiddenInputs.length <= 0) {
-    return false;
-  }
-
-  queue.push(...hiddenInputs);
+  queue.push(...Array.from(mutation.target));
 
   if (!tabData) {
     tabData = tabInfo;
   }
 
-  return requestAnimationFrame(() => process(queue));
+  if (timeout) {
+    window.cancelAnimationFrame(timeout);
+  }
+
+  timeout = window.requestAnimationFrame(() => process(queue));
 };
 
 module.exports = hiddenNodes;

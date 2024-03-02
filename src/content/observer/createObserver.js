@@ -52,11 +52,11 @@ const createObserver = tabData => {
       }
 
       if (mutation?.type === 'attributes' && mutation?.target) {
-        await hiddenNodes(mutation, tabData);
+        hiddenNodes(mutation, tabData);
       }
 
       if (mutation?.removedNodes && Array.from(mutation?.removedNodes).length > 0) {
-        await removedNodes(mutation, tabData);
+        removedNodes(mutation, tabData);
       }
     });
   });
