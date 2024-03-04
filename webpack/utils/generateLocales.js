@@ -61,6 +61,10 @@ getDirectories('./src/_locales')
     })
   })
   .then(res => {
+    if (!fs.existsSync('./public/')) {
+      fs.mkdirSync('./public');
+    }
+
     if (!fs.existsSync('./public/_locales')) {
       fs.mkdirSync('./public/_locales');
     }
