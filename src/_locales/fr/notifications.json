@@ -4,7 +4,7 @@
   "errorUndefinedErrorTitle": "Quelque chose ne va pas",
   "errorUndefinedErrorMessage": "Merci de rafraîchir et d'essayer à nouveau.",
   "errorTimeoutTitle": "Délai d'attente",
-  "errorTimeoutMessage": "Connexion fermée due à une limite de temps. Merci de cliquer sur le boutton régénérer pour essayer à nouveau.",
+  "errorTimeoutMessage": "Connexion fermée due à une limite de temps. Merci de cliquer sur le bouton régénérer pour essayer à nouveau.",
   "errorPushExpiredTitle": "Push expiré pour DOMAIN",
   "errorPushExpiredMessage": "Veuillez retenter.",
   "errorWebSocketTitle": "Erreur WebSocket",
