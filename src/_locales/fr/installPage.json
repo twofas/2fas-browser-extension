@@ -7,10 +7,10 @@
   "installStep2": "Aller dans Réglages → Extension de naviguateur",
   "installStep3": "Appuyer sur \"Appaîrer avec le naviguateur web\" et scanner le code QR",
   "installSuccessHeader": "L'extension pour naviguateur 2FAS est appairée avec succès avec votre application 2FAS",
-  "installSuccessSubheader": "Maintenant vous pouvez facilement remplir automatiquement les formulaires à deux facteurs en confirmant avec votre application mobile 2FAS.",
+  "installSuccessSubheader": "Vous pouvez maintenant facilement remplir automatiquement les formulaires à deux facteurs en confirmant avec votre application mobile 2FAS.",
   "installStart": "Apprendre comment ça fonctionne",
   "installGoToSettings": "Aller dans les réglages",
-  "installQuestions": "Des question? Lire notre",
+  "installQuestions": "Des questions ? Lire notre",
   "installBackToStep1": "Revenir à l'étape 1",
   "installQRTimeoutText": "Le code QR a expiré",
   "installQRTimeoutButton": "Cliquer ici pour régénérer"
