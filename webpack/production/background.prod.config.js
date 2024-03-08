@@ -25,7 +25,6 @@ const webpack = require('webpack');
 const path = require('path');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 const backgroundProdConfig = {
   name: 'background',
@@ -64,14 +63,20 @@ const backgroundProdConfig = {
     constants: 'constants'
   },
   optimization: {
-    moduleIds: 'named',
+    chunkIds: 'size',
+    moduleIds: 'size',
+    concatenateModules: true,
+    mangleExports: 'size',
     removeAvailableModules: true,
     removeEmptyChunks: true,
     mergeDuplicateChunks: true,
+    minimize: true,
     minimizer: [
-      new TerserPlugin(),
-      new CssMinimizerPlugin()
-    ]
+      new TerserPlugin({
+        parallel: true
+      })
+    ],
+    nodeEnv: 'production'
   },
   resolve: {
     modules: ['node_modules']
