@@ -23,7 +23,11 @@ class SDK {
 
   onSuccess (res) {
     if (res.status >= 200 && res.status < 400) {
-      return res.json();
+      try {
+        return res.json();
+      } catch (err) {
+        return Promise.reject(err);
+      }
     }
 
     // Wrong status code
@@ -36,7 +40,11 @@ class SDK {
     errObj.statusText = err.statusText;
 
     if (err.status >= 400 && err.status < 500) {
-      errObj.content = await err.json();
+      try {
+        errObj.content = await err.json();
+      } catch (e) {
+        errObj.content = err;
+      }
     } else {
       errObj.content = err;
     }

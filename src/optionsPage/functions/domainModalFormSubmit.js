@@ -55,7 +55,16 @@ const domainModalFormSubmit = e => {
     return false;
   }
 
-  const url = domain.replace(/^https?:\/\/(www)?/, '').replace(/\/$/, '');
+  const urlTemp = domain.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+  let url;
+
+  try {
+    const urlObj = new URL(`https://${urlTemp}`);
+    url = urlObj.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
+  } catch (err) {
+    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
+    return false;
+  }
 
   return loadFromLocalStorage('autoSubmitExcludedDomains')
     .then(storage => {

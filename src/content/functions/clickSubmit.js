@@ -41,15 +41,23 @@ const closest = (counts, goal) => {
 
 const clickSubmit = (inputElement, siteURL) => {
   return delay(() => {}, 500)
-    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains']))
+    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']))
     .then(storage => {
-      const domains = storage.autoSubmitExcludedDomains || [];
-      const url = new URL(siteURL);
-      const hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
-
-      if (domains && domains?.includes(hostname)) {
+      if (!storage?.autoSubmitEnabled) {
         return false;
       }
+
+      const domains = storage.autoSubmitExcludedDomains || [];
+      let url, hostname;
+      
+      try {
+        url = new URL(siteURL);
+        hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
+
+        if (domains && domains?.includes(hostname)) {
+          return false;
+        }
+      } catch (err) {}
 
       const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
       const submits = getFormSubmitElements();
@@ -59,21 +67,26 @@ const clickSubmit = (inputElement, siteURL) => {
         return false;
       }
       
-      if (submits.length === 1) {
-        try {
-          submits[0].click();
-        } catch (e) {}
-
-        return true;
-      }
-      
       if (form) {
         const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
   
-        if (formSubmit && formSubmit.length === 1 && !ignoreButtonTexts().includes(formSubmit[0].innerText.trim().toLowerCase())) {
-          try {
-            formSubmit[0].click();
-          } catch (e) {}
+        if (formSubmit && formSubmit.length === 1) {
+          const formSubmitText = formSubmit[0]?.innerText;
+
+          if (
+            formSubmitText &&
+            typeof formSubmitText.trim === 'function' &&
+            typeof formSubmitText.toLowerCase === 'function' &&
+            !ignoreButtonTexts().includes(formSubmitText.trim().toLowerCase())
+          ) {
+            try {
+              formSubmit[0].click();
+            } catch (e) {}
+          } else {
+            try {
+              formSubmit[0].click();
+            } catch (e) {}
+          }
 
           return true;
         }
@@ -86,7 +99,7 @@ const clickSubmit = (inputElement, siteURL) => {
       });
 
       const submitElement = submits[closest(submitsNumbers, inputNumber)];
-  
+
       if (submitElement) {
         try {
           submitElement.click();

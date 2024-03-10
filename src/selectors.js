@@ -76,6 +76,7 @@ const selectors = {
       content: '.js-twofas-options-menu-content'
     },
     autoSubmit: {
+      toggle: 'input#twofas-auto-submit-switch',
       list: '.js-twofas-auto-submit-excluded-domain-list',
       exclude: '.js-twofas-auto-submit-excluded-domain-exclude',
       add: '.js-twofas-auto-submit-excluded-domain-add',

@@ -18,7 +18,6 @@
 //
 
 /* global IntersectionObserver */
-
 const isVisible = domElement => {
   return new Promise(resolve => {
     const o = new IntersectionObserver(([entry]) => {

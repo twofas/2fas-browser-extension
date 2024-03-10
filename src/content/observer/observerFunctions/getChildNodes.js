@@ -17,7 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global HTMLElement */
 const getChildNodes = node => {
+  if (!(node instanceof HTMLElement)) {
+    return [];
+  }
+
   return Array.from(node.getElementsByTagName('*'));
 };
 
