@@ -70,7 +70,8 @@
     "tabs",
     "storage",
     "notifications",
-    "contextMenus"
+    "contextMenus",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "*://*.2fas.com/*"

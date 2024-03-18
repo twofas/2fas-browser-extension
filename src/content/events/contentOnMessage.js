@@ -22,6 +22,7 @@ const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
 const storeLog = require('../../partials/storeLog');
+const { clipboard } = require('@extend-chrome/clipboard');
 
 const contentOnMessage = async (request, tabData) => {
   if (!request || !request.action) {
@@ -57,7 +58,8 @@ const contentOnMessage = async (request, tabData) => {
       if (lastFocusedInput) {
         tokenInput = getTokenInput(lastFocusedInput);
       } else {
-        alert('clipboard');
+        await clipboard.writeText(request.token);
+        return { status: 'clipboard' };
       }
 
       if (!tokenInput) {
