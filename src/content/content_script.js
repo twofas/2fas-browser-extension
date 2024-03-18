@@ -19,8 +19,9 @@
 
 import './styles/content_script.scss';
 const browser = require('webextension-polyfill');
-const { observe, createObserver } = require('./observer');
-const { getTabData, getInputs, addInputListener, portSetup, isInFrame, addFormElementsNumber, getFormElements } = require('./functions');
+// const { observe, createObserver } = require('./observer');
+// const { getTabData, getInputs, addInputListener, portSetup, isInFrame, addFormElementsNumber, getFormElements } = require('./functions');
+const { getTabData, portSetup, isInFrame } = require('./functions');
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
@@ -67,14 +68,14 @@ const contentScriptRun = async () => {
     storage = null;
   }
 
-  addInputListener(getInputs(), tabData?.id);
-  addFormElementsNumber(getFormElements());
+  // addInputListener(getInputs(), tabData?.id);
+  // addFormElementsNumber(getFormElements());
 
-  const mutationObserver = createObserver(tabData);
-  observe(mutationObserver);
+  // const mutationObserver = createObserver(tabData);
+  // observe(mutationObserver);
 
   window.addEventListener('beforeunload', async () => {
-    mutationObserver.disconnect();
+    // mutationObserver.disconnect();
     browser.runtime.onMessage.removeListener(onMessageListener);
   }, { once: true });
 };

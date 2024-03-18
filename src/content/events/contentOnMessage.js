@@ -17,6 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global alert */ // @TODO: remove alert
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
@@ -37,19 +38,7 @@ const contentOnMessage = async (request, tabData) => {
         return storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
       }
 
-      if (!storage || !storage[`tabData-${tabData?.id}`]) {
-        if (isInFrame()) {
-          return false;
-        }
-
-        return {
-          status: 'notification',
-          title: config.Texts.Warning.SelectInput.Title,
-          message: config.Texts.Warning.SelectInput.Message
-        };
-      }
-
-      if (storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
+      if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
         // No matching requestID
         if (isInFrame()) {
           return false;
@@ -63,7 +52,13 @@ const contentOnMessage = async (request, tabData) => {
       }
 
       const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
-      const tokenInput = getTokenInput(lastFocusedInput);
+      let tokenInput;
+
+      if (lastFocusedInput) {
+        tokenInput = getTokenInput(lastFocusedInput);
+      } else {
+        alert('clipboard');
+      }
 
       if (!tokenInput) {
         return { status: 'elementNotFound' };

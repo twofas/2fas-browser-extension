@@ -36,9 +36,9 @@ const initBEAction = (url, tab, storageData) => {
 
   const tabData = storage[`tabData-${tab.id}`];
 
-  if (!storage[`tabData-${tab?.id}`]?.lastFocusedInput) {
-    return TwoFasNotification.show(config.Texts.Warning.SelectInput, tab?.id);
-  }
+  // if (!storage[`tabData-${tab?.id}`]?.lastFocusedInput) {
+  //   return TwoFasNotification.show(config.Texts.Warning.SelectInput, tab?.id);
+  // }
 
   if (!storage[`tabData-${tab?.id}`]?.lastAction) {
     condition = true;
