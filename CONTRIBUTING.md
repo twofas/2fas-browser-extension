@@ -35,3 +35,27 @@ Please make sure your pull request includes the following:
 We will review your pull request and provide feedback as soon as possible. Thank you for your contribution!
 
 By sharing ideas and code with the 2FAS community, either through GitHub or Discord, you agree that these contributions become the property of the 2FAS community and may be implemented into the 2FAS open source code.
+
+## Project setup
+### Requirements
+Before you start, you should have installed:
+  - NodeJS (currently used version is always available in `.nvmrc` and `package.json` files). If you have installed `nvm`, you can use `nvm use` command in project directory.
+  - latest `npm` or `yarn`
+
+### First build
+1. Copy `.env.example` file and save it as `.env`
+2. Run `npm install` or `yarn install`
+3. Run command for chosen browser (f.e. `npm run chrome-dev` or `yarn chrome-dev` for Chrome browser)
+
+### Useful scripts
+`chrome-dev`, `opera-dev`, `firefox-dev`, `edge-dev`, `safari-dev` - These scripts build extension code for development for chosen browser (without production mode, browserlist-update etc.)
+
+`chrome-prod`, `opera-prod`, `firefox-prod`, `edge-prod`, `safari-prod` - These scripts build production extension code.
+
+`chrome-build`, `opera-build`, `firefox-build`, `edge-build` - These scripts build production extension code and creates zip files for it. There is no script for Safari, because Safari version is created by xCode.
+
+`all-build` - Script that performs build for all browsers (except Safari).
+
+`firefox-run` - Additional script for `web-ext` tool for Firefox. You can read more about `web-ext` [`here`](https://github.com/mozilla/web-ext).
+
+Other scripts are only aliases for longer commands. You don't need to know them and you shouldn't run them separately.

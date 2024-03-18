@@ -5,7 +5,9 @@
     },
     "modules": "commonjs"
   }], ["minify", {
-    "builtIns": false
+    "builtIns": false,
+    "keepFnName": true,
+    "removeDebugger": true
   }]],
   "env": {
     "production": {

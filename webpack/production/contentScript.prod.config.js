@@ -72,14 +72,21 @@ const contentScriptProdConfig = {
     ]
   },
   optimization: {
-    moduleIds: 'named',
+    chunkIds: 'size',
+    moduleIds: 'size',
+    concatenateModules: true,
+    mangleExports: 'size',
     removeAvailableModules: true,
     removeEmptyChunks: true,
     mergeDuplicateChunks: true,
+    minimize: true,
     minimizer: [
-      new TerserPlugin(),
+      new TerserPlugin({
+        parallel: true
+      }),
       new CssMinimizerPlugin()
-    ]
+    ],
+    nodeEnv: 'production'
   },
   plugins: [
     new ESLintPlugin({

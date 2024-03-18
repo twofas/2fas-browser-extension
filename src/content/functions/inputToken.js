@@ -62,7 +62,7 @@ const inputToken = (request, inputElement, siteURL) => {
           document.activeElement.dispatchEvent(inputEvent);
 
           // NORTON FIX
-          if (siteURL.includes('login.norton')) {
+          if (siteURL.includes('login.norton') || siteURL.includes('indodax.com')) {
             document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: request.token[i] }));
           }
           // END NORTON FIX
