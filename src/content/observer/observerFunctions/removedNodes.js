@@ -17,7 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global requestAnimationFrame */
 const browser = require('webextension-polyfill');
 const significantInputs = require('../observerConstants/significantInputs');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
@@ -25,11 +24,17 @@ const getChildNodes = require('./getChildNodes');
 const storeLog = require('../../../partials/storeLog');
 const { clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const notObservedNodes = require('../observerConstants/notObservedNodes');
+const uniqueOnly = require('../../../partials/uniqueOnly');
 
 let queue = [];
 let tabData = null;
+let timeout;
 
 const process = async nodes => {
+  if (document.readyState !== 'complete') {
+    timeout = window.requestAnimationFrame(() => process(nodes));
+  }
+
   if (!nodes || nodes.length <= 0 || !tabData) {
     return false;
   }
@@ -37,7 +42,13 @@ const process = async nodes => {
   const ids = [];
   let storage;
 
-  const removedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+  const removedNodes =
+    nodes
+      .filter(uniqueOnly)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()))
+      .flatMap(getChildNodes)
+      .filter(uniqueOnly)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
 
   removedNodes.forEach(node => {
     const nodeName = node.nodeName.toLowerCase();
@@ -80,29 +91,23 @@ const process = async nodes => {
     .catch(err => storeLog('error', 40, err, tabData?.url));
 };
 
-const removedNodes = async (mutation, tabInfo) => {
+const removedNodes = (mutation, tabInfo) => {
   if (!mutation?.target || !browser?.runtime?.id) {
     return false;
   }
 
-  const nodes =
-    Array.from(mutation?.removedNodes)
-      .concat(...(Array.from(mutation?.removedNodes).map(node => getChildNodes(node))))
-      .concat(mutation?.target)
-      .concat(...getChildNodes(mutation.target))
-      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
-
-  if (!nodes || nodes.length <= 0) {
-    return false;
-  }
-
-  queue.push(...nodes);
+  queue.push(mutation.target);
+  queue.push(...Array.from(mutation.removedNodes));
 
   if (!tabData) {
     tabData = tabInfo;
   }
 
-  return requestAnimationFrame(() => process(queue));
+  if (timeout) {
+    window.cancelAnimationFrame(timeout);
+  }
+
+  timeout = window.requestAnimationFrame(() => process(queue));
 };
 
 module.exports = removedNodes;

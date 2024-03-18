@@ -46,17 +46,17 @@ const createObserver = tabData => {
       if (
         (mutation?.addedNodes && Array.from(mutation?.addedNodes).length > 0) ||
         (mutation?.attributeName === 'disabled' && !mutation?.target?.disabled) ||
-        (mutation?.attirbuteName === 'style' && mutation?.target)
+        (mutation?.attributeName === 'style' && mutation?.target)
       ) {
         addedNodes(mutation, tabData);
       }
 
       if (mutation?.type === 'attributes' && mutation?.target) {
-        await hiddenNodes(mutation, tabData);
+        hiddenNodes(mutation, tabData);
       }
 
       if (mutation?.removedNodes && Array.from(mutation?.removedNodes).length > 0) {
-        await removedNodes(mutation, tabData);
+        removedNodes(mutation, tabData);
       }
     });
   });

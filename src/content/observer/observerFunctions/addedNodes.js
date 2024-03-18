@@ -17,23 +17,34 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global requestAnimationFrame */
 const browser = require('webextension-polyfill');
 const findSignificantChanges = require('./findSignificantChanges');
 const { getInputs, addInputListener, clearFormElementsNumber, addFormElementsNumber, getFormElements } = require('../../functions');
 const getChildNodes = require('./getChildNodes');
 const storeLog = require('../../../partials/storeLog');
 const notObservedNodes = require('../observerConstants/notObservedNodes');
+const uniqueOnly = require('../../../partials/uniqueOnly');
 
 let queue = [];
 let tabData = null;
+let timeout;
 
 const process = nodes => {
+  if (document.readyState !== 'complete') {
+    timeout = window.requestAnimationFrame(() => process(nodes));
+  }
+
   if (!nodes || nodes.length <= 0 || !tabData) {
     return false;
   }
 
-  const addedNodes = nodes.filter((value, index, array) => array.indexOf(value) === index);
+  const addedNodes =
+    nodes
+      .filter(uniqueOnly)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()))
+      .flatMap(getChildNodes)
+      .filter(uniqueOnly)
+      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
 
   let newInputs = false;
   let inputs = [];
@@ -73,24 +84,18 @@ const addedNodes = (mutation, tabInfo) => {
     return false;
   }
 
-  const newNodes =
-    Array.from(mutation?.addedNodes)
-      .concat(...(Array.from(mutation?.addedNodes).map(node => getChildNodes(node))))
-      .concat(mutation?.target)
-      .concat(...getChildNodes(mutation.target))
-      .filter(node => !notObservedNodes.includes(node.nodeName.toLowerCase()));
-
-  if (!newNodes || newNodes.length <= 0) {
-    return false;
-  }
-
-  queue.push(...newNodes);
+  queue.push(mutation.target);
+  queue.push(...Array.from(mutation.addedNodes));
 
   if (!tabData) {
     tabData = tabInfo;
   }
 
-  return requestAnimationFrame(() => process(queue));
+  if (timeout) {
+    window.cancelAnimationFrame(timeout);
+  }
+
+  timeout = window.requestAnimationFrame(() => process(queue));
 };
 
 module.exports = addedNodes;
