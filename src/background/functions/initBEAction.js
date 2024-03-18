@@ -36,10 +36,6 @@ const initBEAction = (url, tab, storageData) => {
 
   const tabData = storage[`tabData-${tab.id}`];
 
-  // if (!storage[`tabData-${tab?.id}`]?.lastFocusedInput) {
-  //   return TwoFasNotification.show(config.Texts.Warning.SelectInput, tab?.id);
-  // }
-
   if (!storage[`tabData-${tab?.id}`]?.lastAction) {
     condition = true;
   } else {
@@ -71,7 +67,13 @@ const initBEAction = (url, tab, storageData) => {
         });
       })
       .then(channel => channel.connect())
-      .then(() => TwoFasNotification.show(config.Texts.Success.PushSent, tab?.id))
+      .then(() => {
+        if (!storage[`tabData-${tab?.id}`]?.lastFocusedInput) {
+          return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tab?.id);
+        }
+
+        return TwoFasNotification.show(config.Texts.Success.PushSent, tab?.id);
+      })
       .catch(async err => {
         await storeLog('error', 5, err, tabData?.url);
         return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab?.id);

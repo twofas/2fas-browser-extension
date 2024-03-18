@@ -115,6 +115,10 @@ const config = {
         Title: browser.i18n.getMessage('successPushSentTitle') || t.successPushSentTitle,
         Message: browser.i18n.getMessage('successPushSentMessage') || t.successPushSentMessage
       },
+      PushSentClipboard: {
+        Title: browser.i18n.getMessage('successPushSentClipboardTitle') || t.successPushSentClipboardTitle,
+        Message: browser.i18n.getMessage('successPushSentClipboardMessage') || t.successPushSentClipboardMessage
+      },
       ExtNameUpdated: {
         Title: browser.i18n.getMessage('successExtNameUpdatedTitle') || t.successExtNameUpdatedTitle,
         Message: browser.i18n.getMessage('successExtNameUpdatedMessage') || t.successExtNameUpdatedMessage
@@ -149,6 +153,10 @@ const config = {
       BrowserActionWithoutTab: {
         Title: browser.i18n.getMessage('infoBrowserActionWithoutTabTitle') || t.infoBrowserActionWithoutTabTitle,
         Message: browser.i18n.getMessage('infoBrowserActionWithoutTabMessage') || t.infoBrowserActionWithoutTabMessage
+      },
+      CopiedToClipboard: {
+        Title: browser.i18n.getMessage('infoCopiedToClipboardTitle') || t.infoCopiedToClipboardTitle,
+        Message: browser.i18n.getMessage('infoCopiedToClipboardMessage') || t.infoCopiedToClipboardMessage
       },
       Test: {
         Title: browser.i18n.getMessage('infoTestTitle') || t.infoTestTitle,

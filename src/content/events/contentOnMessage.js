@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global alert */ // @TODO: remove alert
+const browser = require('webextension-polyfill');
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
@@ -58,8 +58,19 @@ const contentOnMessage = async (request, tabData) => {
       if (lastFocusedInput) {
         tokenInput = getTokenInput(lastFocusedInput);
       } else {
-        await clipboard.writeText(request.token);
-        return { status: 'clipboard' };
+        return clipboard.writeText(request.token)
+          .then(() => browser.runtime.sendMessage({
+            action: 'notificationOnBackground',
+            data: config.Texts.Info.CopiedToClipboard,
+            tabID: tabData?.id
+          }))
+          .then(() => {
+            return { status: 'clipboard' };
+          })
+          .catch(err => {
+            console.error(err);
+            // @TODO: catch err
+          });
       }
 
       if (!tokenInput) {

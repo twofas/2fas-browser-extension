@@ -39,6 +39,8 @@
   "warningSelectInputMessage": "Select the text field for the 2FA token then click the extension icon or use the chosen shortcut.",
   "successPushSentTitle": "Push sent",
   "successPushSentMessage": "Please check your phone and accept your login request.",
+  "successPushSentClipboardTitle": "Push sent",
+  "successPushSentClipboardMessage": "Please check your phone and accept your login request. The token will be copied to the clipboard.",
   "successExtNameUpdatedTitle": "Success",
   "successExtNameUpdatedMessage": "Extension name updated",
   "successDeviceDisconnectedTitle": "Success",
@@ -56,6 +58,8 @@
   "infoUnsupportedProtocolMessage": "Only HTTP and HTTPS protocols are supported by 2FAS Extension",
   "infoBrowserActionWithoutTabTitle": "Info",
   "infoBrowserActionWithoutTabMessage": "Using outside the browser is not supported by 2FAS Extension",
+  "infoCopiedToClipboardTitle": "Successfully copied to clipboard",
+  "infoCopiedToClipboardMessage": "You can now paste the token into the input field",
   "infoTestTitle": "2FAS Notification",
   "infoTestMessage": "Hi! This is just a test"
 }
