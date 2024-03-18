@@ -27,6 +27,8 @@ const inputFocus = async (event, tabID) => {
     return false;
   }
 
+  console.log('inputFocus', event, tabID);
+
   let storage;
   const el = event.target;
 

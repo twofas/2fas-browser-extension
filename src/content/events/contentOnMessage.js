@@ -40,7 +40,6 @@ const contentOnMessage = async (request, tabData) => {
       }
 
       if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
-        // No matching requestID
         if (isInFrame()) {
           return false;
         }
