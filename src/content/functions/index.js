@@ -35,7 +35,6 @@ exports.loadFonts = require('./loadFonts');
 exports.neverShowNotificationInfo = require('./neverShowNotificationInfo');
 exports.notification = require('./notification');
 exports.openOptionsPage = require('./openOptionsPage');
-exports.pageLoadComplete = require('./pageLoadComplete');
 exports.portSetup = require('./portSetup');
 exports.showNotificationInfo = require('./showNotificationInfo');
 exports.updateEventListener = require('./updateEventListener');

@@ -57,15 +57,17 @@ const contentOnMessage = async (request, tabData) => {
       }
       
       if (!lastFocusedInput || !tokenInput) {
-        // Show token in notification
-        return; // @TODO: remove
+        return notification({
+          title: 'Your token',
+          message: request.token
+        }); // @TODO: change to proper notification later
       } else {
         return inputToken(request, tokenInput, tabData?.url);
       }
     }
 
     case 'pageLoadComplete': {
-      return pageLoadComplete(tabData?.id);
+      return { status: 'ok' } // Possibly for future use
     }
 
     case 'notification':
@@ -75,7 +77,7 @@ const contentOnMessage = async (request, tabData) => {
       if (request.action === 'notification') {
         return notification(request);
       } else if (request.action === 'notificationInfo') {
-        return showNotificationInfo(request);
+        return showNotificationInfo();
       }
 
       break;
