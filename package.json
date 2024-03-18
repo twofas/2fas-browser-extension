@@ -111,7 +111,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.0",
-    "@extend-chrome/clipboard": "^2.0.0",
     "qrcode": "^1.5.3",
     "uuid": "^9.0.0"
   }

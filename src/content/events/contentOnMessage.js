@@ -17,12 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
 const storeLog = require('../../partials/storeLog');
-const { clipboard } = require('@extend-chrome/clipboard');
 
 const contentOnMessage = async (request, tabData) => {
   if (!request || !request.action) {
@@ -56,27 +54,14 @@ const contentOnMessage = async (request, tabData) => {
 
       if (lastFocusedInput) {
         tokenInput = getTokenInput(lastFocusedInput);
+      }
+      
+      if (!lastFocusedInput || !tokenInput) {
+        // Show token in notification
+        return; // @TODO: remove
       } else {
-        return clipboard.writeText(request.token)
-          .then(() => browser.runtime.sendMessage({
-            action: 'notificationOnBackground',
-            data: config.Texts.Info.CopiedToClipboard,
-            tabID: tabData?.id
-          }))
-          .then(() => {
-            return { status: 'clipboard' };
-          })
-          .catch(err => {
-            console.error(err);
-            // @TODO: catch err
-          });
+        return inputToken(request, tokenInput, tabData?.url);
       }
-
-      if (!tokenInput) {
-        return { status: 'elementNotFound' };
-      }
-
-      return inputToken(request, tokenInput, tabData?.url);
     }
 
     case 'pageLoadComplete': {
