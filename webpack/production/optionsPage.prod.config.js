@@ -39,8 +39,6 @@ const optionsPageProdConfig = {
     contentPageStyles: './src/content/styles/content_script.scss'
   },
   mode: 'production',
-  devtool: 'cheap-module-source-map',
-  target: 'web',
   node: false,
   output: {
     path: path.join(__dirname, '../../public/optionsPage'),
