@@ -77,6 +77,7 @@
     "storage",
     "notifications",
     "contextMenus",
+    "webNavigation",
     "https://*.2fas.com/*",
     "wss://*.2fas.com/*"
   ],
