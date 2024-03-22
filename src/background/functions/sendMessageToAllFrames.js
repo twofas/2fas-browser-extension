@@ -19,7 +19,7 @@
 
 const browser = require('webextension-polyfill');
 const config = require('../../config');
-const TwoFasNotification = require('../notification');
+const TwoFasNotification = require('../../notification');
 
 const sendMessageToAllFrames = async (tabId, message) => {
   const frames = await browser.webNavigation.getAllFrames({ tabId });
