@@ -49,13 +49,13 @@
 16 - inputFocus
 17 - contentOnMessage
 18 - neverShowNotificationInfo
-*19 - openOptionsPage [redundant]
-39 - removedNodes - loadFromLocalStorage
-40 - removedNodes - saveToLocalStorage
-41 - hiddenNodes - loadFromLocalStorage
-42 - hiddenNodes - saveToLocalStorage
-43 - pageLoadComplete - loadFromLocalStorage
-44 - pageLoadComplete - saveToLocalStorage
+*19 - openOptionsPage [deprecated]
+*39 - removedNodes - loadFromLocalStorage [deprecated]
+*40 - removedNodes - saveToLocalStorage [deprecated]
+*41 - hiddenNodes - loadFromLocalStorage [deprecated]
+*42 - hiddenNodes - saveToLocalStorage [deprecated]
+*43 - pageLoadComplete - loadFromLocalStorage [deprecated]
+*44 - pageLoadComplete - saveToLocalStorage [deprecated]
 46 - clickSubmit - loadFromLocalStorage
 
 // INSTALL PAGE

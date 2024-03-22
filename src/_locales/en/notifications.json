@@ -35,8 +35,6 @@
   "errorStorageIntegrityMessage": "Please reinstall browser extension or contact with 2FAS Support on Discord",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
-  "warningSelectInputTitle": "Select the text field first",
-  "warningSelectInputMessage": "Select the text field for the 2FA token then click the extension icon or use the chosen shortcut.",
   "successPushSentTitle": "Push sent",
   "successPushSentMessage": "Please check your phone and accept your login request.",
   "successPushSentClipboardTitle": "Push sent",

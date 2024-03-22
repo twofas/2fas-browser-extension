@@ -104,10 +104,6 @@ const config = {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
           Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', 10 - Math.round(diff))
         }
-      },
-      SelectInput: {
-        Title: browser.i18n.getMessage('warningSelectInputTitle') || t.warningSelectInputTitle,
-        Message: browser.i18n.getMessage('warningSelectInputMessage') || t.warningSelectInputMessage
       }
     },
     Success: {
