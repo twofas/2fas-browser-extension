@@ -19,7 +19,7 @@
 
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame } = require('../functions');
+const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
 const contentOnMessage = async (request, tabData) => {
@@ -66,10 +66,8 @@ const contentOnMessage = async (request, tabData) => {
       }
     }
 
-    case 'checkActiveElement': {
-      // const activeElement = document.activeElement;
-
-      return { status: 'todo' };
+    case 'getActiveElement': {
+      return getActiveElement();
     }
 
     case 'pageLoadComplete': {
