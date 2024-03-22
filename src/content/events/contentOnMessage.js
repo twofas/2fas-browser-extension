@@ -19,7 +19,7 @@
 
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement } = require('../functions');
+const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
 const contentOnMessage = async (request, tabData) => {
@@ -57,10 +57,7 @@ const contentOnMessage = async (request, tabData) => {
       }
       
       if (!lastFocusedInput || !tokenInput) {
-        return notification({
-          title: 'Your token',
-          message: request.token
-        }); // @TODO: change to proper notification later
+        return tokenNotification(request.token);
       } else {
         return inputToken(request, tokenInput, tabData?.url);
       }

@@ -121,6 +121,80 @@
       }
     }
 
+    &-token-box {
+      align-items: center !important;
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      margin-bottom: 10px !important;
+
+      > p {
+        &.twofas-be-notification-token-box-text {
+          color: $color !important;
+          font-size: 32px !important;
+          font-weight: 700 !important;
+        }
+      }
+
+      > button {
+        &.twofas-be-notification-token-box-copy-button {
+          align-items: center !important;
+          appearance: none !important;
+          background-color: $theme-color !important;
+          border: 0 !important;
+          border-radius: 20px !important;
+          color: $color-2 !important;
+          cursor: pointer !important;
+          display: inline-flex !important;
+          flex-direction: row !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          height: 40px !important;
+          justify-content: space-between !important;
+          letter-spacing: .9px !important;
+          line-height: 40px !important;
+          padding: 0 5px 0 16px !important;
+          outline: none !important;
+          text-align: center !important;
+          text-decoration: none !important;
+          text-transform: uppercase !important;
+          transition: background-color .2s ease-in-out, color .2s ease-in-out !important;
+
+          &:hover {
+            background-color: color.adjust($theme-color, $lightness: -10%) !important;
+            color: $color-2 !important;
+          }
+      
+          &:active {
+            background-color: color.adjust($theme-color, $lightness: -20%) !important;
+            color: $color-2 !important;
+          }
+
+          > span {
+            flex-grow: 1 !important;
+            margin-right: 8px !important;
+          }
+
+          > .twofas-be-notification-token-box-copy-icon {
+            align-items: center !important;
+            background-color: $color-2 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            justify-content: center !important;
+            height: 32px !important;
+            width: 32px !important;
+
+            > svg {
+              height: 16px !important;
+              margin-right: 0 !important;
+              max-width: 100% !important;
+              width: auto !important;
+            }
+          }
+        }
+      }
+    }
+
     .twofas-be-col {
       flex-shrink: unset !important;
       font-family: 'Montserrat', sans-serif !important;

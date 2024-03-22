@@ -38,4 +38,5 @@ exports.notification = require('./notification');
 exports.openOptionsPage = require('./openOptionsPage');
 exports.portSetup = require('./portSetup');
 exports.showNotificationInfo = require('./showNotificationInfo');
+exports.tokenNotification = require('./tokenNotification');
 exports.updateEventListener = require('./updateEventListener');

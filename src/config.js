@@ -162,6 +162,12 @@ const config = {
         Title: browser.i18n.getMessage('infoTestTitle') || t.infoTestTitle,
         Message: browser.i18n.getMessage('infoTestMessage') || t.infoTestMessage
       }
+    },
+    Token: {
+      Header: browser.i18n.getMessage('tokenHeader') || t.tokenHeader,
+      Copy: browser.i18n.getMessage('tokenCopy') || t.tokenCopy,
+      Copied: browser.i18n.getMessage('tokenCopied') || t.tokenCopied,
+      Description: browser.i18n.getMessage('tokenDescription') || t.tokenDescription
     }
   }
 };
