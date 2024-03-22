@@ -69,21 +69,30 @@ const notification = request => {
   setTimeout(() => n.notification.classList.add('visible'), 300);
 
   window.addEventListener('beforeunload', () => {
-    n.notification.classList.remove('visible');
+    if (n && n.notification) {
+      n.notification.classList.remove('visible');
+    }
 
     setTimeout(() => {
-      n.notification.classList.add('hidden');
-      n = null;
+      if (n && n.notification) {
+        n.notification.classList.add('hidden');
+        n = null;
+      }
     }, 300);
   });
 
   if (request.timeout) {
     setTimeout(() => {
-      n.notification.classList.remove('visible');
+      if (n && n.notification) {
+        n.notification.classList.remove('visible');
+      }
     }, 5300);
+
     setTimeout(() => {
-      n.notification.classList.add('hidden');
-      n = null;
+      if (n && n.notification) {
+        n.notification.classList.add('hidden');
+        n = null;
+      }
     }, 5600);
   }
 };
