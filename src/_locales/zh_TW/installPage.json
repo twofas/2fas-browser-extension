@@ -1,0 +1,17 @@
+{
+  "installTitle": "2FAS 瀏覽器擴充功能 | 配置",
+  "installH1": "首先，你需要將此擴充功能與 2FAS 行動應用程式進行配對。",
+  "installAppInstalled": "我已經安裝了應用程式",
+  "installScan": "使用你的 2FAS 行動應用程式掃描此代碼",
+  "installStep1": "開啟 2FAS 行動應用程式",
+  "installStep2": "前往設定 ➡️ 瀏覽器擴充功能",
+  "installStep3": "點擊「與瀏覽器配對」並掃描 QR 圖碼",
+  "installSuccessHeader": "2FAS 瀏覽器擴充功能已與你的 2FAS 應用程式成功配對",
+  "installSuccessSubheader": "現在你可以透過行動應用程式確認自動填寫雙重要素驗證碼。",
+  "installStart": "了解它是如何運作的",
+  "installGoToSettings": "前往設定",
+  "installQuestions": "有任何問題？閱讀我們的",
+  "installBackToStep1": "回到步驟 1",
+  "installQRTimeoutText": "QR 圖碼已過期",
+  "installQRTimeoutButton": "點擊此處以重新生成"
+}
