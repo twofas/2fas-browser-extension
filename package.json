@@ -23,7 +23,7 @@
     "safari-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Safari node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
     "safari-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Safari NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
     "all-build": "npx -y rimraf --glob ./build/* && yon generate-license-info && yon chrome-build && yon opera-build && yon firefox-build && yon edge-build",
-    "browserlist-update": "npx -y update-browserslist-db@latest",
+    "browserlist-update": "npx -y browserslist@latest --update-db",
     "loco-export": "node webpack/utils/locoExport.js",
     "loco-import": "node webpack/utils/locoImport.js",
     "check-build-directory": "node webpack/utils/checkBuildDirectoryExists.js",
