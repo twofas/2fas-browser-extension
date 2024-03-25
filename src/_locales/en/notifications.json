@@ -38,7 +38,7 @@
   "successPushSentTitle": "Push sent",
   "successPushSentMessage": "Please check your phone and accept your login request.",
   "successPushSentClipboardTitle": "Push sent",
-  "successPushSentClipboardMessage": "Please check your phone and accept your login request. The token will be copied to the clipboard.",
+  "successPushSentClipboardMessage": "Please check your phone and accept your login request. Copy your token and paste it into the correct input on the website.",
   "successExtNameUpdatedTitle": "Success",
   "successExtNameUpdatedMessage": "Extension name updated",
   "successDeviceDisconnectedTitle": "Success",
