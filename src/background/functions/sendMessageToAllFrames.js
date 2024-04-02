@@ -18,20 +18,18 @@
 //
 
 const browser = require('webextension-polyfill');
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
 
 const sendMessageToAllFrames = async (tabId, message) => {
   const frames = await browser.webNavigation.getAllFrames({ tabId });
-  
+
   return Promise.all(frames.map(frame => {
-    return browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId })
+    return browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => Promise.resolve(false));
   })).then(res => {
     return res.map(frame => {
       if (!frame) {
         return false;
       }
-  
+
       switch (frame?.status) {
         case 'activeElement': {
           return frame;
@@ -42,11 +40,7 @@ const sendMessageToAllFrames = async (tabId, message) => {
         }
       }
     });
-  }).catch(err => {
-    if (err.toString().includes('Receiving end does not exist')) {
-      return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabId);
-    }
-  });
+  }).catch(() => false);
 };
 
 module.exports = sendMessageToAllFrames;
