@@ -57,9 +57,12 @@
     margin-bottom: 25px !important;
     max-width: 380px !important;
     overflow: hidden !important;
+    position: relative !important;
     text-align: left !important;
     transform: translateX(425px) !important;
     transition: box-shadow .3s ease-in-out, max-height .3s ease-in-out, margin-bottom .3s ease-in-out, transform .3s ease-in-out !important;
+    z-index: 999999 !important;
+    z-index: infinite !important;
 
     &.visible {
       box-shadow: 0 0 20px 5px $shadow-color !important;
@@ -69,6 +72,24 @@
     &.hidden {
       margin-bottom: 0 !important;
       max-height: 0 !important;
+    }
+
+    &-close {
+      appearance: none !important;
+      background: transparent !important;
+      border: 0 !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      position: absolute !important;
+      right: 2px !important;
+      top: 2px !important;
+
+      > svg {
+        height: auto !important;
+        margin-right: 0 !important;
+        max-width: unset !important;
+        width: 24px !important;
+      }
     }
 
     &-buttons {
@@ -133,6 +154,10 @@
           color: $color !important;
           font-size: 32px !important;
           font-weight: 700 !important;
+
+          @media all and (max-width: 400px) {
+            font-size: 24px !important;
+          }
         }
       }
 
@@ -209,6 +234,13 @@
       &:last-of-type {
         margin-right: 18px !important;
       }
+
+      > svg {
+        height: 34px !important;
+        margin-right: 16px !important;
+        max-width: 28px !important;
+        width: 28px !important;
+      }
     }
 
     /* ProtonMail FIX */
@@ -220,13 +252,6 @@
       overflow: auto !important;
     }
     /* ProtonMail FIX */
-
-    svg {
-      height: 34px !important;
-      margin-right: 16px;
-      max-width: 28px !important;
-      width: 28px !important;
-    }
 
     h3,
     p {

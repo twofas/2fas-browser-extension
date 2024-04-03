@@ -22,6 +22,7 @@ const isInFrame = require('./isInFrame');
 const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
 const iconSrc = require('../../images/notification-logo.svg');
 const copySrc = require('../../images/copy-icon.svg');
+const closeSrc = require('../../images/notification-close.svg');
 const S = require('../../selectors');
 
 const tokenNotification = token => {
@@ -44,7 +45,27 @@ const tokenNotification = token => {
     tokenButton: null,
     tokenButtonText: null,
     notificationText: null,
-    p: null
+    p: null,
+    closeBtn: null,
+    close: null
+  };
+
+  const closeNotification = e => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (n && n.notification) {
+      n.notification.classList.remove('visible');
+    }
+
+    setTimeout(() => {
+      if (n && n.notification) {
+        n.notification.classList.add('hidden');
+        n = null;
+      }
+    }, 300);
   };
 
   if (!n.container) {
@@ -53,6 +74,12 @@ const tokenNotification = token => {
   }
 
   n.notification = createElement('div', 'twofas-be-notification');
+  n.closeBtn = createElement('button', 'twofas-be-notification-close');
+  n.closeBtn.addEventListener('click', closeNotification);
+  n.close = createSVGElement(closeSrc);
+  n.closeBtn.appendChild(n.close);
+  n.notification.appendChild(n.closeBtn);
+
   n.firstCol = createElement('div', 'twofas-be-col');
   n.logo = createSVGElement(iconSrc);
 
@@ -99,16 +126,7 @@ const tokenNotification = token => {
   setTimeout(() => n.notification.classList.add('visible'), 300);
 
   window.addEventListener('beforeunload', () => {
-    if (n && n.notification) {
-      n.notification.classList.remove('visible');
-    }
-
-    setTimeout(() => {
-      if (n && n.notification) {
-        n.notification.classList.add('hidden');
-        n = null;
-      }
-    }, 300);
+    closeNotification();
   });
 
   setTimeout(() => {
