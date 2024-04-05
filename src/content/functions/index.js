@@ -18,24 +18,21 @@
 //
 
 exports.addFormElementsNumber = require('./addFormElementsNumber');
-exports.addInputListener = require('./addInputListener');
+exports.clearAfterInputToken = require('./clearAfterInputToken');
 exports.clearFormElementsNumber = require('./clearFormElementsNumber');
 exports.clickSubmit = require('./clickSubmit');
 exports.closeNotificationInfo = require('./closeNotificationInfo');
+exports.getActiveElement = require('./getActiveElement');
 exports.getFormElements = require('./getFormElements');
 exports.getFormSubmitElements = require('./getFormSubmitElements');
-exports.getInputs = require('./getInputs');
 exports.getTabData = require('./getTabData');
 exports.getTokenInput = require('./getTokenInput');
-exports.inputFocus = require('./inputFocus');
 exports.inputToken = require('./inputToken');
 exports.isInFrame = require('./isInFrame');
-exports.isVisible = require('./isVisible');
 exports.loadFonts = require('./loadFonts');
 exports.neverShowNotificationInfo = require('./neverShowNotificationInfo');
 exports.notification = require('./notification');
 exports.openOptionsPage = require('./openOptionsPage');
-exports.pageLoadComplete = require('./pageLoadComplete');
 exports.portSetup = require('./portSetup');
 exports.showNotificationInfo = require('./showNotificationInfo');
-exports.updateEventListener = require('./updateEventListener');
+exports.tokenNotification = require('./tokenNotification');

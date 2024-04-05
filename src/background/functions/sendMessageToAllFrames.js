@@ -17,10 +17,30 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const significantNodes = require('../observerConstants/significantNodes');
+const browser = require('webextension-polyfill');
 
-const findSignificantChanges = node => {
-  return significantNodes.includes(node.nodeName.toLowerCase());
+const sendMessageToAllFrames = async (tabId, message) => {
+  const frames = await browser.webNavigation.getAllFrames({ tabId });
+
+  return Promise.all(frames.map(frame => {
+    return browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => Promise.resolve(false));
+  })).then(res => {
+    return res.map(frame => {
+      if (!frame) {
+        return false;
+      }
+
+      switch (frame?.status) {
+        case 'activeElement': {
+          return frame;
+        }
+  
+        default: {
+          return false;
+        }
+      }
+    });
+  }).catch(() => false);
 };
 
-module.exports = findSignificantChanges;
+module.exports = sendMessageToAllFrames;

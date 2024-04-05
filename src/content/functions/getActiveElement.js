@@ -17,7 +17,38 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.addedNodes = require('./addedNodes');
-exports.getChildNodes = require('./getChildNodes');
-exports.hiddenNodes = require('./hiddenNodes');
-exports.removedNodes = require('./removedNodes');
+const { v4: uuidv4 } = require('uuid');
+const clearFormElementsNumber = require('./clearFormElementsNumber');
+const addFormElementsNumber = require('./addFormElementsNumber');
+const getFormElements = require('./getFormElements');
+
+const getActiveElement = () => {
+  const activeElement = document.activeElement;
+  let nodeName;
+
+  if (activeElement) {
+    nodeName = activeElement.nodeName.toLowerCase();
+  }
+
+  if (!activeElement || (nodeName !== 'input' && nodeName !== 'textarea')) {
+    return {
+      status: 'activeElement',
+      nodeName,
+      id: null
+    };
+  }
+
+  const inputUUID = uuidv4();
+  activeElement.setAttribute('data-twofas-input', inputUUID);
+
+  clearFormElementsNumber();
+  addFormElementsNumber(getFormElements());
+
+  return {
+    status: 'activeElement',
+    nodeName,
+    id: inputUUID
+  };
+};
+
+module.exports = getActiveElement;

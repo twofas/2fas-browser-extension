@@ -34,8 +34,6 @@ const contentScriptProdConfig = {
   name: 'contentScriptGlobal',
   entry: './src/content/content_script.js',
   mode: 'production',
-  devtool: 'cheap-module-source-map',
-  target: 'web',
   node: false,
   output: {
     path: path.join(__dirname, '../../public/content'),

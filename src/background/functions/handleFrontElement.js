@@ -17,9 +17,25 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const significantNodes = [
-  'input',
-  'textarea'
-];
+const config = require('../../config');
+const TwoFasNotification = require('../../notification');
+const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
 
-module.exports = significantNodes;
+const handleFrontElement = async (activeElements, tabId, storage) => {
+  let properElements = [];
+
+  if (activeElements && activeElements.length > 0) {
+    properElements = activeElements.filter(el => el.id && (el.nodeName === 'input' || el.nodeName === 'textarea'));
+  }
+
+  if (properElements.length > 0) {
+    const tabData = storage[`tabData-${tabId}`] || {};
+    tabData.lastFocusedInput = properElements[0].id;
+    await saveToLocalStorage({ [`tabData-${tabId}`]: tabData }, storage);
+    return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
+  }
+
+  return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);
+};
+
+module.exports = handleFrontElement;

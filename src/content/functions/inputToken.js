@@ -21,6 +21,7 @@
 const delay = require('../../partials/delay');
 const getTabData = require('./getTabData');
 const clickSubmit = require('./clickSubmit');
+const clearAfterInputToken = require('./clearAfterInputToken');
 
 const inputToken = (request, inputElement, siteURL) => {
   return new Promise(resolve => {
@@ -80,6 +81,8 @@ const inputToken = (request, inputElement, siteURL) => {
         if (tab.status === 'complete') {
           clickSubmit(inputElement, siteURL);
         }
+
+        clearAfterInputToken(inputElement, tab.id);
 
         return resolve({
           status: 'completed',

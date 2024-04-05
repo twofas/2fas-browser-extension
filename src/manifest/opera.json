@@ -3,7 +3,7 @@
   "name": "2FAS - Two Factor Authentication",
   "short_name": "2FAS",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.6.4",
+  "version": "1.7.0",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "icons": {
@@ -70,7 +70,8 @@
     "tabs",
     "storage",
     "notifications",
-    "contextMenus"
+    "contextMenus",
+    "webNavigation"
   ],
   "host_permissions": [
     "*://*.2fas.com/*"

@@ -17,5 +17,27 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.createObserver = require('./createObserver');
-exports.observe = require('./observe');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage')
+
+const clearAfterInputToken = (inputElement, tabID) => {
+  // CLEAR INPUT
+  if (inputElement) {
+    if (typeof inputElement?.removeAttribute === 'function') {
+      inputElement.removeAttribute('data-twofas-input');
+    }
+  }
+
+  // CLEAR STORAGE
+  return loadFromLocalStorage([`tabData-${tabID}`])
+    .then(storage => {
+      if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].lastFocusedInput) {
+        delete storage[`tabData-${tabID}`].lastFocusedInput;
+        return saveToLocalStorage({ [`tabData-${tabID}`]: storage[`tabData-${tabID}`] });
+      }
+
+      return true;
+    })
+    .catch(() => {});
+};
+
+module.exports = clearAfterInputToken;

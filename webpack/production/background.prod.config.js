@@ -30,8 +30,6 @@ const backgroundProdConfig = {
   name: 'background',
   entry: './src/background/background.js',
   mode: 'production',
-  devtool: 'cheap-module-source-map',
-  target: 'web',
   node: false,
   output: {
     path: path.join(__dirname, '../../public/background'),
