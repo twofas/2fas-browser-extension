@@ -21,6 +21,7 @@
 const getBrowserInfo = require('./getBrowserInfo');
 const generateDefaultStorage = require('./generateDefaultStorage');
 const storeLog = require('../../partials/storeLog');
+const TwoFasNotification = require('../../notification');
 
 const onMessage = (request, sender) => {
   return new Promise(resolve => {
@@ -54,6 +55,14 @@ const onMessage = (request, sender) => {
         return generateDefaultStorage(browserInfo)
           .then(() => resolve(true))
           .catch(async err => await storeLog('error', 37, err, 'storageReset'));
+      }
+
+      case 'notificationOnBackground': {
+        if (!request.data) {
+          return resolve({ status: 'No data' });
+        }
+
+        return TwoFasNotification.show(request.data, request.tabID);
       }
 
       default: {

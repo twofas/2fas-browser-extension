@@ -23,7 +23,7 @@ const t = require('./_locales/en/notifications.json');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.6.4',
+  ExtensionVersion: '1.7.0',
 
   Texts: {
     Error: {
@@ -104,16 +104,16 @@ const config = {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
           Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', 10 - Math.round(diff))
         }
-      },
-      SelectInput: {
-        Title: browser.i18n.getMessage('warningSelectInputTitle') || t.warningSelectInputTitle,
-        Message: browser.i18n.getMessage('warningSelectInputMessage') || t.warningSelectInputMessage
       }
     },
     Success: {
       PushSent: {
         Title: browser.i18n.getMessage('successPushSentTitle') || t.successPushSentTitle,
         Message: browser.i18n.getMessage('successPushSentMessage') || t.successPushSentMessage
+      },
+      PushSentClipboard: {
+        Title: browser.i18n.getMessage('successPushSentClipboardTitle') || t.successPushSentClipboardTitle,
+        Message: browser.i18n.getMessage('successPushSentClipboardMessage') || t.successPushSentClipboardMessage
       },
       ExtNameUpdated: {
         Title: browser.i18n.getMessage('successExtNameUpdatedTitle') || t.successExtNameUpdatedTitle,
@@ -150,10 +150,20 @@ const config = {
         Title: browser.i18n.getMessage('infoBrowserActionWithoutTabTitle') || t.infoBrowserActionWithoutTabTitle,
         Message: browser.i18n.getMessage('infoBrowserActionWithoutTabMessage') || t.infoBrowserActionWithoutTabMessage
       },
+      CopiedToClipboard: {
+        Title: browser.i18n.getMessage('infoCopiedToClipboardTitle') || t.infoCopiedToClipboardTitle,
+        Message: browser.i18n.getMessage('infoCopiedToClipboardMessage') || t.infoCopiedToClipboardMessage
+      },
       Test: {
         Title: browser.i18n.getMessage('infoTestTitle') || t.infoTestTitle,
         Message: browser.i18n.getMessage('infoTestMessage') || t.infoTestMessage
       }
+    },
+    Token: {
+      Header: browser.i18n.getMessage('tokenHeader') || t.tokenHeader,
+      Copy: browser.i18n.getMessage('tokenCopy') || t.tokenCopy,
+      Copied: browser.i18n.getMessage('tokenCopied') || t.tokenCopied,
+      Description: browser.i18n.getMessage('tokenDescription') || t.tokenDescription
     }
   }
 };

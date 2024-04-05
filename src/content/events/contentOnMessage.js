@@ -19,7 +19,7 @@
 
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, pageLoadComplete } = require('../functions');
+const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
 const contentOnMessage = async (request, tabData) => {
@@ -37,20 +37,7 @@ const contentOnMessage = async (request, tabData) => {
         return storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
       }
 
-      if (!storage || !storage[`tabData-${tabData?.id}`]) {
-        if (isInFrame()) {
-          return false;
-        }
-
-        return {
-          status: 'notification',
-          title: config.Texts.Warning.SelectInput.Title,
-          message: config.Texts.Warning.SelectInput.Message
-        };
-      }
-
-      if (storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
-        // No matching requestID
+      if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
         if (isInFrame()) {
           return false;
         }
@@ -63,17 +50,25 @@ const contentOnMessage = async (request, tabData) => {
       }
 
       const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
-      const tokenInput = getTokenInput(lastFocusedInput);
+      let tokenInput;
 
-      if (!tokenInput) {
-        return { status: 'elementNotFound' };
+      if (lastFocusedInput) {
+        tokenInput = getTokenInput(lastFocusedInput);
       }
+      
+      if (!lastFocusedInput || !tokenInput) {
+        return tokenNotification(request.token);
+      } else {
+        return inputToken(request, tokenInput, tabData?.url);
+      }
+    }
 
-      return inputToken(request, tokenInput, tabData?.url);
+    case 'getActiveElement': {
+      return getActiveElement();
     }
 
     case 'pageLoadComplete': {
-      return pageLoadComplete(tabData?.id);
+      return { status: 'ok' }; // Possibly for future use
     }
 
     case 'notification':
@@ -83,7 +78,7 @@ const contentOnMessage = async (request, tabData) => {
       if (request.action === 'notification') {
         return notification(request);
       } else if (request.action === 'notificationInfo') {
-        return showNotificationInfo(request);
+        return showNotificationInfo();
       }
 
       break;

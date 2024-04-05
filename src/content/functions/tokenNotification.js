@@ -17,12 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const config = require('../../config');
 const isInFrame = require('./isInFrame');
 const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
 const iconSrc = require('../../images/notification-logo.svg');
+const copySrc = require('../../images/copy-icon.svg');
+const closeSrc = require('../../images/notification-close.svg');
 const S = require('../../selectors');
 
-const notification = request => {
+const tokenNotification = token => {
   if (isInFrame()) {
     return false;
   }
@@ -35,40 +38,24 @@ const notification = request => {
     secondCol: null,
     header: null,
     h3: null,
+    tokenBox: null,
+    tokenText: null,
+    tokenIconContainer: null,
+    tokenIcon: null,
+    tokenButton: null,
+    tokenButtonText: null,
     notificationText: null,
-    p: null
+    p: null,
+    closeBtn: null,
+    close: null
   };
 
-  if (!n.container) {
-    n.container = createElement('div', 'twofas-be-notifications');
-    window.top.document.body.appendChild(n.container);
-  }
+  const closeNotification = e => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-  n.notification = createElement('div', 'twofas-be-notification');
-  n.firstCol = createElement('div', 'twofas-be-col');
-  n.logo = createSVGElement(iconSrc);
-
-  n.firstCol.appendChild(n.logo);
-  n.notification.appendChild(n.firstCol);
-
-  n.secondCol = createElement('div', 'twofas-be-col');
-  n.header = createElement('div', 'twofas-be-notification-header');
-  n.h3 = createTextElement('h3', request.title);
-
-  n.header.appendChild(n.h3);
-  n.secondCol.appendChild(n.header);
-
-  n.notificationText = createElement('div', 'twofas-be-notification-text');
-  n.p = createTextElement('p', request.message);
-
-  n.notificationText.appendChild(n.p);
-  n.secondCol.appendChild(n.notificationText);
-  n.notification.appendChild(n.secondCol);
-  n.container.appendChild(n.notification);
-
-  setTimeout(() => n.notification.classList.add('visible'), 300);
-
-  window.addEventListener('beforeunload', () => {
     if (n && n.notification) {
       n.notification.classList.remove('visible');
     }
@@ -79,22 +66,81 @@ const notification = request => {
         n = null;
       }
     }, 300);
+  };
+
+  if (!n.container) {
+    n.container = createElement('div', 'twofas-be-notifications');
+    window.top.document.body.appendChild(n.container);
+  }
+
+  n.notification = createElement('div', 'twofas-be-notification');
+  n.closeBtn = createElement('button', 'twofas-be-notification-close');
+  n.closeBtn.addEventListener('click', closeNotification);
+  n.close = createSVGElement(closeSrc);
+  n.closeBtn.appendChild(n.close);
+  n.notification.appendChild(n.closeBtn);
+
+  n.firstCol = createElement('div', 'twofas-be-col');
+  n.logo = createSVGElement(iconSrc);
+
+  n.firstCol.appendChild(n.logo);
+  n.notification.appendChild(n.firstCol);
+
+  n.secondCol = createElement('div', 'twofas-be-col');
+  n.header = createElement('div', 'twofas-be-notification-header');
+  n.h3 = createTextElement('h3', config.Texts.Token.Header);
+
+  n.header.appendChild(n.h3);
+  n.secondCol.appendChild(n.header);
+
+  n.tokenBox = createElement('div', 'twofas-be-notification-token-box');
+  n.tokenText = createTextElement('p', token, 'twofas-be-notification-token-box-text');
+  n.tokenButton = createElement('button', 'twofas-be-notification-token-box-copy-button');
+  n.tokenButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(token);
+    n.tokenButtonText.innerText = config.Texts.Token.Copied;
+
+    setTimeout(() => {
+      n.tokenButtonText.innerText = config.Texts.Token.Copy;
+    }, 1000);
+  });
+  n.tokenButtonText = createTextElement('span', config.Texts.Token.Copy);
+  n.tokenIconContainer = createElement('div', 'twofas-be-notification-token-box-copy-icon');
+  n.tokenIcon = createSVGElement(copySrc);
+
+  n.tokenButton.appendChild(n.tokenButtonText);
+  n.tokenIconContainer.appendChild(n.tokenIcon);
+  n.tokenButton.appendChild(n.tokenIconContainer);
+  n.tokenBox.appendChild(n.tokenText);
+  n.tokenBox.appendChild(n.tokenButton);
+  n.secondCol.appendChild(n.tokenBox);
+
+  n.notificationText = createElement('div', 'twofas-be-notification-text');
+  n.p = createTextElement('p', config.Texts.Token.Description);
+
+  n.notificationText.appendChild(n.p);
+  n.secondCol.appendChild(n.notificationText);
+  n.notification.appendChild(n.secondCol);
+  n.container.appendChild(n.notification);
+
+  setTimeout(() => n.notification.classList.add('visible'), 300);
+
+  window.addEventListener('beforeunload', () => {
+    closeNotification();
   });
 
-  if (request.timeout) {
-    setTimeout(() => {
-      if (n && n.notification) {
-        n.notification.classList.remove('visible');
-      }
-    }, 5300);
+  setTimeout(() => {
+    if (n && n.notification) {
+      n.notification.classList.remove('visible');
+    }
+  }, 30300);
 
-    setTimeout(() => {
-      if (n && n.notification) {
-        n.notification.classList.add('hidden');
-        n = null;
-      }
-    }, 5600);
-  }
+  setTimeout(() => {
+    if (n && n.notification) {
+      n.notification.classList.add('hidden');
+      n = null;
+    }
+  }, 30600);
 };
 
-module.exports = notification;
+module.exports = tokenNotification;

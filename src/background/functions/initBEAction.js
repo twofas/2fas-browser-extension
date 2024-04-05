@@ -23,6 +23,8 @@ const subscribeChannel = require('./subscribeChannel');
 const TwoFasNotification = require('../../notification');
 const SDK = require('../../sdk');
 const storeLog = require('../../partials/storeLog');
+const sendMessageToAllFrames = require('./sendMessageToAllFrames');
+const handleFrontElement = require('./handleFrontElement');
 
 const initBEAction = (url, tab, storageData) => {
   const now = new Date().getTime();
@@ -35,10 +37,6 @@ const initBEAction = (url, tab, storageData) => {
   }
 
   const tabData = storage[`tabData-${tab.id}`];
-
-  if (!storage[`tabData-${tab?.id}`]?.lastFocusedInput) {
-    return TwoFasNotification.show(config.Texts.Warning.SelectInput, tab?.id);
-  }
 
   if (!storage[`tabData-${tab?.id}`]?.lastAction) {
     condition = true;
@@ -71,7 +69,8 @@ const initBEAction = (url, tab, storageData) => {
         });
       })
       .then(channel => channel.connect())
-      .then(() => TwoFasNotification.show(config.Texts.Success.PushSent, tab?.id))
+      .then(() => sendMessageToAllFrames(tab?.id, { action: 'getActiveElement' }))
+      .then(elements => handleFrontElement(elements, tab?.id, storage))
       .catch(async err => {
         await storeLog('error', 5, err, tabData?.url);
         return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab?.id);
