@@ -1,6 +1,6 @@
 {
   "name": "2fas-browser-extension",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "This is the official Browser Extension for the Open Source 2FAS project.",
   "engines": {
     "node": "20.11.1"
