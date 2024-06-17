@@ -62,6 +62,12 @@ const inputToken = (request, inputElement, siteURL) => {
           document.activeElement.value += request.token[i];
           document.activeElement.dispatchEvent(inputEvent);
 
+          // FORTRA GOANYWHERE FIX
+          if (siteURL.includes('.goanywhere.cloud') {
+            document.getElementById('formPanel:answer_hinput').value = request.token;
+          }
+          // FORTRA GOANYWHERE FIX
+          
           // NORTON FIX
           if (siteURL.includes('login.norton') || siteURL.includes('indodax.com')) {
             document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: request.token[i] }));
