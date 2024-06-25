@@ -67,6 +67,19 @@ const inputToken = (request, inputElement, siteURL) => {
             document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: request.token[i] }));
           }
           // END NORTON FIX
+
+          // SOC PRIME FIX
+          if (siteURL.includes('socprime.com')) {
+            const nextInput = document.activeElement.getAttribute('data-next');
+
+            if (nextInput) {
+              const nextInputEl = document.querySelector(`input[name="${nextInput}"]`);
+              nextInputEl.focus();
+            } else {
+              document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+            }
+          }
+          // END SOC PRIME FIX
         }, 100 * i)
       );
     }
