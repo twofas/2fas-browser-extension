@@ -34,61 +34,38 @@ const inputToken = (request, inputElement, siteURL) => {
     }
 
     const tokenLength = request.token.length;
-    let clearEvent = new Event('change', { bubbles: true, cancelable: true });
-    let inputEvent = new Event('input', { bubbles: true, cancelable: true });
     const promises = [];
+    let currentToken = '';
+
+    inputElement.focus();
 
     for (let i = 0; i < tokenLength; i++) {
       promises.push(
         delay(() => {
-          // MANY INPUTS FIX
-          if (i === 0) {
-            inputElement.focus();
-            inputElement.value = '';
-            inputElement.dispatchEvent(clearEvent);
-            inputElement.focus();
+          if (document.activeElement.value.length > 0 && document.activeElement.value !== currentToken) {
+            document.activeElement.value = '';
           }
 
-          if (!inputElement.contains(document.activeElement)) {
-            if (!siteURL.includes('secure.newegg')) { // NEWEGG FIX
-              document.activeElement.focus();
-              document.activeElement.value = '';
-              document.activeElement.dispatchEvent(clearEvent);
-              document.activeElement.focus();
-            }
+          document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
+          document.activeElement.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, cancelable: true, charCode: 48 + parseInt(request.token[i], 10), code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
+          
+          if (document.activeElement.type.toLowerCase() === 'number') {
+            document.activeElement.value += parseInt(request.token[i], 10);
+          } else {
+            document.activeElement.value += request.token[i];
           }
-          // END MANY INPUTS FIX
 
-          document.activeElement.value += request.token[i];
-          document.activeElement.dispatchEvent(inputEvent);
+          document.activeElement.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, data: request.token[i], inputType: 'insertText', which: 0 }));
+          document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
+          document.activeElement.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 
-          // NORTON FIX
-          if (siteURL.includes('login.norton') || siteURL.includes('indodax.com')) {
-            document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: request.token[i] }));
-          }
-          // END NORTON FIX
-
-          // SOC PRIME FIX
-          if (siteURL.includes('socprime.com')) {
-            const nextInput = document.activeElement.getAttribute('data-next');
-
-            if (nextInput) {
-              const nextInputEl = document.querySelector(`input[name="${nextInput}"]`);
-              nextInputEl.focus();
-            } else {
-              document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
-            }
-          }
-          // END SOC PRIME FIX
+          currentToken += request.token[i];
         }, 100 * i)
       );
     }
 
     return Promise.all(promises)
       .then(async () => {
-        clearEvent = null;
-        inputEvent = null;
-
         const tab = await getTabData();
 
         if (tab.status === 'complete') {
