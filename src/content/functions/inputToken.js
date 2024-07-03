@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global Event, KeyboardEvent */
+/* global Event, KeyboardEvent, InputEvent */
 const delay = require('../../partials/delay');
 const getTabData = require('./getTabData');
 const clickSubmit = require('./clickSubmit');
