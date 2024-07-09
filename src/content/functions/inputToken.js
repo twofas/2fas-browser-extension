@@ -18,7 +18,7 @@
 //
 
 /* global Event, KeyboardEvent, InputEvent */
-const delay = require('../../partials/delay');
+const runTasksWithDelay = require('../../partials/runTasksWithDelay');
 const getTabData = require('./getTabData');
 const clickSubmit = require('./clickSubmit');
 const clearAfterInputToken = require('./clearAfterInputToken');
@@ -35,14 +35,14 @@ const inputToken = (request, inputElement, siteURL) => {
 
     const tokenLength = request.token.length;
     const promises = [];
-    let currentToken = '';
 
+    inputElement.value = '';
     inputElement.focus();
 
     for (let i = 0; i < tokenLength; i++) {
       promises.push(
-        delay(() => {
-          if (document.activeElement.value.length > 0 && document.activeElement.value !== currentToken) {
+        () => new Promise(resolve => {
+          if (document.activeElement !== inputElement) {
             document.activeElement.value = '';
           }
 
@@ -59,12 +59,12 @@ const inputToken = (request, inputElement, siteURL) => {
           document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
           document.activeElement.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 
-          currentToken += request.token[i];
-        }, 100 * i)
+          return resolve();
+        })
       );
     }
 
-    return Promise.all(promises)
+    return runTasksWithDelay(promises, 150)
       .then(async () => {
         const tab = await getTabData();
 
