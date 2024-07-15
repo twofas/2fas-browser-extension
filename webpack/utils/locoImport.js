@@ -81,8 +81,6 @@ Promise.all(Object.keys(urls).map(locale => {
     });
   })
   .then(() => {
-    // console.log(files);
-
     return Object.keys(files).forEach(locale => {
       return Object.keys(files[locale]).forEach(fileName => {
         const data = JSON.stringify(files[locale][fileName], null, 2);
@@ -90,7 +88,3 @@ Promise.all(Object.keys(urls).map(locale => {
       });
     });
   });
-
-// Przelecieć po wszystkich locale'ach i po wszystkich kluczach i dopisać do files
-// Zapisać do jsonów
-// Test z wieloma językami
