@@ -2,7 +2,7 @@
 
 This is the official Browser Extension for the Open Source 2FAS project.
 
-## What is 2FAS?
+## What is 2FAS ?
 
 2FAS (Two-Factor Authentication Service) is a user authentication method that provides an additional layer of security for online accounts. In addition to a username and password, 2FAS uses a second factor, such as a one-time password (OTP) shown on a user's phone, to verify a user's identity. This helps prevent unauthorized access to accounts, even if a password is compromised.
 
