@@ -18,17 +18,18 @@
 //
 
 const browser = require('webextension-polyfill');
-const browserAction = require('./browserAction');
-const openBrowserPage = require('./openBrowserPage');
 
-const onContextMenuClick = (info, tab) => {
-  if (info?.menuItemId === 'twofas-firefox-options-menu') {
-    return openBrowserPage(browser.runtime.getURL('/optionsPage/optionsPage.html'));
-  }
-
-  if (info?.menuItemId === 'twofas-context-menu') {
-    return browserAction(tab);
+const createFirefoxOptionsMenu = () => {
+  if (process.env.EXT_PLATFORM === 'Firefox') {
+    browser.contextMenus.create({
+      title: browser.i18n.getMessage('options'),
+      id: 'twofas-firefox-options-menu',
+      contexts: ['browser_action'],
+      enabled: true,
+      type: 'normal',
+      visible: true
+    });
   }
 };
 
-module.exports = onContextMenuClick;
+module.exports = createFirefoxOptionsMenu;

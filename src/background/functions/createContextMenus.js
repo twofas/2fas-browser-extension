@@ -19,6 +19,7 @@
 
 const browser = require('webextension-polyfill');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+const createFirefoxOptionsMenu = require('./createFirefoxOptionsMenu');
 
 const createContextMenus = () => {
   return loadFromLocalStorage(['contextMenu'])
@@ -50,6 +51,8 @@ const createContextMenus = () => {
         browser.contextMenus.removeAll();
         browser.contextMenus.create(options);
       }
+
+      createFirefoxOptionsMenu();
     })
     .catch(() => {});
 };
