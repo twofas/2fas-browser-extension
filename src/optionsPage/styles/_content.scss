@@ -617,6 +617,17 @@
   &-icon {
     margin-top: 20px;
     max-width: 305px;
+
+    &-box {
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: $desc-color;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+    }
   }
 
   &-advanced {

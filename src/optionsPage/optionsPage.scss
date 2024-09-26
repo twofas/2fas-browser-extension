@@ -40,3 +40,103 @@
 
   @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
 }
+
+.ss-main {
+  background-color: $input-bg;
+  border: 0;
+  border-radius: 10px;
+  height: 51px;
+  padding: 0 17px;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $input-bg-dark;
+    color: $input-color-dark;
+  }
+
+  @media all and (max-width: 660px) {
+    padding: 0 10px;
+  }
+
+  &:active,
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.ss-content .ss-list .ss-option,
+.ss-main .ss-single {
+  > span {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    gap: 0 12px;
+
+    > img {
+      height: 24px;
+      width: auto;
+    }
+
+    > span {
+      color: $input-color;
+      font-size: 16px;
+      font-weight: 400;
+
+      @media (prefers-color-scheme: dark) {
+        color: $input-color-dark;
+      }
+    }
+  }
+}
+
+.ss-content {
+  background-color: $color-2;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: rgba($color-header-line-dark, .2) 0 2px 8px 0;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: $dark-color;
+    box-shadow: rgba($color, .2) 0 2px 8px 0;
+  }
+
+  &.ss-open-below,
+  &.ss-open-above {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+
+  .ss-list {
+    border-radius: 10px;
+
+    .ss-option {
+      gap: 0 6px;
+      padding: 6px 12px;
+      transition: background-color .3s ease-in-out, color .3s ease-in-out;
+
+      &:not(.ss-disabled) {
+        &.ss-selected {
+          background-color: $select-option-selected;
+          color: $color-header;
+
+          @media (prefers-color-scheme: dark) {
+            background-color: $select-option-selected-dark;
+            color: $color-2;
+          }
+        }
+      }
+
+      &:hover {
+        background-color: rgba($theme-color, .8);
+        color: $color-2;
+      }
+
+      > span {
+        > span {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}

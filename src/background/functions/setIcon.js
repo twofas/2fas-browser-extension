@@ -21,7 +21,9 @@ const browser = require('webextension-polyfill');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 
 const getIconObj = async (tabID, isActive) => {
+  const MAX_TYPE = 3;
   const isSafari = process.env.EXT_PLATFORM === 'Safari';
+  
   let type = 0;
   let typeFilename = '';
   let iconFileName = '';
@@ -32,8 +34,12 @@ const getIconObj = async (tabID, isActive) => {
   } else {
     const storage = await loadFromLocalStorage(['extIcon']);
 
-    if (storage && storage?.extIcon) {
+    if (storage && storage?.extIcon && !isNaN(storage.extIcon)) {
       type = parseInt(storage.extIcon, 10);
+
+      if (type > MAX_TYPE) {
+        type = 0;
+      }
     }
   
     if (type !== 0) {
