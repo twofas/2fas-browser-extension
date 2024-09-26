@@ -41,5 +41,6 @@
   "optionsDomainRequired": "Domain is required",
   "optionsDomainTooLong": "Domain is too long",
   "optionsDomainIncorrect": "Domain is not correct",
-  "optionsDomainExists": "Domain exists on excluded list"
+  "optionsDomainExists": "Domain exists on excluded list",
+  "optionsIconDesc": "Choose an icon for the 2FAS Browser Extension to personalize its appearance in your browser."
 }

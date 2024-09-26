@@ -18,6 +18,7 @@
 //
 
 @import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+@import url('/node_modules/slim-select/dist/slimselect.css');
 
 .twofas-options-page {
   background-color: $bg;

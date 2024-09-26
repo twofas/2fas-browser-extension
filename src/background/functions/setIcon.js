@@ -18,7 +18,7 @@
 //
 
 const browser = require('webextension-polyfill');
-const loadFromLocalStorage = require('./loadFromLocalStorage');
+const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 
 const getIconObj = async (tabID, isActive) => {
   const isSafari = process.env.EXT_PLATFORM === 'Safari';
@@ -63,13 +63,13 @@ const setIcon = async (tabID, isActive = true, changeTitle = false) => {
     browser.browserAction.setIcon(iconObj);
 
     if (isActive || (!isActive && changeTitle)) {
-      await browser.browserAction.setTitle({ tabID, title: iconTitle });
+      await browser.browserAction.setTitle({ tabId: tabID, title: iconTitle });
     }
   } else {
     browser.action.setIcon(iconObj);
 
     if (isActive || (!isActive && changeTitle)) {
-      await browser.action.setTitle({ tabID, title: iconTitle });
+      await browser.action.setTitle({ tabId: tabID, title: iconTitle });
     }
   }
 };
