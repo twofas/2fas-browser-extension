@@ -18,46 +18,58 @@
 //
 
 const browser = require('webextension-polyfill');
+const loadFromLocalStorage = require('./loadFromLocalStorage');
 
-const setIcon = async (tabId, active = true, changeTitle = false) => {
-  const option = process.env.EXT_PLATFORM === 'Safari' ? 'safari' : '';
+const getIconObj = async (tabID, isActive) => {
+  const isSafari = process.env.EXT_PLATFORM === 'Safari';
+  let type = 0;
+  let typeFilename = '';
+  let iconFileName = '';
 
-  const iconObj =
-    active
-      ? {
-        path: {
-          16: browser.runtime.getURL(`images/icons/icon16${option}.png`),
-          32: browser.runtime.getURL(`images/icons/icon32${option}.png`),
-          48: browser.runtime.getURL(`images/icons/icon48${option}.png`),
-          96: browser.runtime.getURL(`images/icons/icon96${option}.png`),
-          128: browser.runtime.getURL(`images/icons/icon128${option}.png`)
-        },
-        tabId
-      }
-      : {
-        path: {
-          16: browser.runtime.getURL('images/icons/icon16gray.png'),
-          32: browser.runtime.getURL('images/icons/icon32gray.png'),
-          48: browser.runtime.getURL('images/icons/icon48gray.png'),
-          96: browser.runtime.getURL('images/icons/icon96gray.png'),
-          128: browser.runtime.getURL('images/icons/icon128gray.png')
-        },
-        tabId
-      };
-    
-  const iconTitle = active ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
+  if (isSafari) {
+    typeFilename = 'safari';
+    iconFileName = isActive ? 'safari' : 'gray';
+  } else {
+    const storage = await loadFromLocalStorage(['extIcon']);
+
+    if (storage && storage?.extIcon) {
+      type = parseInt(storage.extIcon, 10);
+    }
+  
+    if (type !== 0) {
+      typeFilename = `_${type}`;
+    }
+
+    iconFileName = isActive ? typeFilename : `${typeFilename}gray`;
+  }
+
+  return {
+    path: {
+      16: browser.runtime.getURL(`images/icons/icon16${iconFileName}.png`),
+      32: browser.runtime.getURL(`images/icons/icon32${iconFileName}.png`),
+      48: browser.runtime.getURL(`images/icons/icon48${iconFileName}.png`),
+      96: browser.runtime.getURL(`images/icons/icon96${iconFileName}.png`),
+      128: browser.runtime.getURL(`images/icons/icon128${iconFileName}.png`)
+    },
+    tabId: tabID
+  };
+};
+
+const setIcon = async (tabID, isActive = true, changeTitle = false) => {
+  const iconObj = await getIconObj(tabID, isActive);
+  const iconTitle = isActive ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
 
   if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
     browser.browserAction.setIcon(iconObj);
 
-    if (active || (!active && changeTitle)) {
-      await browser.browserAction.setTitle({ tabId, title: iconTitle });
+    if (isActive || (!isActive && changeTitle)) {
+      await browser.browserAction.setTitle({ tabID, title: iconTitle });
     }
   } else {
     browser.action.setIcon(iconObj);
 
-    if (active || (!active && changeTitle)) {
-      await browser.action.setTitle({ tabId, title: iconTitle });
+    if (isActive || (!isActive && changeTitle)) {
+      await browser.action.setTitle({ tabID, title: iconTitle });
     }
   }
 };
