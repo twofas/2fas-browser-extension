@@ -36,7 +36,7 @@ const checkTabCS = async tabId => {
     return;
   }
 
-  const tabUrl = tabInfo.url ? tabInfo.url : tabInfo.pendingUrl;
+  const tabUrl = tabInfo?.url ? tabInfo.url : (tabInfo?.pendingUrl ? tabInfo.pendingUrl : '');
   const extUrl = browser.runtime.getURL('');
   let urlObj;
 
