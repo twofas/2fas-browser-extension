@@ -31,15 +31,13 @@ const handleTargetBlank = () => {
       e.preventDefault();
       e.stopPropagation();
 
-      const url = this.href;
-      const port = browser.runtime.connect({ name: '2FAS' });
+      const url = this?.href;
 
-      port.postMessage({
-        action: 'openBrowserPage',
-        url
-      });
+      if (typeof window === 'undefined' || !url || url.length <= 0) {
+        return;
+      }
 
-      port.disconnect();
+      return browser.tabs.create({ url });
     });
   });
 };
