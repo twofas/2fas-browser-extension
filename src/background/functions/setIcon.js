@@ -49,16 +49,21 @@ const getIconObj = async (tabID, isActive) => {
     iconFileName = isActive ? typeFilename : `${typeFilename}gray`;
   }
 
-  return {
+  const iconObj = {
     path: {
       16: browser.runtime.getURL(`images/icons/icon16${iconFileName}.png`),
       32: browser.runtime.getURL(`images/icons/icon32${iconFileName}.png`),
       48: browser.runtime.getURL(`images/icons/icon48${iconFileName}.png`),
       96: browser.runtime.getURL(`images/icons/icon96${iconFileName}.png`),
       128: browser.runtime.getURL(`images/icons/icon128${iconFileName}.png`)
-    },
-    tabId: tabID
+    }
   };
+
+  if (tabID) {
+    iconObj.tabId = tabID;
+  }
+
+  return iconObj;
 };
 
 const setIcon = async (tabID, isActive = true, changeTitle = false) => {

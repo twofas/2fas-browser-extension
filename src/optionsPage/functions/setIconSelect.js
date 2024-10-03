@@ -20,7 +20,7 @@
 const SlimSelect = require('slim-select');
 const browser = require('webextension-polyfill');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const checkTabCS = require('../../background/functions/checkTabCS');
+const setIcon = require('../../background/functions/setIcon');
 
 const setIconSelect = async () => {
   const { extIcon } = await loadFromLocalStorage(['extIcon']);
@@ -57,7 +57,8 @@ const setIconSelect = async () => {
         const tabID = await browser.tabs.query({ active: true, currentWindow: true }).then(tabs => tabs[0].id);
 
         await saveToLocalStorage({ extIcon: parseInt(item[0].value, 10) });
-        await checkTabCS(tabID);
+        await setIcon(null, false, false);
+        await setIcon(tabID, false, false);
       }
     }
   });
