@@ -19,28 +19,33 @@
 
 const SlimSelect = require('slim-select');
 const browser = require('webextension-polyfill');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
 const checkTabCS = require('../../background/functions/checkTabCS');
 
-const setIconSelect = () => {
+const setIconSelect = async () => {
+  const { extIcon } = await loadFromLocalStorage(['extIcon']);
+
   // eslint-disable-next-line no-new
   new SlimSelect({
     select: '#twofas-icon-select',
     data: [
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon32.png')}" alt="Default" /><span>Default</span></span>`,
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128.png')}" alt="Default" /><span>Default</span></span>`,
         text: 'Default',
-        value: 0
+        value: 0,
+        selected: extIcon === 0
       },
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon32_1.png')}" alt="Type1" /><span>Type 1</span></span>`,
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_1.png')}" alt="Type1" /><span>Type 1</span></span>`,
         text: 'Type 1',
-        value: 1
+        value: 1,
+        selected: extIcon === 1
       },
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon32_2.png')}" alt="Type1" /><span>Type 2</span></span>`,
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_2.png')}" alt="Type1" /><span>Type 2</span></span>`,
         text: 'Type 2',
-        value: 2
+        value: 2,
+        selected: extIcon === 2
       }
     ],
     settings: {
