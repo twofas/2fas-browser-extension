@@ -29,8 +29,7 @@ const getIconObj = async (tabID, isActive) => {
   let iconFileName = '';
 
   if (isSafari) {
-    typeFilename = 'safari';
-    iconFileName = isActive ? 'safari' : 'gray';
+    iconFileName = isActive ? 'safari' : 'safarigray';
   } else {
     const storage = await loadFromLocalStorage(['extIcon']);
 
