@@ -53,6 +53,7 @@ exports.setExtNameUpdateForm = require('./setExtNameUpdateForm');
 exports.setExtVersion = require('./setExtVersion');
 exports.setPinInfoBtns = require('./setPinInfoBtns');
 exports.setHamburger = require('./setHamburger');
+exports.setIconSelect = require('./setIconSelect');
 exports.setImportDefaultExcludedDomains = require('./setImportDefaultExcludedDomains');
 exports.setLoggingToggle = require('./setLoggingToggle');
 exports.setMenuLinks = require('./setMenuLinks');
