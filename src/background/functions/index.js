@@ -27,6 +27,7 @@ exports.checkTabCS = require('./checkTabCS');
 exports.closeRequest = require('./closeRequest');
 exports.closeWSChannel = require('./closeWSChannel');
 exports.createContextMenus = require('./createContextMenus');
+exports.createFirefoxOptionsMenu = require('./createFirefoxOptionsMenu');
 exports.Crypt = require('./Crypt');
 exports.dummyGetLocalStorage = require('./dummyGetLocalStorage');
 exports.generateDefaultStorage = require('./generateDefaultStorage');

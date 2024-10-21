@@ -61,7 +61,8 @@ const generateDefaultStorage = browserInfo => {
         extensionVersion: config.ExtensionVersion,
         autoSubmitEnabled: false,
         autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
-        attempt: attempt + 1
+        attempt: attempt + 1,
+        extIcon: 0 // 0 - default
       });
     })
     .then(storage => {

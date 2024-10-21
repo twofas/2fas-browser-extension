@@ -17,9 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+const browser = require('webextension-polyfill');
 const browserAction = require('./browserAction');
+const openBrowserPage = require('./openBrowserPage');
 
 const onContextMenuClick = (info, tab) => {
+  if (info?.menuItemId === 'twofas-firefox-options-menu') {
+    return openBrowserPage(browser.runtime.getURL('/optionsPage/optionsPage.html'));
+  }
+
   if (info?.menuItemId === 'twofas-context-menu') {
     return browserAction(tab);
   }
