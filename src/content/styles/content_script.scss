@@ -78,7 +78,16 @@
       appearance: none !important;
       background: transparent !important;
       border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
       cursor: pointer !important;
+      line-height: 1 !important;
+      margin-bottom: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      margin-top: 0 !important;
+      min-height: 0 !important;
+      min-width: 0 !important;
       padding: 0 !important;
       position: absolute !important;
       right: 2px !important;
@@ -105,15 +114,24 @@
       width: 100% !important;
 
       button {
+        appearance: none !important;
         background: transparent !important;
         border: 0 !important;
+        border-radius: 0 !important;
         color: $theme-color !important;
         cursor: pointer !important;
+        display: inline-block !important;
         font-family: 'Montserrat', sans-serif !important;
         font-size: 12px !important;
         font-weight: 700 !important;
+        line-height: 1 !important;
+        margin-bottom: 0 !important;
         margin-right: 8px !important;
+        margin-top: 0 !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
         padding: 0 !important;
+        position: static !important;
         transition: color .2s ease-in-out !important;
 
         &:last-of-type {
@@ -252,6 +270,14 @@
       overflow: auto !important;
     }
     /* ProtonMail FIX */
+
+    button {
+      &:hover,
+      &:focus,
+      &:active {
+        outline: none !important;
+      }
+    }
 
     h3,
     p {

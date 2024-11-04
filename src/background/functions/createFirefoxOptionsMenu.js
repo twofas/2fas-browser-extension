@@ -19,27 +19,17 @@
 
 const browser = require('webextension-polyfill');
 
-const handleTargetBlank = () => {
-  if (process.env.EXT_PLATFORM !== 'Safari') {
-    return;
-  }
-
-  const nodes = Array.from(document.querySelectorAll('a.twofas-new-tab-link'));
-
-  nodes.forEach(node => {
-    node.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const url = this?.href;
-
-      if (typeof window === 'undefined' || !url || url.length <= 0) {
-        return;
-      }
-
-      return browser.tabs.create({ url });
+const createFirefoxOptionsMenu = () => {
+  if (process.env.EXT_PLATFORM === 'Firefox') {
+    browser.contextMenus.create({
+      title: browser.i18n.getMessage('options'),
+      id: 'twofas-firefox-options-menu',
+      contexts: ['browser_action'],
+      enabled: true,
+      type: 'normal',
+      visible: true
     });
-  });
+  }
 };
 
-module.exports = handleTargetBlank;
+module.exports = createFirefoxOptionsMenu;
