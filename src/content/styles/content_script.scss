@@ -18,14 +18,10 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
+
+@use "../../global-styles/variables" as v;
 
 .twofas-be-notifications {
-  // VARIABLES
-  $bg: $color-2;
-  $shadow-color: rgba(#333, .1);
-  $text-color: $color-header;
-
   box-sizing: border-box !important;
   font-family: 'Montserrat', sans-serif !important;
   position: fixed !important;
@@ -48,9 +44,9 @@
   }
 
   .twofas-be-notification {
-    background-color: $bg !important;
+    background-color: v.$color-2 !important;
     border-radius: 13px !important;
-    color: $color !important;
+    color: v.$color !important;
     display: flex !important;
     flex-direction: row !important;
     font-family: 'Montserrat', sans-serif !important;
@@ -65,7 +61,7 @@
     z-index: infinite !important;
 
     &.visible {
-      box-shadow: 0 0 20px 5px $shadow-color !important;
+      box-shadow: 0 0 20px 5px rgba(#333, .1) !important;
       transform: translateX(0) !important;
     }
 
@@ -118,7 +114,7 @@
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
-        color: $theme-color !important;
+        color: v.$theme-color !important;
         cursor: pointer !important;
         display: inline-block !important;
         font-family: 'Montserrat', sans-serif !important;
@@ -139,22 +135,22 @@
         }
 
         &:hover {
-          color: color.adjust($theme-color, $lightness: -10%) !important;
+          color: color.adjust(v.$theme-color, $lightness: -10%) !important;
         }
 
         &:active {
-          color: color.adjust($theme-color, $lightness: -20%) !important;
+          color: color.adjust(v.$theme-color, $lightness: -20%) !important;
         }
 
         &.twofas-never {
-          color: $text-color !important;
+          color: v.$color-header !important;
           font-family: 'Montserrat', sans-serif !important;
           font-weight: 400 !important;
           text-decoration: underline !important;
 
           &:hover,
           &:active {
-            color: $color !important;
+            color: v.$color !important;
           }
         }
       }
@@ -169,7 +165,7 @@
 
       > p {
         &.twofas-be-notification-token-box-text {
-          color: $color !important;
+          color: v.$color !important;
           font-size: 32px !important;
           font-weight: 700 !important;
 
@@ -183,10 +179,10 @@
         &.twofas-be-notification-token-box-copy-button {
           align-items: center !important;
           appearance: none !important;
-          background-color: $theme-color !important;
+          background-color: v.$theme-color !important;
           border: 0 !important;
           border-radius: 20px !important;
-          color: $color-2 !important;
+          color: v.$color-2 !important;
           cursor: pointer !important;
           display: inline-flex !important;
           flex-direction: row !important;
@@ -204,13 +200,13 @@
           transition: background-color .2s ease-in-out, color .2s ease-in-out !important;
 
           &:hover {
-            background-color: color.adjust($theme-color, $lightness: -10%) !important;
-            color: $color-2 !important;
+            background-color: color.adjust(v.$theme-color, $lightness: -10%) !important;
+            color: v.$color-2 !important;
           }
       
           &:active {
-            background-color: color.adjust($theme-color, $lightness: -20%) !important;
-            color: $color-2 !important;
+            background-color: color.adjust(v.$theme-color, $lightness: -20%) !important;
+            color: v.$color-2 !important;
           }
 
           > span {
@@ -220,7 +216,7 @@
 
           > .twofas-be-notification-token-box-copy-icon {
             align-items: center !important;
-            background-color: $color-2 !important;
+            background-color: v.$color-2 !important;
             border-radius: 50% !important;
             display: flex !important;
             justify-content: center !important;
@@ -290,7 +286,7 @@
 
     h3 {
       border-bottom: none !important; // AWS FIX
-      color: $color !important;
+      color: v.$color !important;
       font-size: 16px !important;
       font-weight: 700 !important;
       line-height: 20px !important;
@@ -298,13 +294,13 @@
     }
 
     p {
-      color: $text-color !important;
+      color: v.$color-header !important;
       font-size: 12px !important;
       font-weight: 400 !important;
       line-height: 15px !important;
 
       > a {
-        color: $theme-color !important;
+        color: v.$theme-color !important;
         font-family: 'Montserrat', sans-serif !important;
         font-size: 12px !important;
         font-weight: 700 !important;
@@ -312,11 +308,11 @@
         transition: color .2s ease-in-out !important;
 
         &:hover {
-          color: color.adjust($theme-color, $lightness: -10%) !important;
+          color: color.adjust(v.$theme-color, $lightness: -10%) !important;
         }
 
         &:active {
-          color: color.adjust($theme-color, $lightness: -20%) !important;
+          color: color.adjust(v.$theme-color, $lightness: -20%) !important;
         }
       }
     }

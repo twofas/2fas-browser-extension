@@ -18,32 +18,47 @@
 //
 
 @use "sass:color";
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut";
+
+@use "../global-styles/variables" as v;
+
+@use "../global-styles/global";
+
+@use "../global-styles/input";
+
+@use "../global-styles/buttons";
+
+@use "../global-styles/shortcut";
+
+@use "styles/container";
+
+@use "styles/configured";
+
+@use "styles/integrityError";
 
 .twofas-install-page {
-  background-color: $bg;
+  background-color: v.$bg;
   box-sizing: border-box;
-  color: $color;
+  color: v.$color;
   font-family: 'Montserrat', sans-serif;
   height: 100%;
   min-height: 100vh;
   width: 100%;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $bg-dark;
-    color: $color-2;
+    background-color: v.$bg-dark;
+    color: v.$color-2;
   }
 
   &-footer,
   &-header {
-    background: $color-2;
+    background: v.$color-2;
     height: 90px;
     line-height: 90px;
     text-align: center;
     width: 100%;
 
     @media (prefers-color-scheme: dark) {
-      background-color: $dark-color;
+      background-color: v.$dark-color;
     }
 
     @media all and (max-width: 800px) {
@@ -85,13 +100,13 @@
       justify-content: center;
 
       p {
-        color: $color;
+        color: v.$color;
         font-size: 16px;
         line-height: 30px;
         text-align: center;
 
         @media (prefers-color-scheme: dark) {
-          color: $color-2;
+          color: v.$color-2;
         }
 
         a {
@@ -103,16 +118,14 @@
 
   &-footer {
     a {
-      color: $theme-color;
+      color: v.$theme-color;
       text-decoration: none;
       transition: color .2s ease-in-out;
 
       &:hover {
-        color: color.adjust($theme-color, $lightness: -5%);
+        color: color.adjust(v.$theme-color, $lightness: -5%);
         text-decoration: underline;
       }
     }
   }
-
-  @import "styles/container", "styles/configured", "styles/integrityError";
 }

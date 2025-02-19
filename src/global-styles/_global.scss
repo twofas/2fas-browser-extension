@@ -17,8 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "variables";
-@import "fonts";
+@use "variables" as v;
+
+@use "fonts";
 
 :root {
   color-scheme: light dark;
@@ -40,11 +41,11 @@ html {
   font-size: 16px;
   height: 100%;
 
-  @media all and (max-width: $screen-sm-max) {
+  @media all and (max-width: v.$screen-sm-max) {
     font-size: 15px;
   }
 
-  @media all and (max-width: $screen-xs-max) {
+  @media all and (max-width: v.$screen-xs-max) {
     font-size: 14px;
   }
 
@@ -63,14 +64,14 @@ body {
 }
 
 body {
-  background-color: $bg;
+  background-color: v.$bg;
   font-family: 'Montserrat', sans-serif;
   height: 100%;
   min-height: 100vh;
   text-rendering: optimizespeed;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $bg-dark;
+    background-color: v.$bg-dark;
   }
 
   * {

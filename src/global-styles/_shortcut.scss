@@ -18,39 +18,19 @@
 //
 
 @use "sass:color";
-@import "variables";
+
+@use "variables" as v;
 
 .twofas-shortcut-edit {
-  // VARIABLES
-  $box-bg: $bg;
-  $box-bg-dark: #272931;
-  $btn-bg: $color-2;
-  $btn-bg-dark: #4c4d58;
-  $btn-color: $color;
-  $btn-color-dark: $color-2;
-  $plus-color: #a9aabd;
-  $install-page-bg: #dcdee8;
-  $install-page-shadow: rgba(186, 188, 195, .25);
-  $install-page-btn-color: #979797;
-  $tooltip-bg: $color-2;
-  $tooltip-bg-dark: #30313b;
-  $tooltip-color: $color;
-  $tooltip-color-dark: $color-2;
-  $tooltip-shadow-color: rgba(186, 188, 195, .25);
-  $tooltip-shadow-color-dark: rgba(0, 0, 0, .25);
-  $tooltip-x-bg: #f5f5f8;
-  $tooltip-x-bg-dark: #272931;
-  $tooltip-x-color: #b3b3b3;
-
   margin-top: 61px;
   max-width: 306px;
   width: 100%;
 
-  @media all and (max-width: $screen-sm-max) {
+  @media all and (max-width: v.$screen-sm-max) {
     margin-top: 40px;
   }
 
-  @media all and (max-width: $screen-xs-max) {
+  @media all and (max-width: v.$screen-xs-max) {
     margin-top: 20px;
   }
 
@@ -61,7 +41,7 @@
     max-width: unset;
     width: 100%;
 
-    @media all and (max-width: $screen-xs-max) {
+    @media all and (max-width: v.$screen-xs-max) {
       display: inline-flex;
       width: auto;
     }
@@ -75,22 +55,22 @@
     }
 
     .twofas-shortcut-edit-box {
-      background-color: $install-page-bg;
+      background-color: #dcdee8;
       border-radius: 25px;
       margin-bottom: 0;
       padding: 14px 27px;
       position: relative;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $box-bg-dark;
+        background-color: #272931;
       }
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         padding: 11px 24px;
       }
 
       &::before {
-        background-color: $install-page-shadow;
+        background-color: rgba(186, 188, 195, .25);
         content: "";
         display: block;
         filter: blur(30px);
@@ -102,23 +82,23 @@
         z-index: 1;
 
         @media (prefers-color-scheme: dark) {
-          background-color: rgba($box-bg-dark, .25);
+          background-color: rgba(#272931, .25);
         }
 
-        @media all and (max-width: $screen-xs-max) {
-          background-color: rgba($install-page-shadow, .125);
+        @media all and (max-width: v.$screen-xs-max) {
+          background-color: rgba(rgba(186, 188, 195, .25), .125);
           left: 0;
           filter: blur(15px);
           top: 0;
 
           @media (prefers-color-scheme: dark) {
-            background-color: rgba($box-bg-dark, .125);
+            background-color: rgba(#272931, .125);
           }
         }
       }
 
       &::after {
-        background-color: $install-page-bg;
+        background-color: #dcdee8;
         border-radius: 25px;
         content: "";
         display: block;
@@ -130,13 +110,13 @@
         z-index: 2;
 
         @media (prefers-color-scheme: dark) {
-          background-color: $box-bg-dark;
+          background-color: #272931;
         }
       }
 
       &-btn {
         border-radius: 6px;
-        color: $install-page-btn-color;
+        color: #979797;
         font-size: 21px;
         font-weight: 600;
         margin-right: 10px;
@@ -147,10 +127,10 @@
         z-index: 3;
 
         @media (prefers-color-scheme: dark) {
-          color: $color-2;
+          color: v.$color-2;
         }
 
-        @media all and (max-width: $screen-sm-max) {
+        @media all and (max-width: v.$screen-sm-max) {
           font-size: 16px;
           font-weight: 400;
           min-width: 50px;
@@ -173,7 +153,7 @@
 
   &-box {
     align-items: center;
-    background-color: $box-bg;
+    background-color: v.$bg;
     border-radius: 12px;
     display: inline-flex;
     flex-direction: row;
@@ -182,7 +162,7 @@
     position: relative;
 
     @media (prefers-color-scheme: dark) {
-      background-color: $box-bg-dark;
+      background-color: #272931;
     }
 
     @media all and (max-width: 480px) {
@@ -191,9 +171,9 @@
     }
 
     &-btn {
-      background-color: $btn-bg;
+      background-color: v.$color-2;
       border-radius: 3px;
-      color: $btn-color;
+      color: v.$color;
       font-size: 14px;
       font-weight: 400;
       margin-right: 8px;
@@ -202,13 +182,13 @@
       user-select: none;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $btn-bg-dark;
-        color: $btn-color-dark;
+        background-color: #4c4d58;
+        color: v.$color-2;
       }
     }
 
     &-plus {
-      color: $plus-color;
+      color: #a9aabd;
       font-size: 16px;
       font-weight: 600;
       margin-right: 8px;
@@ -217,19 +197,19 @@
     }
 
     &-firefox-tooltip {
-      background-color: $tooltip-bg;
+      background-color: v.$color-2;
       bottom: 90%;
-      box-shadow: 10px 10px 40px $tooltip-shadow-color;
-      color: $tooltip-color;
+      box-shadow: 10px 10px 40px rgba(186, 188, 195, .25);
+      color: v.$color;
       display: none;
       left: 222px;
       padding: 24px 28px;
       position: absolute;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $tooltip-bg-dark;
-        box-shadow: 10px 10px 40px $tooltip-shadow-color-dark;
-        color: $tooltip-color-dark;
+        background-color: #30313b;
+        box-shadow: 10px 10px 40px rgba(0, 0, 0, .25);
+        color: v.$color-2;
       }
 
       @media all and (max-width: 640px) {
@@ -239,7 +219,7 @@
       }
 
       &::after {
-        border-color: $tooltip-bg transparent transparent transparent;
+        border-color: v.$color-2 transparent transparent transparent;
         border-style: solid;
         border-width: 15px 14.5px 0;
         bottom: -14px;
@@ -251,10 +231,10 @@
         width: 0;
 
         @media (prefers-color-scheme: dark) {
-          border-color: $tooltip-bg-dark transparent transparent transparent;
+          border-color: #30313b transparent transparent;
         }
 
-        @media all and (max-width: $screen-sm-max) {
+        @media all and (max-width: v.$screen-sm-max) {
           display: none;
         }
       }
@@ -271,29 +251,29 @@
 
         &:hover {
           .twofas-shortcut-edit-box-firefox-tooltip-close-bg {
-            fill: color.adjust($tooltip-x-bg, $lightness: -5%);
+            fill: color.adjust(#f5f5f8, $lightness: -5%);
 
             @media (prefers-color-scheme: dark) {
-              fill: color.adjust($tooltip-x-bg-dark, $lightness: -5%);
+              fill: color.adjust(#272931, $lightness: -5%);
             }
           }
 
           .twofas-shortcut-edit-box-firefox-tooltip-close-x {
-            fill: color.adjust($tooltip-x-color, $lightness: -10%);
+            fill: color.adjust(#b3b3b3, $lightness: -10%);
           }
         }
 
         &-bg {
-          fill: $tooltip-x-bg;
+          fill: #f5f5f8;
           transition: fill .2s ease-in-out;
 
           @media (prefers-color-scheme: dark) {
-            fill: $tooltip-x-bg-dark;
+            fill: #272931;
           }
         }
 
         &-x {
-          fill: $tooltip-x-color;
+          fill: #b3b3b3;
           transition: fill .2s ease-in-out;
         }
       }
@@ -317,14 +297,14 @@
       padding-left: 0;
       padding-right: 0;
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         margin-left: 5px;
       }
     }
   }
 
   p {
-    color: $desc-color;
+    color: v.$desc-color;
     font-size: 12px;
     font-weight: 400;
     line-height: 18px;
