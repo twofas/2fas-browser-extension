@@ -19,7 +19,7 @@
 
 import './styles/content_script.scss';
 const browser = require('webextension-polyfill');
-const { getTabData, portSetup, isInFrame } = require('./functions');
+const { getTabData, portSetup } = require('./functions');
 const contentOnMessage = require('./events/contentOnMessage');
 const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
 const storeLog = require('../partials/storeLog');
@@ -34,15 +34,8 @@ const contentScriptRun = async () => {
     return false;
   }
 
-  const onMessageListener = request => {
-    if (request?.action === 'contentScript') {
-      if (isInFrame()) {
-        return false;
-      }
-    }
-
-    return contentOnMessage(request, tabData);
-  };
+  // @TODO: Check this!
+  const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
   browser.runtime.onMessage.addListener(onMessageListener);
 
   try {
