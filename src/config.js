@@ -23,7 +23,7 @@ const t = require('./_locales/en/notifications.json');
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.7.3',
+  ExtensionVersion: '1.7.4',
 
   Texts: {
     Error: {
