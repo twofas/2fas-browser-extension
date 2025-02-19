@@ -104,7 +104,7 @@
     "url-loader": "^4.1.0",
     "webextension-polyfill": "^0.12.0",
     "webpack": "^5.98.0",
-    "webpack-cli": "^5.1.4",
+    "webpack-cli": "^6.0.1",
     "webpack-node-externals": "^3.0.0",
     "ws": "^8.17.1",
     "yarn-or-npm": "^3.0.1"
@@ -113,6 +113,6 @@
     "@babel/runtime": "^7.26.9",
     "qrcode": "^1.5.3",
     "slim-select": "^2.10.0",
-    "uuid": "^10.0.0"
+    "uuid": "^11.0.5"
   }
 }
