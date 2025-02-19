@@ -3,7 +3,7 @@
   "version": "1.7.4",
   "description": "This is the official Browser Extension for the Open Source 2FAS project.",
   "engines": {
-    "node": "20.17.0"
+    "node": "22.12.0"
   },
   "scripts": {
     "clean": "npx -y rimraf --glob ./public/*",
