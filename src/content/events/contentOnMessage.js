@@ -19,7 +19,7 @@
 
 const config = require('../../config');
 const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification, isInFrame } = require('../functions');
+const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
 // @TODO: Check this!

@@ -18,21 +18,11 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
 
-&-content {
-  // VARIABLES
-  $content-bg: $color-2;
-  $add-icon-color: $color-2;
-  $settings-table-header-bg: #d3d4e2;
-  $settings-table-header-bg-dark: #272931;
-  $settings-table-header-color: $color-header;
-  $settings-table-body-bg: $bg;
-  $settings-table-body-bg-dark: #30313b;
-  $settings-table-border-color: rgba(#898989, .3);
-  $settings-version-color: $color-header;
+@use "../../global-styles/variables" as v;
 
-  background-color: $content-bg;
+.twofas-options-page-content {
+  background-color: v.$color-2;
   flex: 1 1 0;
   left: 240px;
   height: 100%;
@@ -43,10 +33,10 @@
   width: calc(100% - 240px);
 
   @media (prefers-color-scheme: dark) {
-    background-color: $bg-dark;
+    background-color: v.$bg-dark;
   }
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+  @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
     height: auto;
     left: auto;
     overflow: unset;
@@ -70,11 +60,11 @@
       margin-bottom: 66px;
       position: relative;
 
-      @media all and (max-width: $screen-md-max) {
+      @media all and (max-width: v.$screen-md-max) {
         margin-bottom: 50px;
       }
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         margin-bottom: 30px;
       }
 
@@ -129,8 +119,8 @@
 
           tr {
             th {
-              background-color: $settings-table-header-bg;
-              color: $settings-table-header-color;
+              background-color: #d3d4e2;
+              color: v.$color-header;
               font-size: 16px;
               font-weight: 600;
               height: 50px;
@@ -138,7 +128,7 @@
               text-align: left;
 
               @media (prefers-color-scheme: dark) {
-                background-color: $settings-table-header-bg-dark;
+                background-color: #272931;
               }
 
               &:first-child {
@@ -192,9 +182,9 @@
             }
 
             td {
-              background-color: $settings-table-body-bg;
-              border-bottom: 1px solid $settings-table-border-color;
-              color: $color;
+              background-color: v.$bg;
+              border-bottom: 1px solid rgba(#898989, .3);
+              color: v.$color;
               font-size: 14px;
               font-weight: 400;
               padding-bottom: 16px;
@@ -202,8 +192,8 @@
               text-align: left;
 
               @media (prefers-color-scheme: dark) {
-                background-color: $settings-table-body-bg-dark;
-                color: $color-2;
+                background-color: #30313b;
+                color: v.$color-2;
               }
 
               @media all and (max-width: 660px) {
@@ -257,13 +247,13 @@
 
         td {
           p {
-            color: $color;
+            color: v.$color;
             font-size: 14px;
             font-weight: 400;
             line-height: 17px;
 
             @media (prefers-color-scheme: dark) {
-              color: $color-2;
+              color: v.$color-2;
             }
           }
 
@@ -277,12 +267,12 @@
 
             &:hover {
               svg {
-                stroke: color.adjust($theme-color, $lightness: -10%);
+                stroke: color.adjust(v.$theme-color, $lightness: -10%);
               }
             }
 
             svg {
-              stroke: $theme-color;
+              stroke: v.$theme-color;
               transition: .2s stroke ease-in-out;
             }
           }
@@ -297,19 +287,19 @@
 
       &:hover {
         .twofas-options-page-content-paired-devices-add-icon {
-          background-color: color.adjust($theme-color, $lightness: -10%);
+          background-color: color.adjust(v.$theme-color, $lightness: -10%);
         }
 
         .twofas-options-page-content-paired-devices-add-text {
-          color: color.adjust($theme-color, $lightness: -10%);
+          color: color.adjust(v.$theme-color, $lightness: -10%);
         }
       }
 
       &-icon {
         align-items: center;
-        background-color: $theme-color;
+        background-color: v.$theme-color;
         border-radius: 50%;
-        color: $add-icon-color;
+        color: v.$color-2;
         display: flex;
         height: 37px;
         justify-content: center;
@@ -326,7 +316,7 @@
       }
 
       &-text {
-        color: $theme-color;
+        color: v.$theme-color;
         font-size: 13px;
         font-weight: 700;
         letter-spacing: .8125px;
@@ -361,8 +351,8 @@
 
         tr {
           th {
-            background-color: $settings-table-header-bg;
-            color: $settings-table-header-color;
+            background-color: #d3d4e2;
+            color: v.$color-header;
             font-size: 16px;
             font-weight: 600;
             height: 50px;
@@ -370,7 +360,7 @@
             text-align: left;
 
             @media (prefers-color-scheme: dark) {
-              background-color: $settings-table-header-bg-dark;
+              background-color: #272931;
             }
 
             &:first-child {
@@ -422,9 +412,9 @@
           }
 
           td {
-            background-color: $settings-table-body-bg;
-            border-bottom: 1px solid $settings-table-border-color;
-            color: $color;
+            background-color: v.$bg;
+            border-bottom: 1px solid rgba(#898989, .3);
+            color: v.$color;
             font-size: 14px;
             font-weight: 400;
             padding-bottom: 8px;
@@ -432,8 +422,8 @@
             text-align: left;
 
             @media (prefers-color-scheme: dark) {
-              background-color: $settings-table-body-bg-dark;
-              color: $color-2;
+              background-color: #30313b;
+              color: v.$color-2;
             }
 
             @media all and (max-width: 660px) {
@@ -498,13 +488,13 @@
         }
         
         p {
-          color: $color;
+          color: v.$color;
           font-size: 14px;
           font-weight: 400;
           line-height: 17px;
 
           @media (prefers-color-scheme: dark) {
-            color: $color-2;
+            color: v.$color-2;
           }
         }
 
@@ -518,12 +508,12 @@
 
           &:hover {
             svg {
-              fill: color.adjust($theme-color, $lightness: -10%);
+              fill: color.adjust(v.$theme-color, $lightness: -10%);
             }
           }
 
           svg {
-            fill: $theme-color;
+            fill: v.$theme-color;
             transition: .2s fill ease-in-out;
           }
         }
@@ -537,11 +527,11 @@
 
       &:hover {
         .twofas-options-page-content-paired-devices-exclude-icon {
-          background-color: color.adjust($theme-color, $lightness: -10%);
+          background-color: color.adjust(v.$theme-color, $lightness: -10%);
         }
 
         .twofas-options-page-content-paired-devices-exclude-text {
-          color: color.adjust($theme-color, $lightness: -10%);
+          color: color.adjust(v.$theme-color, $lightness: -10%);
         }
       }
 
@@ -570,9 +560,9 @@
 
       &-icon {
         align-items: center;
-        background-color: $theme-color;
+        background-color: v.$theme-color;
         border-radius: 50%;
-        color: $add-icon-color;
+        color: v.$color-2;
         display: flex;
         height: 37px;
         justify-content: center;
@@ -589,7 +579,7 @@
       }
 
       &-text {
-        color: $theme-color;
+        color: v.$theme-color;
         font-size: 13px;
         font-weight: 700;
         letter-spacing: .8125px;
@@ -623,7 +613,7 @@
     }
 
     p {
-      color: $desc-color;
+      color: v.$desc-color;
       font-size: 12px;
       font-weight: 400;
       line-height: 18px;
@@ -671,13 +661,13 @@
   &-safari-reset {
     margin-top: 40px;
 
-    @media all and (max-width: $screen-xs-max) {
+    @media all and (max-width: v.$screen-xs-max) {
       margin-top: 20px;
     }
 
     &-desc {
       p {
-        color: $desc-color;
+        color: v.$desc-color;
         font-size: 12px;
         font-weight: 400;
         line-height: 1.5;
@@ -689,19 +679,19 @@
   &-logs {
     margin-top: 6px;
 
-    @media all and (max-width: $screen-xs-max) {
+    @media all and (max-width: v.$screen-xs-max) {
       margin-top: 6px;
     }
   }
 
   &-safari-reset {
-    border: 2px solid $theme-color;
+    border: 2px solid v.$theme-color;
     border-radius: 16px;
     max-width: 600px;
     padding: 16px;
 
     h6 {
-      color: $theme-color;
+      color: v.$theme-color;
       font-size: 14px;
       font-weight: 700;
       letter-spacing: .8125px;
@@ -710,7 +700,7 @@
     }
 
     p {
-      color: $color;
+      color: v.$color;
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;
@@ -718,10 +708,10 @@
       user-select: none;
 
       @media all and (prefers-color-scheme: dark) {
-        color: $color-2;
+        color: v.$color-2;
       }
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         font-size: 12px;
         line-height: 18px;
       }
@@ -738,11 +728,11 @@
     margin-bottom: 16px;
     margin-top: 66px;
 
-    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
       display: flex;
     }
 
-    @media all and (max-width: $screen-xs-max) {
+    @media all and (max-width: v.$screen-xs-max) {
       margin-top: 20px;
     }
 
@@ -769,7 +759,7 @@
     text-align: right;
 
     p {
-      color: $settings-version-color;
+      color: v.$color-header;
       font-size: 12px;
       font-weight: 400;
       line-height: 1.5;
@@ -777,7 +767,7 @@
   }
 
   h2 {
-    color: $color-header;
+    color: v.$color-header;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -793,7 +783,7 @@
     max-width: 100%;
     width: 710px;
 
-    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
       font-size: 32px;
       margin-bottom: 48px;
     }
@@ -810,11 +800,11 @@
     &.twofas-intro-header {
       width: 100%;
 
-      @media all and (max-width: $screen-md-max) {
+      @media all and (max-width: v.$screen-md-max) {
         font-size: 32px;
       }
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         margin-bottom: 40px;
       }
     }

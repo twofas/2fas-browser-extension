@@ -18,22 +18,13 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
+
+@use "../../global-styles/variables" as v;
 
 .twofas-confirm-modal,
 .twofas-domain-modal {
-  // VARIABLES
-  $modal-backdrop-color: rgba(#4f4f4f, .5);
-  $modal-backdrop-color-dark: rgba($color, .5);
-  $modal-close-bg: #f5f5f8;
-  $modal-close-bg-dark: #272931;
-  $modal-close-x-color: #b3b3b3;
-  $modal-body-bg: $color-2;
-  $modal-body-bg-dark: #30313b;
-  $modal-body-shadow: rgba($color, .25);
-
   align-items: center;
-  background-color: $modal-backdrop-color;
+  background-color: rgba(#4f4f4f, .5);
   display: flex;
   height: 100%;
   justify-content: center;
@@ -47,7 +38,7 @@
   z-index: 9998;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $modal-backdrop-color-dark;
+    background-color: rgba(v.$color, .5);
   }
 
   &.hidden {
@@ -67,38 +58,38 @@
     &:hover {
       .twofas-confirm-modal-close-bg,
       .twofas-domain-modal-close-bg {
-        fill: color.adjust($modal-close-bg, $lightness: -5%);
+        fill: color.adjust(#f5f5f8, $lightness: -5%);
 
         @media (prefers-color-scheme: dark) {
-          fill: color.adjust($modal-close-bg-dark, $lightness: -5%);
+          fill: color.adjust(#272931, $lightness: -5%);
         }
       }
 
       .twofas-confirm-modal-close-x,
       .twofas-domain-modal-close-x {
-        fill: color.adjust($modal-close-x-color, $lightness: -10%);
+        fill: color.adjust(#b3b3b3, $lightness: -10%);
       }
     }
 
     &-bg {
-      fill: $modal-close-bg;
+      fill: #f5f5f8;
       transition: fill .2s ease-in-out;
 
       @media (prefers-color-scheme: dark) {
-        fill: $modal-close-bg-dark;
+        fill: #272931;
       }
     }
 
     &-x {
-      fill: $modal-close-x-color;
+      fill: #b3b3b3;
       transition: fill .2s ease-in-out;
     }
   }
 
   &-body {
-    background: $modal-body-bg;
-    box-shadow: 4px 4px 50px $modal-body-shadow;
-    color: $color;
+    background: v.$color-2;
+    box-shadow: 4px 4px 50px rgba(v.$color, .25);
+    color: v.$color;
     max-width: 90%;
     padding: 86px 0 57px;
     position: relative;
@@ -106,15 +97,15 @@
     width: 652px;
 
     @media (prefers-color-scheme: dark) {
-      background: $modal-body-bg-dark;
-      color: $color-2;
+      background: #30313b;
+      color: v.$color-2;
     }
 
     @media all and (max-width: 660px) {
       padding: 80px 0 45px;
     }
 
-    @media all and (max-height: $op-rwd-height) {
+    @media all and (max-height: v.$op-rwd-height) {
       padding: 50px 0 45px;
     }
 
@@ -124,7 +115,7 @@
       flex-direction: column;
       margin-top: 34px;
 
-      @media all and (max-width: 660px), all and (max-height: $op-rwd-height) {
+      @media all and (max-width: 660px), all and (max-height: v.$op-rwd-height) {
         margin-top: 15px;
       }
     }
@@ -136,10 +127,10 @@
     }
 
     input {
-      background-color: $input-bg;
+      background-color: v.$input-bg;
       border: 0;
       border-radius: 10px;
-      color: $input-color;
+      color: v.$input-color;
       display: block;
       flex-grow: 1;
       font-size: 16px;
@@ -149,8 +140,8 @@
       padding: 0 0 0 17px;
   
       @media (prefers-color-scheme: dark) {
-        background-color: $bg-dark;
-        color: $input-color-dark;
+        background-color: v.$bg-dark;
+        color: v.$input-color-dark;
       }
   
       @media all and (max-width: 660px) {
@@ -158,15 +149,15 @@
       }
   
       &::-webkit-input-placeholder { /* stylelint-disable-line */
-        color: $desc-color;
+        color: v.$desc-color;
       }
   
       &::-moz-placeholder { /* stylelint-disable-line */
-        color: $desc-color;
+        color: v.$desc-color;
       }
   
       &:-ms-input-placeholder { /* stylelint-disable-line */
-        color: $desc-color;
+        color: v.$desc-color;
       }
     }
 
@@ -193,7 +184,7 @@
   }
 
   &-validation {
-    color: $theme-color;
+    color: v.$theme-color;
     font-size: 12px !important;
     font-weight: 700 !important;
     height: 18px !important;

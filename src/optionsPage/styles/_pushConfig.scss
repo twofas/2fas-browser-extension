@@ -18,9 +18,10 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
 
-&-push-config {
+@use "../../global-styles/variables" as v;
+
+.twofas-options-page-push-config {
   margin-top: 17px;
 
   &-radios {
@@ -29,43 +30,43 @@
 
   &-description {
     p {
-      color: $desc-color;
+      color: v.$desc-color;
       font-size: 12px;
       font-weight: 400;
       line-height: 1.5;
       max-width: 477px;
 
       a {
-        color: $theme-color;
+        color: v.$theme-color;
         text-decoration: none;
         transition: color .25s ease-in-out;
 
         &:hover {
-          color: color.adjust($theme-color, $lightness: -10%);
+          color: color.adjust(v.$theme-color, $lightness: -10%);
 
           svg {
-            stroke: color.adjust($theme-color, $lightness: -10%);
+            stroke: color.adjust(v.$theme-color, $lightness: -10%);
           }
         }
 
         &:focus {
-          color: color.adjust($theme-color, $lightness: -15%);
+          color: color.adjust(v.$theme-color, $lightness: -15%);
 
           svg {
-            stroke: color.adjust($theme-color, $lightness: -15%);
+            stroke: color.adjust(v.$theme-color, $lightness: -15%);
           }
         }
 
         &:active {
-          color: color.adjust($theme-color, $lightness: -20%);
+          color: color.adjust(v.$theme-color, $lightness: -20%);
 
           svg {
-            stroke: color.adjust($theme-color, $lightness: -20%);
+            stroke: color.adjust(v.$theme-color, $lightness: -20%);
           }
         }
 
         svg {
-          stroke: $theme-color;
+          stroke: v.$theme-color;
           transition: stroke .25s ease-in-out;
         }
       }
@@ -73,13 +74,13 @@
   }
 
   > p {
-    color: $color;
+    color: v.$color;
     font-size: 13px;
     margin-bottom: 10px;
     max-width: 600px;
 
     @media (prefers-color-scheme: dark) {
-      color: $color-2;
+      color: v.$color-2;
     }
   }
 
