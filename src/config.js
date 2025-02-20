@@ -106,7 +106,7 @@ const config = {
       TooSoon: diff => {
         return {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
-          Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', 10 - Math.round(diff))
+          Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
         }
       }
     },

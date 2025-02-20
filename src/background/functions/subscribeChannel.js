@@ -95,6 +95,7 @@ const subscribeChannel = (storage, tabID, data = {
   
       channel.ws.onmessage = async message => {
         const data = JSON.parse(message.data);
+        clearTimeout(timeoutID);
   
         switch (data.event) {
           case 'browser_extensions.pairing.success': {
@@ -103,7 +104,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }
@@ -114,7 +114,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }
@@ -127,7 +126,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }
