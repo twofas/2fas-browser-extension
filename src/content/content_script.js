@@ -34,7 +34,6 @@ const contentScriptRun = async () => {
     return false;
   }
 
-  // @TODO: Check this!
   const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
   browser.runtime.onMessage.addListener(onMessageListener);
 

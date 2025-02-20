@@ -19,7 +19,6 @@
 
 const browser = require('webextension-polyfill');
 
-// @TODO: Check this!
 const sendMessageToAllFrames = async (tabId, message) => {
   let frames;
 
@@ -30,28 +29,8 @@ const sendMessageToAllFrames = async (tabId, message) => {
   }
 
   return Promise.all(
-    frames.map(frame => browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => false))
+    frames.map(frame => browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId })).catch(() => false)
   );
-
-  // return Promise.all(frames.map(frame => {
-  //   return browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => Promise.resolve(false));
-  // })).then(res => {
-  //   return res.map(frame => {
-  //     if (!frame) {
-  //       return false;
-  //     }
-
-  //     switch (frame?.status) {
-  //       case 'activeElement': {
-  //         return frame;
-  //       }
-  
-  //       default: {
-  //         return false;
-  //       }
-  //     }
-  //   });
-  // }).catch(() => false);
 };
 
 module.exports = sendMessageToAllFrames;

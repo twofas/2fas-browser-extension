@@ -22,8 +22,7 @@ const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
-// @TODO: Check this!
-const contentOnMessage = async (request, sender, sendResponse, tabData) => {
+const contentOnMessage = (request, sender, sendResponse, tabData) => {
   if (!request || !request.action) {
     sendResponse({ status: 'error' });
     return true;
@@ -38,46 +37,50 @@ const contentOnMessage = async (request, sender, sendResponse, tabData) => {
 
   switch (request.action) {
     case 'inputToken': {
-      let storage;
+      (async () => {
+        let storage;
 
-      try {
-        storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-      } catch (err) {
-        await storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
-        sendResponse({ status: 'error', message: 'Failed to load data' });
-      }
-
-      if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
-        if (isInFrame()) {
-          sendResponse({ status: 'omitted' });
+        try {
+          storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+        } catch (err) {
+          await storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
+          sendResponse({ status: 'error', message: 'Failed to load data' });
         }
-
-        sendResponse({
-          status: 'notification',
-          title: config.Texts.Error.UndefinedError.Title,
-          message: config.Texts.Error.UndefinedError.Message
-        });
-      }
-
-      const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
-      let tokenInput;
-
-      if (lastFocusedInput) {
-        tokenInput = getTokenInput(lastFocusedInput);
-      }
-      
-      if (!lastFocusedInput || !tokenInput) {
-        tokenNotification(request.token);
-        sendResponse({ status: 'ok' });
-      } else {
-        sendResponse(inputToken(request, tokenInput, tabData?.url));
-      }
+  
+        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
+          if (isInFrame()) {
+            sendResponse({ status: 'omitted' });
+          }
+  
+        // @TODO: Add better texts!
+          sendResponse({
+            status: 'notification',
+            title: config.Texts.Error.UndefinedError.Title,
+            message: config.Texts.Error.UndefinedError.Message
+          });
+        }
+  
+        const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
+        let tokenInput;
+  
+        if (lastFocusedInput) {
+          tokenInput = getTokenInput(lastFocusedInput);
+        }
+        
+        if (!lastFocusedInput || !tokenInput) {
+          tokenNotification(request.token);
+          sendResponse({ status: 'ok' });
+        } else {
+          sendResponse(inputToken(request, tokenInput, tabData?.url));
+        }
+      })();
 
       break;
     }
 
     case 'getActiveElement': {
-      sendResponse(getActiveElement());
+      const activeElementResponse = getActiveElement();
+      sendResponse(activeElementResponse);
       break;
     }
 
