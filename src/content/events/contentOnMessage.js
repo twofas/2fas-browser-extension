@@ -52,12 +52,12 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
             sendResponse({ status: 'omitted' });
           }
   
-        // @TODO: Add better texts!
           sendResponse({
             status: 'notification',
-            title: config.Texts.Error.UndefinedError.Title,
-            message: config.Texts.Error.UndefinedError.Message
+            title: config.Texts.Error.OldRequest.Title,
+            message: config.Texts.Error.OldRequest.Message
           });
+          return true;
         }
   
         const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;

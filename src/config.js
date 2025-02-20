@@ -96,6 +96,10 @@ const config = {
       StorageIntegrity: {
         Title: browser.i18n.getMessage('errorStorageIntegrityTitle') || t.errorStorageIntegrityTitle,
         Message: browser.i18n.getMessage('errorStorageIntegrityMessage') || t.errorStorageIntegrityMessage
+      },
+      OldRequest: {
+        Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
+        Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
       }
     },
     Warning: {
