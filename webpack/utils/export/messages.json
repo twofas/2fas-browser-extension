@@ -116,6 +116,8 @@
   "errorInputNotExistMessage": "Please refresh and try again.",
   "errorStorageIntegrityTitle": "Browser Extension data error",
   "errorStorageIntegrityMessage": "Please reinstall browser extension or contact with 2FAS Support on Discord",
+  "errorOldRequestTitle": "Outdated request",
+  "errorOldRequestMessage": "It seems like you're responding to an old request that can no longer be executed",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
   "successPushSentTitle": "Push sent",
