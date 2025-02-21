@@ -106,10 +106,12 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
 
     case 'contentScript': {
       sendResponse({ status: 'ok' });
+      break;
     }
 
     default: {
       sendResponse({ status: 'error' });
+      break;
     }
   }
 

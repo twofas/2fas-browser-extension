@@ -59,7 +59,9 @@
       "match_about_blank": true
     }
   ],
-  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "commands": {
     "tokenRequest": {
       "description": "__MSG_shortcutDesc__",
@@ -83,9 +85,7 @@
     "storage",
     "notifications",
     "contextMenus",
-    "webNavigation",
-    "https://*.2fas.com/*",
-    "wss://*.2fas.com/*"
+    "webNavigation"
   ],
   "web_accessible_resources": [
     "/fonts/*"

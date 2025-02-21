@@ -29,17 +29,11 @@ const checkIconTitleText = async tabID => {
     return true;
   }
 
-  let badgeText;
-
   if (process.env.EXT_PLATFORM === 'Safari') {
     return true;
   }
 
-  if (process.env.EXT_PLATFORM === 'Firefox') {
-    badgeText = await browser.browserAction.getTitle({ tabId: tabID });
-  } else {
-    badgeText = await browser.action.getTitle({ tabId: tabID });
-  }
+  const badgeText = await browser.action.getTitle({ tabId: tabID });
 
   if (badgeText === browser.i18n.getMessage('inActiveTabInfo')) {
     showNativePush(config.Texts.Error.InactiveTab, true);

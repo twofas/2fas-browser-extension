@@ -31,11 +31,7 @@ browser.runtime.onMessage.addListener(onMessage);
 browser.runtime.onStartup.addListener(onStartup);
 browser.runtime.onConnect.addListener(onConnect);
 
-if (process.env.EXT_PLATFORM === 'Firefox') {
-  browser.browserAction.onClicked.addListener(browserAction);
-} else {
-  browser.action.onClicked.addListener(browserAction);
-}
+browser.action.onClicked.addListener(browserAction);
 
 browser.commands.onCommand.addListener(onCommand);
 browser.contextMenus.onClicked.addListener(onContextMenuClick);
