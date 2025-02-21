@@ -22,31 +22,26 @@ const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 
 const getIconObj = async (tabID, isActive) => {
   const MAX_TYPE = 2;
-  const isSafari = process.env.EXT_PLATFORM === 'Safari';
   
   let type = 0;
   let typeFilename = '';
   let iconFileName = '';
 
-  if (isSafari) {
-    iconFileName = isActive ? 'safari' : 'safarigray';
-  } else {
-    const storage = await loadFromLocalStorage(['extIcon']);
+  const storage = await loadFromLocalStorage(['extIcon']);
 
-    if (storage && storage?.extIcon && !isNaN(storage.extIcon)) {
-      type = parseInt(storage.extIcon, 10);
+  if (storage && storage?.extIcon && !isNaN(storage.extIcon)) {
+    type = parseInt(storage.extIcon, 10);
 
-      if (type > MAX_TYPE) {
-        type = 0;
-      }
+    if (type > MAX_TYPE) {
+      type = 0;
     }
-  
-    if (type !== 0) {
-      typeFilename = `_${type}`;
-    }
-
-    iconFileName = isActive ? typeFilename : `${typeFilename}gray`;
   }
+
+  if (type !== 0) {
+    typeFilename = `_${type}`;
+  }
+
+  iconFileName = isActive ? typeFilename : `${typeFilename}gray`;
 
   const iconObj = {
     path: {
@@ -66,17 +61,21 @@ const getIconObj = async (tabID, isActive) => {
 };
 
 const setIcon = async (tabID, isActive = true, changeTitle = false) => {
+  if (process.env.EXT_PLATFORM === 'Safari') {
+    return false;
+  }
+
   const iconObj = await getIconObj(tabID, isActive);
   const iconTitle = isActive ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
 
   if (process.env.EXT_PLATFORM === 'Firefox') {
-    browser.browserAction.setIcon(iconObj);
+    await browser.browserAction.setIcon(iconObj);
 
     if (isActive || (!isActive && changeTitle)) {
       await browser.browserAction.setTitle({ tabId: tabID, title: iconTitle });
     }
   } else {
-    browser.action.setIcon(iconObj);
+    await browser.action.setIcon(iconObj);
 
     if (isActive || (!isActive && changeTitle)) {
       await browser.action.setTitle({ tabId: tabID, title: iconTitle });
