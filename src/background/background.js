@@ -22,7 +22,7 @@ const { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, o
 const { onTabRemoved, onTabUpdated, onTabActivated } = require('./tabs');
 
 const browserInfo = getBrowserInfo();
-if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
+if (process.env.EXT_PLATFORM === 'Firefox') {
   createContextMenus();
 }
 
@@ -31,7 +31,7 @@ browser.runtime.onMessage.addListener(onMessage);
 browser.runtime.onStartup.addListener(onStartup);
 browser.runtime.onConnect.addListener(onConnect);
 
-if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
+if (process.env.EXT_PLATFORM === 'Firefox') {
   browser.browserAction.onClicked.addListener(browserAction);
 } else {
   browser.action.onClicked.addListener(browserAction);

@@ -20,6 +20,7 @@
 const browser = require('webextension-polyfill');
 
 const createFirefoxOptionsMenu = () => {
+  // @TODO: Change for Firefox MV3
   if (process.env.EXT_PLATFORM === 'Firefox') {
     browser.contextMenus.create({
       title: browser.i18n.getMessage('options'),

@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "2FAS Auth - Two Factor Authentication",
   "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
@@ -13,7 +13,7 @@
     "96": "images/icons/icon96.png",
     "128": "images/icons/icon128.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "images/icons/icon16safari.png",
       "32": "images/icons/icon32safari.png",
@@ -27,9 +27,7 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": [
-      "background/background.js"
-    ]
+    "service_worker": "background/background.js"
   },
   "browser_specific_settings": {
     "safari": {

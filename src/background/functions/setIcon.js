@@ -69,7 +69,7 @@ const setIcon = async (tabID, isActive = true, changeTitle = false) => {
   const iconObj = await getIconObj(tabID, isActive);
   const iconTitle = isActive ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
 
-  if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
+  if (process.env.EXT_PLATFORM === 'Firefox') {
     browser.browserAction.setIcon(iconObj);
 
     if (isActive || (!isActive && changeTitle)) {

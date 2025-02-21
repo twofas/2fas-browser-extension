@@ -23,13 +23,13 @@ const createContextMenus = require('../../background/functions/createContextMenu
 
 const handleContextMenuChange = e => {
   return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
-    .then(storage => {
+    .then(async storage => {
       if (storage.contextMenu) {
-        browser.contextMenus.removeAll();
+        await browser.contextMenus.removeAll();
         createContextMenus();
       } else {
         try {
-          browser.contextMenus.remove('twofas-context-menu');
+          await browser.contextMenus.remove('twofas-context-menu');
         } catch {}
       }
     });
