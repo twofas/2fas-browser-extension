@@ -60,7 +60,6 @@
     "babel-loader": "^9.1.3",
     "babel-plugin-transform-minify-booleans": "^6.9.4",
     "babel-plugin-transform-remove-debugger": "^6.9.4",
-    "babel-preset-minify": "^0.5.2",
     "browserslist": "^4.24.4",
     "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
