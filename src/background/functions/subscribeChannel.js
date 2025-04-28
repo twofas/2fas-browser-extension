@@ -70,7 +70,7 @@ const subscribeChannel = (storage, tabID, data = {
           }
   
           return reject(new Error('timeout'));
-        }, (1000 * 60 * config.WebSocketTimeout) - 100);
+        }, (1000 * 60 * config.WebSocketTimeout) - 5000);
   
         browser.tabs.onRemoved.addListener(tabClosedFunc);
         browser.tabs.onUpdated.addListener(tabChangedFunc);
@@ -87,7 +87,7 @@ const subscribeChannel = (storage, tabID, data = {
         return reject(err);
       };
   
-      channel.ws.onclose = reason => {
+      channel.ws.onclose = event => {
         browser.tabs.onRemoved.removeListener(tabClosedFunc);
         browser.tabs.onUpdated.removeListener(tabChangedFunc);
         clearTimeout(timeoutID);
