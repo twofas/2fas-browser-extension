@@ -25,7 +25,12 @@ const handleFrontElement = async (activeElements, tabId, storage) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
-    properElements = activeElements.filter(el => el.id && (el.nodeName === 'input' || el.nodeName === 'textarea'));
+    properElements = activeElements.filter(el => 
+      el?.id && 
+      (typeof el?.id === 'string' || el?.id instanceof String) &&
+      el?.id?.length > 0 &&
+      (el?.nodeName === 'input' || el?.nodeName === 'textarea')
+    );
   }
 
   if (properElements.length > 0) {
