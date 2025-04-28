@@ -27,8 +27,8 @@
     "open_in_tab": true
   },
   "background": {
-    "service_worker": "background/background.js",
-    "persistent": false
+    "scripts": ["background/background.js"],
+    "type": "module"
   },
   "browser_specific_settings": {
     "safari": {
