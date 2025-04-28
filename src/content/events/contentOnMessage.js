@@ -28,7 +28,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     return true;
   }
 
-  if (request?.action === 'contentScript') {
+  if (request?.action === 'contentScript' || request?.action === 'notification' || request?.action === 'notificationInfo') {
     if (isInFrame()) {
       sendResponse({ status: 'omitted' });
       return true;
