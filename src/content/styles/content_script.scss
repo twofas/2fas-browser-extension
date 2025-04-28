@@ -114,21 +114,26 @@
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
+        box-shadow: none !important;
         color: v.$theme-color !important;
         cursor: pointer !important;
         display: inline-block !important;
         font-family: 'Montserrat', sans-serif !important;
         font-size: 12px !important;
         font-weight: 700 !important;
+        height: 15px !important;
         line-height: 1 !important;
         margin-bottom: 0 !important;
         margin-right: 8px !important;
         margin-top: 0 !important;
         min-height: 0 !important;
         min-width: 0 !important;
+        overflow: auto !important;
         padding: 0 !important;
         position: static !important;
+        text-overflow: unset !important;
         transition: color .2s ease-in-out !important;
+        white-space: nowrap !important;
 
         &:last-of-type {
           margin-right: 0 !important;
