@@ -23,53 +23,70 @@ const generateDefaultStorage = require('./generateDefaultStorage');
 const storeLog = require('../../partials/storeLog');
 const TwoFasNotification = require('../../notification');
 
-const onMessage = (request, sender) => {
-  return new Promise(resolve => {
-    switch (request.action) {
-      case 'getTabData': {
-        if (!sender?.tab?.id) {
-          return resolve({ status: 'No tabID' });
-        }
+const onMessage = async (request, sender, sendResponse) => {
+  if (!request || !request.action) {
+    sendResponse({ status: 'error' });
+    return true;
+  }
 
-        const url = sender?.tab?.url || sender.url;
-        let urlPath;
-
-        try {
-          urlPath = new URL(url);
-          urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
-        } catch (err) {
-          urlPath = url;
-        }
-
-        return resolve({
-          id: sender?.tab?.id,
-          url: sender?.tab?.url,
-          urlPath,
-          status: sender?.tab?.status
-        });
+  switch (request.action) {
+    case 'getTabData': {
+      if (!sender?.tab?.id) {
+        sendResponse({ status: 'No tabID' });
+        return true;
       }
 
-      case 'storageReset': {
-        const browserInfo = getBrowserInfo();
+      const url = sender?.tab?.url || sender.url;
+      let urlPath;
 
-        return generateDefaultStorage(browserInfo)
-          .then(() => resolve(true))
-          .catch(async err => await storeLog('error', 37, err, 'storageReset'));
+      try {
+        urlPath = new URL(url);
+        urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
+      } catch (err) {
+        urlPath = url;
       }
 
-      case 'notificationOnBackground': {
-        if (!request.data) {
-          return resolve({ status: 'No data' });
-        }
+      sendResponse({
+        id: sender?.tab?.id,
+        url: sender?.tab?.url,
+        urlPath,
+        status: sender?.tab?.status
+      });
 
-        return TwoFasNotification.show(request.data, request.tabID);
-      }
-
-      default: {
-        return resolve({ status: 'Empty action' });
-      }
+      break;
     }
-  });
+
+    case 'storageReset': {
+      const browserInfo = getBrowserInfo();
+
+      try {
+        await generateDefaultStorage(browserInfo);
+        sendResponse({ status: 'ok' });
+      } catch {
+        await storeLog('error', 37, err, 'storageReset');
+        sendResponse({ status: 'error' });
+      }
+
+      break;
+    }
+
+    case 'notificationOnBackground': {
+      if (!request.data) {
+        sendResponse({ status: 'No data' });
+      }
+
+      await TwoFasNotification.show(request.data, request.tabID);
+      sendResponse({ status: 'ok' });
+      break;
+    }
+
+    default: {
+      sendResponse({ status: 'Empty action' });
+      break;
+    }
+  }
+
+  return true;
 };
 
 module.exports = onMessage;
