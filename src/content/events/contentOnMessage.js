@@ -68,7 +68,10 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
         }
         
         if (!lastFocusedInput || !tokenInput) {
-          tokenNotification(request.token);
+          if (!isInFrame()) {
+            tokenNotification(request.token);
+          }
+
           sendResponse({ status: 'ok' });
         } else {
           sendResponse(inputToken(request, tokenInput, tabData?.url));

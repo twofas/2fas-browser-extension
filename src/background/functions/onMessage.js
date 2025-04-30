@@ -60,11 +60,13 @@ const onMessage = (request, sender, sendResponse) => {
       const browserInfo = getBrowserInfo();
 
       try {
-        (async () => { await generateDefaultStorage(browserInfo); })();
-        sendResponse({ status: 'ok' });
+        generateDefaultStorage(browserInfo).then(() => {
+          sendResponse({ status: 'ok' });
+        });
       } catch {
-        (async () => { await storeLog('error', 37, err, 'storageReset'); })();
-        sendResponse({ status: 'error' });
+        storeLog('error', 37, err, 'storageReset').then(() => {
+          sendResponse({ status: 'error' });
+        });
       }
 
       break;
@@ -75,8 +77,10 @@ const onMessage = (request, sender, sendResponse) => {
         sendResponse({ status: 'No data' });
       }
 
-      (async () => { await TwoFasNotification.show(request.data, request.tabID); })();
-      sendResponse({ status: 'ok' });
+      TwoFasNotification.show(request.data, request.tabID).then(() => {
+        sendResponse({ status: 'ok' });
+      });
+      
       break;
     }
 
