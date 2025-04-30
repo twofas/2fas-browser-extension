@@ -34,14 +34,14 @@ const contentScriptRun = async () => {
     return false;
   }
 
-  const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
-  browser.runtime.onMessage.addListener(onMessageListener);
-
   try {
     tabData = await getTabData();
   } catch (e) {
     throw new Error(e);
   }
+
+  const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
+  browser.runtime.onMessage.addListener(onMessageListener);
 
   try {
     storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);

@@ -23,7 +23,7 @@ const generateDefaultStorage = require('./generateDefaultStorage');
 const storeLog = require('../../partials/storeLog');
 const TwoFasNotification = require('../../notification');
 
-const onMessage = async (request, sender, sendResponse) => {
+const onMessage = (request, sender, sendResponse) => {
   if (!request || !request.action) {
     sendResponse({ status: 'error' });
     return true;
@@ -60,10 +60,10 @@ const onMessage = async (request, sender, sendResponse) => {
       const browserInfo = getBrowserInfo();
 
       try {
-        await generateDefaultStorage(browserInfo);
+        (async () => { await generateDefaultStorage(browserInfo); })();
         sendResponse({ status: 'ok' });
       } catch {
-        await storeLog('error', 37, err, 'storageReset');
+        (async () => { await storeLog('error', 37, err, 'storageReset'); })();
         sendResponse({ status: 'error' });
       }
 
@@ -71,11 +71,11 @@ const onMessage = async (request, sender, sendResponse) => {
     }
 
     case 'notificationOnBackground': {
-      if (!request.data) {
+      if (!request?.data) {
         sendResponse({ status: 'No data' });
       }
 
-      await TwoFasNotification.show(request.data, request.tabID);
+      (async () => { await TwoFasNotification.show(request.data, request.tabID); })();
       sendResponse({ status: 'ok' });
       break;
     }

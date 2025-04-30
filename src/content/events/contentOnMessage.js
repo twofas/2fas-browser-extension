@@ -47,7 +47,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
           sendResponse({ status: 'error', message: 'Failed to load data' });
         }
   
-        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
+        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
           }
