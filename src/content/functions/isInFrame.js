@@ -18,7 +18,7 @@
 //
 
 const isInFrame = () => {
-  return window.location !== window.parent.location;
+  return window.self !== window.top;
 };
 
 module.exports = isInFrame;
