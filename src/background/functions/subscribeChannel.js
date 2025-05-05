@@ -70,7 +70,7 @@ const subscribeChannel = (storage, tabID, data = {
           }
   
           return reject(new Error('timeout'));
-        }, (1000 * 60 * config.WebSocketTimeout) - 100);
+        }, (1000 * 60 * config.WebSocketTimeout) - 5000);
   
         browser.tabs.onRemoved.addListener(tabClosedFunc);
         browser.tabs.onUpdated.addListener(tabChangedFunc);
@@ -87,7 +87,7 @@ const subscribeChannel = (storage, tabID, data = {
         return reject(err);
       };
   
-      channel.ws.onclose = reason => {
+      channel.ws.onclose = event => {
         browser.tabs.onRemoved.removeListener(tabClosedFunc);
         browser.tabs.onUpdated.removeListener(tabChangedFunc);
         clearTimeout(timeoutID);
@@ -95,6 +95,7 @@ const subscribeChannel = (storage, tabID, data = {
   
       channel.ws.onmessage = async message => {
         const data = JSON.parse(message.data);
+        clearTimeout(timeoutID);
   
         switch (data.event) {
           case 'browser_extensions.pairing.success': {
@@ -103,7 +104,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }
@@ -114,7 +114,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }
@@ -127,7 +126,6 @@ const subscribeChannel = (storage, tabID, data = {
   
             browser.tabs.onRemoved.removeListener(tabClosedFunc);
             browser.tabs.onUpdated.removeListener(tabChangedFunc);
-            clearTimeout(timeoutID);
   
             return true;
           }

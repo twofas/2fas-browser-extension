@@ -17,12 +17,35 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../global-styles/variables", "../global-styles/global", "../global-styles/input", "../global-styles/buttons", "../global-styles/shortcut", "styles/modal";
+@use "../global-styles/variables" as v;
+
+@use "../global-styles/global";
+
+@use "../global-styles/input";
+
+@use "../global-styles/buttons";
+
+@use "../global-styles/shortcut";
+
+@use "styles/modal";
+
+@use "styles/menu";
+
+@use "styles/content";
+
+@use "styles/pinInfo";
+
+@use "styles/pushConfig";
+
+@use "styles/socialIcons";
+
+@use "styles/integrityError";
+
 @import url('/node_modules/slim-select/dist/slimselect.css');
 
 .twofas-options-page {
-  background-color: $bg;
-  color: $color;
+  background-color: v.$bg;
+  color: v.$color;
   display: flex;
   flex-direction: row;
   height: 100%;
@@ -30,27 +53,25 @@
   width: 100%;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    color: $color-2;
+    background-color: v.$dark-color;
+    color: v.$color-2;
   }
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+  @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
     flex-direction: column;
   }
-
-  @import "styles/menu", "styles/content", "styles/pinInfo", "styles/pushConfig", "styles/socialIcons", "styles/integrityError";
 }
 
 .ss-main {
-  background-color: $input-bg;
+  background-color: v.$input-bg;
   border: 0;
   border-radius: 10px;
   height: 51px;
   padding: 0 17px;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $input-bg-dark;
-    color: $input-color-dark;
+    background-color: v.$input-bg-dark;
+    color: v.$input-color-dark;
   }
 
   @media all and (max-width: 660px) {
@@ -77,26 +98,26 @@
     }
 
     > span {
-      color: $input-color;
+      color: v.$input-color;
       font-size: 16px;
       font-weight: 400;
 
       @media (prefers-color-scheme: dark) {
-        color: $input-color-dark;
+        color: v.$input-color-dark;
       }
     }
   }
 }
 
 .ss-content {
-  background-color: $color-2;
+  background-color: v.$color-2;
   border: 0;
   border-radius: 10px;
-  box-shadow: rgba($color-header-line-dark, .2) 0 2px 8px 0;
+  box-shadow: rgba(v.$color-header-line-dark, .2) 0 2px 8px 0;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $dark-color;
-    box-shadow: rgba($color, .2) 0 2px 8px 0;
+    background-color: v.$dark-color;
+    box-shadow: rgba(v.$color, .2) 0 2px 8px 0;
   }
 
   &.ss-open-below,
@@ -117,19 +138,19 @@
 
       &:not(.ss-disabled) {
         &.ss-selected {
-          background-color: $select-option-selected;
-          color: $color-header;
+          background-color: v.$select-option-selected;
+          color: v.$color-header;
 
           @media (prefers-color-scheme: dark) {
-            background-color: $select-option-selected-dark;
-            color: $color-2;
+            background-color: v.$select-option-selected-dark;
+            color: v.$color-2;
           }
         }
       }
 
       &:hover {
-        background-color: rgba($theme-color, .8);
-        color: $color-2;
+        background-color: rgba(v.$theme-color, .8);
+        color: v.$color-2;
       }
 
       > span {

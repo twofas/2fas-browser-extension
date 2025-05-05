@@ -43,7 +43,9 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
       c.errorInfo = {
         currentTargetURL: errObj?.currentTarget?.url || '',
         path: errObj?.path || [],
-        type: errObj?.type || ''
+        type: errObj?.type || '',
+        code: errObj?.code || '',
+        reason: errObj?.reason || ''
       };
 
       break;

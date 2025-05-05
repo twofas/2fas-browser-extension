@@ -23,53 +23,74 @@ const generateDefaultStorage = require('./generateDefaultStorage');
 const storeLog = require('../../partials/storeLog');
 const TwoFasNotification = require('../../notification');
 
-const onMessage = (request, sender) => {
-  return new Promise(resolve => {
-    switch (request.action) {
-      case 'getTabData': {
-        if (!sender?.tab?.id) {
-          return resolve({ status: 'No tabID' });
-        }
+const onMessage = (request, sender, sendResponse) => {
+  if (!request || !request.action) {
+    sendResponse({ status: 'error' });
+    return true;
+  }
 
-        const url = sender?.tab?.url || sender.url;
-        let urlPath;
+  switch (request.action) {
+    case 'getTabData': {
+      if (!sender?.tab?.id) {
+        sendResponse({ status: 'No tabID' });
+        return true;
+      }
 
-        try {
-          urlPath = new URL(url);
-          urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
-        } catch (err) {
-          urlPath = url;
-        }
+      const url = sender?.tab?.url || sender.url;
+      let urlPath;
 
-        return resolve({
-          id: sender?.tab?.id,
-          url: sender?.tab?.url,
-          urlPath,
-          status: sender?.tab?.status
+      try {
+        urlPath = new URL(url);
+        urlPath = `${urlPath.protocol}//${urlPath.host}${urlPath.pathname}`;
+      } catch (err) {
+        urlPath = url;
+      }
+
+      sendResponse({
+        id: sender?.tab?.id,
+        url: sender?.tab?.url,
+        urlPath,
+        status: sender?.tab?.status
+      });
+
+      break;
+    }
+
+    case 'storageReset': {
+      const browserInfo = getBrowserInfo();
+
+      try {
+        generateDefaultStorage(browserInfo).then(() => {
+          sendResponse({ status: 'ok' });
+        });
+      } catch {
+        storeLog('error', 37, err, 'storageReset').then(() => {
+          sendResponse({ status: 'error' });
         });
       }
 
-      case 'storageReset': {
-        const browserInfo = getBrowserInfo();
-
-        return generateDefaultStorage(browserInfo)
-          .then(() => resolve(true))
-          .catch(async err => await storeLog('error', 37, err, 'storageReset'));
-      }
-
-      case 'notificationOnBackground': {
-        if (!request.data) {
-          return resolve({ status: 'No data' });
-        }
-
-        return TwoFasNotification.show(request.data, request.tabID);
-      }
-
-      default: {
-        return resolve({ status: 'Empty action' });
-      }
+      break;
     }
-  });
+
+    case 'notificationOnBackground': {
+      if (!request?.data) {
+        sendResponse({ status: 'No data' });
+      }
+
+      TwoFasNotification.show(request.data, request.tabID).then(() => {
+        sendResponse({ status: 'ok' });
+      });
+      
+      break;
+    }
+
+    default: {
+      sendResponse({ status: 'Empty action' });
+      break;
+    }
+  }
+
+  return true;
 };
 
 module.exports = onMessage;

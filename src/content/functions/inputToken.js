@@ -66,13 +66,19 @@ const inputToken = (request, inputElement, siteURL) => {
 
     return runTasksWithDelay(promises, 150)
       .then(async () => {
-        const tab = await getTabData();
+        let tab = {};
 
-        if (tab.status === 'complete') {
+        try {
+          tab = await getTabData();
+        } catch {
+          return resolve({ status: 'completed', url: siteURL });
+        }
+
+        if (tab?.status === 'complete') {
           clickSubmit(inputElement, siteURL);
         }
 
-        clearAfterInputToken(inputElement, tab.id);
+        clearAfterInputToken(inputElement, tab?.id);
 
         return resolve({
           status: 'completed',

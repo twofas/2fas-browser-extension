@@ -25,7 +25,7 @@ const generateDefaultStorage = require('./generateDefaultStorage');
 const checkSafariStorage = require('./checkSafariStorage');
 
 const onInstalled = (details, browserInfo) => {
-  if (process.env.EXT_PLATFORM !== 'Safari' && process.env.EXT_PLATFORM !== 'Firefox') {
+  if (process.env.EXT_PLATFORM !== 'Firefox') {
     createContextMenus();
   }
 

@@ -18,12 +18,10 @@
 //
 
 @use "sass:color";
-@import "variables";
+
+@use "variables" as v;
 
 .btn {
-  // VARIABLES
-  $btn-icon-bg: $color-2;
-
   -moz-appearance: none; /* stylelint-disable-line */
   -webkit-appearance: none; /* stylelint-disable-line */
   appearance: none;
@@ -53,7 +51,7 @@
     line-height: 116px;
     padding: 0 48px;
 
-    @media all and (max-width: $screen-md-max) {
+    @media all and (max-width: v.$screen-md-max) {
       border-radius: 50px;
       font-size: 32px;
       height: 100px;
@@ -61,14 +59,14 @@
       padding: 0 32px;
     }
 
-    @media all and (max-width: $screen-sm-max) {
+    @media all and (max-width: v.$screen-sm-max) {
       border-radius: 40px;
       font-size: 28px;
       height: 80px;
       line-height: 80px;
     }
 
-    @media all and (max-width: $screen-xs-max) {
+    @media all and (max-width: v.$screen-xs-max) {
       font-size: 24px;
       line-height: 1;
       padding: 32px;
@@ -111,67 +109,67 @@
 
   // COLORS
   &.btn-clear {
-    color: $theme-color;
+    color: v.$theme-color;
 
     &:hover {
-      color: color.adjust($theme-color, $lightness: -10%);
+      color: color.adjust(v.$theme-color, $lightness: -10%);
     }
 
     &:active {
-      color: color.adjust($theme-color, $lightness: -20%);
+      color: color.adjust(v.$theme-color, $lightness: -20%);
     }
   }
 
   &.btn-theme {
-    background-color: $theme-color;
-    color: $color-2;
+    background-color: v.$theme-color;
+    color: v.$color-2;
 
     svg {
-      fill: $theme-color;
+      fill: v.$theme-color;
     }
 
     &:hover {
-      background-color: color.adjust($theme-color, $lightness: -10%);
+      background-color: color.adjust(v.$theme-color, $lightness: -10%);
 
       svg {
-        fill: color.adjust($theme-color, $lightness: -10%);
+        fill: color.adjust(v.$theme-color, $lightness: -10%);
       }
     }
 
     &:active {
-      background-color: color.adjust($theme-color, $lightness: -20%);
+      background-color: color.adjust(v.$theme-color, $lightness: -20%);
 
       svg {
-        fill: color.adjust($theme-color, $lightness: -20%);
+        fill: color.adjust(v.$theme-color, $lightness: -20%);
       }
     }
   }
 
   &.btn-theme-outline {
     background-color: transparent;
-    border: 2px solid $theme-color;
-    color: $color-2;
+    border: 2px solid v.$theme-color;
+    color: v.$color-2;
     transition: background-color .2s ease-in-out, color .2s ease-in-out, border-color .2s ease-in-out;
 
     svg {
-      fill: $theme-color;
+      fill: v.$theme-color;
     }
 
     &:hover {
-      border-color: color.adjust($theme-color, $lightness: -10%);
-      color: color.adjust($theme-color, $lightness: -10%);
+      border-color: color.adjust(v.$theme-color, $lightness: -10%);
+      color: color.adjust(v.$theme-color, $lightness: -10%);
 
       svg {
-        fill: color.adjust($theme-color, $lightness: -10%);
+        fill: color.adjust(v.$theme-color, $lightness: -10%);
       }
     }
 
     &:active {
-      border-color: color.adjust($theme-color, $lightness: -20%);
-      color: color.adjust($theme-color, $lightness: -20%);
+      border-color: color.adjust(v.$theme-color, $lightness: -20%);
+      color: color.adjust(v.$theme-color, $lightness: -20%);
 
       svg {
-        fill: color.adjust($theme-color, $lightness: -20%);
+        fill: color.adjust(v.$theme-color, $lightness: -20%);
       }
     }
   }
@@ -184,7 +182,7 @@
     min-width: 250px;
     text-transform: unset;
 
-    @media all and (max-width: $screen-sm-max) {
+    @media all and (max-width: v.$screen-sm-max) {
       gap: 0 16px;
     }
 
@@ -231,7 +229,7 @@
 
   &.btn-config {
     align-items: center;
-    color: $theme-color;
+    color: v.$theme-color;
     display: inline-flex;
     gap: 0 6px;
     padding: 0 24px;
@@ -261,7 +259,7 @@
   // ICON
   .btn-icon {
     align-items: center;
-    background-color: $btn-icon-bg;
+    background-color: v.$color-2;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -273,9 +271,6 @@
 }
 
 .twofas-toggle {
-  // VARIABLES
-  $twofas-toggle-circle-bg: $color-2;
-
   &.loaded {
     label {
       .twofas-toggle-box {
@@ -294,7 +289,7 @@
     &:checked {
       + label {
         .twofas-toggle-box {
-          background-color: $theme-color;
+          background-color: v.$theme-color;
 
           .twofas-toggle-box-circle {
             transform: translateX(15px);
@@ -314,7 +309,7 @@
 
     .twofas-toggle-box {
       border-radius: 9px;
-      background: $color-header;
+      background: v.$color-header;
       display: block;
       height: 17px;
       margin-right: 10px;
@@ -322,7 +317,7 @@
       width: 32px;
 
       .twofas-toggle-box-circle {
-        background-color: $twofas-toggle-circle-bg;
+        background-color: v.$color-2;
         border-radius: 50%;
         height: 13px;
         left: 2px;
@@ -337,17 +332,17 @@
       user-select: none;
 
       > span {
-        color: $color;
+        color: v.$color;
         font-size: 14px;
         font-weight: 400;
         line-height: 17px;
         user-select: none;
 
         @media all and (prefers-color-scheme: dark) {
-          color: $color-2;
+          color: v.$color-2;
         }
 
-        @media all and (max-width: $screen-xs-max) {
+        @media all and (max-width: v.$screen-xs-max) {
           font-size: 12px;
         }
 

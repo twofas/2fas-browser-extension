@@ -22,7 +22,8 @@ const browserAction = require('./browserAction');
 
 const onCommand = command => {
   switch (command) {
-    case 'tokenRequest': {
+    case 'tokenRequest':
+    case 'tokenRequestSecondary': {
       return browser
         .tabs
         .query({ active: true, currentWindow: true })

@@ -1,9 +1,9 @@
 {
-  "manifest_version": 2,
-  "name": "2FAS - Two Factor Authentication",
-  "short_name": "2FAS",
+  "manifest_version": 3,
+  "name": "2FAS Auth - Two Factor Authentication",
+  "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "icons": {
@@ -13,7 +13,7 @@
     "96": "images/icons/icon96.png",
     "128": "images/icons/icon128.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "images/icons/icon16safari.png",
       "32": "images/icons/icon32safari.png",
@@ -27,9 +27,8 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": [
-      "background/background.js"
-    ]
+    "scripts": ["background/background.js"],
+    "type": "module"
   },
   "browser_specific_settings": {
     "safari": {
@@ -60,7 +59,9 @@
       "match_about_blank": true
     }
   ],
-  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "commands": {
     "tokenRequest": {
       "description": "__MSG_shortcutDesc__",
@@ -68,6 +69,13 @@
       "suggested_key": {
         "default": "Ctrl+Shift+2",
         "mac": "MacCtrl+Shift+2"
+      }
+    },
+    "tokenRequestSecondary": {
+      "description": "__MSG_shortcutDesc__",
+      "global": false,
+      "suggested_key": {
+        "mac": "MacCtrl+Shift+Period"
       }
     }
   },
@@ -77,9 +85,7 @@
     "storage",
     "notifications",
     "contextMenus",
-    "webNavigation",
-    "https://*.2fas.com/*",
-    "wss://*.2fas.com/*"
+    "webNavigation"
   ],
   "web_accessible_resources": [
     "/fonts/*"

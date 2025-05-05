@@ -22,8 +22,8 @@ const t = require('./_locales/en/notifications.json');
 
 const config = {
   WebSocketTimeout: 3, // in minutes
-  ResendPushTimeout: 10, // in seconds
-  ExtensionVersion: '1.7.3',
+  ResendPushTimeout: 30, // in seconds
+  ExtensionVersion: '1.7.4',
 
   Texts: {
     Error: {
@@ -96,13 +96,17 @@ const config = {
       StorageIntegrity: {
         Title: browser.i18n.getMessage('errorStorageIntegrityTitle') || t.errorStorageIntegrityTitle,
         Message: browser.i18n.getMessage('errorStorageIntegrityMessage') || t.errorStorageIntegrityMessage
+      },
+      OldRequest: {
+        Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
+        Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
       }
     },
     Warning: {
       TooSoon: diff => {
         return {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
-          Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', 10 - Math.round(diff))
+          Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
         }
       }
     },

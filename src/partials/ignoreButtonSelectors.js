@@ -24,7 +24,6 @@ const ignoreButtonSelectors = () => {
     ':not(#search)',
     ':not([class*="dropdown"])',
     ':not([class*="cancel"])',
-    ':not([class*="hidden"])',
     ':not([class*="checkbox"])',
     ':not([class*="mail"])',
     ':not([class*="phone"])',

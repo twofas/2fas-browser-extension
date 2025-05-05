@@ -18,37 +18,38 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
 
-&-configured {
+@use "../../global-styles/variables" as v;
+
+.twofas-install-page-configured {
   align-items: center;
   display: flex;
   flex-direction: column;
   height: 100%;
   padding-bottom: 120px;
 
-  @media all and (max-width: $screen-md-max) {
+  @media all and (max-width: v.$screen-md-max) {
     padding-bottom: 80px;
   }
 
-  @media all and (max-width: $screen-sm-max) {
+  @media all and (max-width: v.$screen-sm-max) {
     padding-bottom: 40px;
   }
 
-  @media all and (max-width: $screen-xs-max) {
+  @media all and (max-width: v.$screen-xs-max) {
     padding-bottom: 20px;
   }
 
   &-header {
-    color: $color;
+    color: v.$color;
     margin-bottom: 40px;
     text-align: center;
 
     @media (prefers-color-scheme: dark) {
-      color: $color-2;
+      color: v.$color-2;
     }
 
-    @media all and (max-width: $screen-sm-max) {
+    @media all and (max-width: v.$screen-sm-max) {
       margin-bottom: 30px;
     }
 
@@ -60,12 +61,12 @@
       max-width: 730px;
       width: 95%;
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         font-size: 32px;
         line-height: 42px;
       }
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         font-size: 28px;
         line-height: 38px;
       }
@@ -79,7 +80,7 @@
       max-width: 720px;
       width: 95%;
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         margin: 0 auto 30px;
       }
     }
@@ -89,19 +90,19 @@
       font-weight: 600;
       line-height: 33px;
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         font-size: 24px;
         line-height: 30px;
       }
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         font-size: 20px;
         line-height: 28px;
       }
     }
 
     hr {
-      background: $color-header-line;
+      background: v.$color-header-line;
       border: 0;
       display: block;
       height: 1px;
@@ -110,10 +111,10 @@
       width: 80%;
 
       @media (prefers-color-scheme: dark) {
-        background: $color-header-line-dark;
+        background: v.$color-header-line-dark;
       }
 
-      @media all and (max-width: $screen-xs-max) {
+      @media all and (max-width: v.$screen-xs-max) {
         margin: 0 auto 30px;
       }
     }
@@ -123,7 +124,7 @@
     margin-bottom: 40px;
     position: relative;
 
-    @media all and (max-width: $screen-sm-max) {
+    @media all and (max-width: v.$screen-sm-max) {
       margin-bottom: 30px;
     }
 

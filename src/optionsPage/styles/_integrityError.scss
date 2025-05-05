@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
+@use "../../global-styles/variables" as v;
 
-&-integrity-error {
+.twofas-options-page-integrity-error {
   align-items: center;
-  background-color: $color-2;
+  background-color: v.$color-2;
   display: none;
   flex-direction: column;
   gap: 20px 0;
@@ -38,7 +38,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    background-color: $bg-dark;
+    background-color: v.$bg-dark;
   }
 
   h1 {
@@ -56,7 +56,7 @@
   }
 
   p {
-    color: $theme-color;
+    color: v.$theme-color;
     font-size: 80px;
     font-weight: 700;
     margin: 20px 0;
