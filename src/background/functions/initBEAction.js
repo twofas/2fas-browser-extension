@@ -32,13 +32,17 @@ const initBEAction = (url, tab, storageData) => {
   let condition = false;
   let diff;
 
-  if (!storage[`tabData-${tab?.id}`]) {
+  if (!tab?.id) {
+    return TwoFasNotification.show(config.Texts.Error.UndefinedError, null);
+  }
+
+  if (!storage[`tabData-${tab.id}`]) {
     storage[`tabData-${tab.id}`] = {};
   }
 
   const tabData = storage[`tabData-${tab.id}`];
 
-  if (!storage[`tabData-${tab?.id}`]?.lastAction) {
+  if (!storage[`tabData-${tab.id}`]?.lastAction) {
     condition = true;
   } else {
     diff = (now - storage[`tabData-${tab.id}`].lastAction) / 1000;
@@ -48,20 +52,20 @@ const initBEAction = (url, tab, storageData) => {
   if (condition) {
     tabData.lastAction = now;
 
-    return saveToLocalStorage({ [`tabData-${tab?.id}`]: tabData }, storage)
+    return saveToLocalStorage({ [`tabData-${tab.id}`]: tabData }, storage)
       .then(() => new SDK().request2FAToken(storage.extensionID, url))
       .then(requestData => {
         tabData.requestID = requestData.token_request_id;
-        return saveToLocalStorage({ [`tabData-${tab?.id}`]: tabData }, storage);
+        return saveToLocalStorage({ [`tabData-${tab.id}`]: tabData }, storage);
       })
       .then(sD => {
         storage = sD;
 
-        return subscribeChannel(storage, tab?.id, {
+        return subscribeChannel(storage, tab.id, {
           action: true,
           timeout: true,
           login: true,
-          requestID: storage[`tabData-${tab?.id}`].requestID,
+          requestID: storage[`tabData-${tab.id}`].requestID,
           notifications: {
             timeout: config.Texts.Error.PushExpired(url),
             error: config.Texts.Error.General
@@ -69,15 +73,15 @@ const initBEAction = (url, tab, storageData) => {
         });
       })
       .then(channel => channel.connect())
-      .then(() => sendMessageToAllFrames(tab?.id, { action: 'getActiveElement' }))
-      .then(elements => handleFrontElement(elements, tab?.id, storage))
+      .then(() => sendMessageToAllFrames(tab.id, { action: 'getActiveElement' }))
+      .then(elements => handleFrontElement(elements, tab.id, storage))
       .catch(async err => {
-        await storeLog('error', 5, err, tabData?.url);
-        return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab?.id);
+        await storeLog('error', 5, err, tabData.url);
+        return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab.id);
       });
   } else {
     if (diff > 1) {
-      return TwoFasNotification.show(config.Texts.Warning.TooSoon(diff), tab?.id);
+      return TwoFasNotification.show(config.Texts.Warning.TooSoon(diff), tab.id);
     }
   }
 };

@@ -22,53 +22,74 @@ const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
 const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
 const storeLog = require('../../partials/storeLog');
 
-const contentOnMessage = async (request, tabData) => {
+const contentOnMessage = (request, sender, sendResponse, tabData) => {
   if (!request || !request.action) {
-    return { status: 'error' };
+    sendResponse({ status: 'error' });
+    return true;
+  }
+
+  if (request?.action === 'contentScript' || request?.action === 'notification' || request?.action === 'notificationInfo') {
+    if (isInFrame()) {
+      sendResponse({ status: 'omitted' });
+      return true;
+    }
   }
 
   switch (request.action) {
     case 'inputToken': {
-      let storage;
+      (async () => {
+        let storage;
 
-      try {
-        storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-      } catch (err) {
-        return storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
-      }
-
-      if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`].requestID !== request.token_request_id) {
-        if (isInFrame()) {
-          return false;
+        try {
+          storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+        } catch (err) {
+          await storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
+          sendResponse({ status: 'error', message: 'Failed to load data' });
         }
+  
+        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
+          if (isInFrame()) {
+            sendResponse({ status: 'omitted' });
+          }
+  
+          sendResponse({
+            status: 'notification',
+            title: config.Texts.Error.OldRequest.Title,
+            message: config.Texts.Error.OldRequest.Message
+          });
+          return true;
+        }
+  
+        const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
+        let tokenInput;
+  
+        if (lastFocusedInput) {
+          tokenInput = getTokenInput(lastFocusedInput);
+        }
+        
+        if (!lastFocusedInput || !tokenInput) {
+          if (!isInFrame()) {
+            tokenNotification(request.token);
+          }
 
-        return {
-          status: 'notification',
-          title: config.Texts.Error.UndefinedError.Title,
-          message: config.Texts.Error.UndefinedError.Message
-        };
-      }
+          sendResponse({ status: 'ok' });
+        } else {
+          sendResponse(inputToken(request, tokenInput, tabData?.url));
+        }
+      })();
 
-      const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
-      let tokenInput;
-
-      if (lastFocusedInput) {
-        tokenInput = getTokenInput(lastFocusedInput);
-      }
-      
-      if (!lastFocusedInput || !tokenInput) {
-        return tokenNotification(request.token);
-      } else {
-        return inputToken(request, tokenInput, tabData?.url);
-      }
+      break;
     }
 
     case 'getActiveElement': {
-      return getActiveElement();
+      const activeElementResponse = getActiveElement();
+      sendResponse(activeElementResponse);
+      break;
     }
 
     case 'pageLoadComplete': {
-      return { status: 'ok' }; // Possibly for future use
+      sendResponse({ status: 'ok' }); // Possibly for future use
+      break;
     }
 
     case 'notification':
@@ -76,22 +97,28 @@ const contentOnMessage = async (request, tabData) => {
       loadFonts();
 
       if (request.action === 'notification') {
-        return notification(request);
+        notification(request);
+        sendResponse({ status: 'ok' });
       } else if (request.action === 'notificationInfo') {
-        return showNotificationInfo();
+        showNotificationInfo();
+        sendResponse({ status: 'ok' });
       }
 
       break;
     }
 
     case 'contentScript': {
-      return { status: 'ok' };
+      sendResponse({ status: 'ok' });
+      break;
     }
 
     default: {
-      return { status: 'error' };
+      sendResponse({ status: 'error' });
+      break;
     }
   }
+
+  return true;
 };
 
 module.exports = contentOnMessage;

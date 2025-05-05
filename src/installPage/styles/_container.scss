@@ -17,23 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-@import "../../global-styles/variables";
+@use "../../global-styles/variables" as v;
 
-&-container {
-  // VARIABLES
-  $bg-qr: $color-2;
-  $qr-border-color: #eee;
-  $bg-box: $color-2;
-  $bg-box-dark: $dark-color;
-  $box-border-color: #eee;
-  $number-color: $color-2;
-  $content-img-shadow-color: rgba(186, 188, 195, .25);
-  $content-img-shadow-color-dark: rgba(0, 0, 0, .25);
-  $border-color: #E6E6F2;
-  $border-color-dark: $color-header-line-dark;
-  $header-color: $color;
-  $header-color-dark: $color-2;
-
+.twofas-install-page-container {
   margin: 0 auto 60px;
   max-width: 95%;
   min-height: calc(100vh - 240px);
@@ -45,12 +31,12 @@
   }
 
   &-header {
-    color: $color;
+    color: v.$color;
     margin-bottom: 60px;
     text-align: center;
 
     @media all and (prefers-color-scheme: dark) {
-      color: $color-2;
+      color: v.$color-2;
     }
 
     @media all and (max-width: 1200px) {
@@ -93,9 +79,9 @@
 
     &-app,
     &-qr {
-      background-color: $bg-box;
+      background-color: v.$color-2;
       border-radius: 4px;
-      color: $color;
+      color: v.$color;
       margin: 0 auto;
       max-width: 926px;
       overflow: hidden;
@@ -103,9 +89,9 @@
       width: 100%;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $bg-box-dark;
+        background-color: v.$dark-color;
         border-color: transparent;
-        color: $color-2;
+        color: v.$color-2;
       }
 
       &.active {
@@ -183,9 +169,9 @@
     }
 
     &-number {
-      border: .5px solid $border-color;
+      border: .5px solid #e6e6f2;
       border-radius: 50%;
-      color: $theme-color;
+      color: v.$theme-color;
       font-size: 32px;
       font-weight: 700;
       height: 64px;
@@ -196,11 +182,11 @@
       width: 64px;
 
       @media (prefers-color-scheme: dark) {
-        border-color: $border-color-dark;
+        border-color: v.$color-header-line-dark;
       }
 
       small {
-        color: $color-header;
+        color: v.$color-header;
         font-size: 18px;
         letter-spacing: 2px;
         line-height: 1;
@@ -211,14 +197,14 @@
     }
 
     h4 {
-      color: $header-color;
+      color: v.$color;
       font-size: 26px;
       font-weight: 700;
       line-height: 1.31;
       margin-bottom: 20px;
 
       @media (prefers-color-scheme: dark) {
-        color: $header-color-dark;
+        color: v.$color-2;
       }
 
       @media all and (max-width: 400px) {
@@ -256,9 +242,9 @@
 
       &-icon {
         align-items: center;
-        background-color: $bg-qr;
+        background-color: v.$color-2;
         border-radius: 26px;
-        box-shadow: 0 0 20px 5px $content-img-shadow-color;
+        box-shadow: 0 0 20px 5px rgba(186, 188, 195, .25);
         display: flex;
         height: 110px;
         justify-content: center;
@@ -269,10 +255,10 @@
         z-index: 2;
 
         @media (prefers-color-scheme: dark) {
-          box-shadow: 0 0 20px 5px $content-img-shadow-color-dark;
+          box-shadow: 0 0 20px 5px rgba(0, 0, 0, .25);
         }
 
-        @media all and (max-width: $screen-sm-max) {
+        @media all and (max-width: v.$screen-sm-max) {
           left: auto;
           right: 370px;
           top: 17px;
@@ -328,7 +314,7 @@
         display: none;
       }
 
-      @media all and (max-width: $screen-sm-max) {
+      @media all and (max-width: v.$screen-sm-max) {
         width: 400px;
 
         img {
@@ -398,9 +384,9 @@
 
       &-icon {
         align-items: center;
-        background-color: $bg-qr;
+        background-color: v.$color-2;
         border-radius: 26px;
-        box-shadow: 0 0 20px 5px $content-img-shadow-color;
+        box-shadow: 0 0 20px 5px rgba(186, 188, 195, .25);
         display: flex;
         height: 110px;
         justify-content: center;
@@ -411,7 +397,7 @@
         z-index: 2;
 
         @media (prefers-color-scheme: dark) {
-          box-shadow: 0 0 20px 5px $content-img-shadow-color-dark;
+          box-shadow: 0 0 20px 5px rgba(0, 0, 0, .25);
         }
 
         @media all and (max-width: 780px) {
@@ -439,14 +425,14 @@
       .twofas-qr-container-manual {
         background-color: transparent !important;
         bottom: 40px;
-        color: $color !important;
+        color: v.$color !important;
         position: absolute;
         text-align: center;
         width: 291px;
 
         @media (prefers-color-scheme: dark) {
           bottom: 35px;
-          color: $color-2 !important;
+          color: v.$color-2 !important;
         }
 
         @media all and (max-width: 780px) {
@@ -468,7 +454,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      margin-bottom: 41px;
+      margin-bottom: 16px;
       max-width: 339px;
 
       @media all and (max-width: 700px) {
@@ -499,9 +485,9 @@
         }
 
         &-number {
-          background-color: $theme-color;
+          background-color: v.$theme-color;
           border-radius: 50%;
-          color: $number-color;
+          color: v.$color-2;
           flex-shrink: 0;
           font-size: 14px;
           font-weight: 700;
@@ -519,14 +505,14 @@
         }
 
         &-desc {
-          color: $color;
+          color: v.$color;
           font-size: 16px;
           line-height: 28px;
           margin-left: 18px;
           margin-top: 3px;
 
           @media (prefers-color-scheme: dark) {
-            color: $color-2;
+            color: v.$color-2;
           }
 
           @media all and (max-width: 1310px) {
@@ -646,7 +632,7 @@
           font-size: 16px;
           font-weight: 600;
           margin-bottom: 8px;
-          text-shadow: 0 1px 1px $bg-dark;
+          text-shadow: 0 1px 1px v.$bg-dark;
         }
       }
 
@@ -671,16 +657,16 @@
     }
 
     .twofas-qr-container-manual {
-      background-color: $bg;
+      background-color: v.$bg;
       border-radius: 32px;
-      color: $color;
+      color: v.$color;
       font-size: 14px;
       margin-bottom: 16px;
       padding: 12px 20px;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $bg-dark;
-        color: $color-2;
+        background-color: v.$bg-dark;
+        color: v.$color-2;
       }
 
       p {

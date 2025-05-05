@@ -24,7 +24,7 @@ const createFirefoxOptionsMenu = () => {
     browser.contextMenus.create({
       title: browser.i18n.getMessage('options'),
       id: 'twofas-firefox-options-menu',
-      contexts: ['browser_action'],
+      contexts: ['action'],
       enabled: true,
       type: 'normal',
       visible: true

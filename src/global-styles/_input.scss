@@ -18,7 +18,8 @@
 //
 
 @use "sass:color";
-@import "variables";
+
+@use "variables" as v;
 
 input,
 button,
@@ -31,7 +32,7 @@ select {
 }
 
 label {
-  color: $color-header;
+  color: v.$color-header;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -47,10 +48,10 @@ label {
   width: 365px;
 
   input {
-    background-color: $input-bg;
+    background-color: v.$input-bg;
     border: 0;
     border-radius: 10px 0 0 10px;
-    color: $input-color;
+    color: v.$input-color;
     display: block;
     flex-grow: 1;
     font-size: 16px;
@@ -60,8 +61,8 @@ label {
     padding: 0 0 0 17px;
 
     @media (prefers-color-scheme: dark) {
-      background-color: $input-bg-dark;
-      color: $input-color-dark;
+      background-color: v.$input-bg-dark;
+      color: v.$input-color-dark;
     }
 
     @media all and (max-width: 660px) {
@@ -69,23 +70,23 @@ label {
     }
 
     &::-webkit-input-placeholder { /* stylelint-disable-line */
-      color: $desc-color;
+      color: v.$desc-color;
     }
 
     &::-moz-placeholder { /* stylelint-disable-line */
-      color: $desc-color;
+      color: v.$desc-color;
     }
 
     &:-ms-input-placeholder { /* stylelint-disable-line */
-      color: $desc-color;
+      color: v.$desc-color;
     }
   }
 
   button {
-    background: $button-bg;
+    background: v.$button-bg;
     border: 0;
     border-radius: 0 10px 10px 0;
-    color: $theme-color;
+    color: v.$theme-color;
     cursor: pointer;
     display: block;
     font-size: 13px;
@@ -99,7 +100,7 @@ label {
     transition: color .2s ease-in-out;
 
     @media (prefers-color-scheme: dark) {
-      background: $button-bg-dark;
+      background: v.$button-bg-dark;
     }
 
     @media all and (max-width: 660px) {
@@ -107,16 +108,16 @@ label {
     }
 
     &:hover {
-      color: color.adjust($theme-color, $lightness: -10%);
+      color: color.adjust(v.$theme-color, $lightness: -10%);
     }
 
     &:active {
-      color: color.adjust($theme-color, $lightness: -20%);
+      color: color.adjust(v.$theme-color, $lightness: -20%);
     }
 
     &[disabled],
     &:disabled {
-      color: color.adjust($theme-color, $saturation: -75%);
+      color: color.adjust(v.$theme-color, $saturation: -75%);
       cursor: wait;
     }
   }
@@ -134,12 +135,12 @@ label {
     }
 
     &.error {
-      color: $theme-color;
+      color: v.$theme-color;
       opacity: 1;
     }
 
     &.success {
-      color: $success-color;
+      color: v.$success-color;
       opacity: 1;
     }
   }
@@ -177,7 +178,7 @@ label {
 
     span {
       &.twofas-radio-switch {
-        background-color: $color-header-line;
+        background-color: v.$color-header-line;
         border-radius: 50%;
         display: block;
         height: 20px;
@@ -186,12 +187,12 @@ label {
         width: 20px;
 
         @media (prefers-color-scheme: dark) {
-          background-color: $color-2;
+          background-color: v.$color-2;
         }
 
         &::before {
           content: "";
-          border: 0 solid $theme-color;
+          border: 0 solid v.$theme-color;
           border-radius: 50%;
           display: block;
           height: 10px;
@@ -206,7 +207,7 @@ label {
       }
 
       &.twofas-radio-label {
-        color: $color;
+        color: v.$color;
         font-size: 13px;
         font-weight: 400;
         letter-spacing: 0;
@@ -214,7 +215,7 @@ label {
         user-select: none;
 
         @media (prefers-color-scheme: dark) {
-          color: $color-2;
+          color: v.$color-2;
         }
       }
     }

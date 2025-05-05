@@ -18,16 +18,12 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
 
-&-pin-info {
-  // VARIABLES
-  $backdrop-color: rgba(#4f4f4f, 50%);
-  $backdrop-dark-color: rgba($color, 50%);
-  $box-bg-dark: #202229;
-  
+@use "../../global-styles/variables" as v;
+
+.twofas-options-page-pin-info {
   align-items: flex-start;
-  background-color: $backdrop-color;
+  background-color: rgba(#4f4f4f, 50%);
   display: flex;
   justify-content: flex-end;
   height: 100%;
@@ -41,7 +37,7 @@
   z-index: 9998;
 
   @media (prefers-color-scheme: dark) {
-    background-color: $backdrop-dark-color;
+    background-color: rgba(v.$color, 50%);
   }
 
   &.hidden {
@@ -50,14 +46,14 @@
   }
 
   &-box {
-    background-color: $color-2;
+    background-color: v.$color-2;
     border-radius: 24px;
     padding: 16px;
     max-width: 352px;
     text-align: center;
 
     @media (prefers-color-scheme: dark) {
-      background-color: $box-bg-dark;
+      background-color: #202229;
     }
 
     &-slider {
@@ -74,12 +70,12 @@
         + .twofas-options-page-pin-info-box-indicators {
           div {
             &:first-of-type {
-              background-color: $color-header;
+              background-color: v.$color-header;
               width: 5px;
             }
 
             &:nth-of-type(2) {
-              background-color: $theme-color;
+              background-color: v.$theme-color;
               width: 22px;
             }
           }
@@ -93,7 +89,7 @@
         width: 100%;
 
         .toolbar-customization {
-          color: $color;
+          color: v.$color;
           font-size: 14px;
           font-weight: 600;
           left: 20%;
@@ -105,7 +101,7 @@
           }
 
           @media (prefers-color-scheme: dark) {
-            color: $color-2;
+            color: v.$color-2;
           }
         }
       }
@@ -119,7 +115,7 @@
       margin-top: 16px;
       
       div {
-        background-color: $color-header;
+        background-color: v.$color-header;
         border-radius: 2.5px;
         cursor: pointer;
         height: 5px;
@@ -127,32 +123,32 @@
         width: 5px;
 
         &:first-of-type {
-          background-color: $theme-color;
+          background-color: v.$theme-color;
           width: 22px;
         }
       }
     }
 
     &-header {
-      color: $color;
+      color: v.$color;
       font-size: 16px;
       font-weight: 600;
       line-height: 20px;
       margin-bottom: 8px;
 
       @media (prefers-color-scheme: dark) {
-        color: $color-2;
+        color: v.$color-2;
       }
     }
 
     &-subheader {
-      color: $color-header;
+      color: v.$color-header;
       font-size: 12px;
       line-height: 1.17;
       margin-bottom: 17px;
 
       @media (prefers-color-scheme: dark) {
-        color: $color-2;
+        color: v.$color-2;
       }
     }
 

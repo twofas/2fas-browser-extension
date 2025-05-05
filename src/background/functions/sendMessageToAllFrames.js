@@ -20,27 +20,17 @@
 const browser = require('webextension-polyfill');
 
 const sendMessageToAllFrames = async (tabId, message) => {
-  const frames = await browser.webNavigation.getAllFrames({ tabId });
+  let frames;
 
-  return Promise.all(frames.map(frame => {
-    return browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => Promise.resolve(false));
-  })).then(res => {
-    return res.map(frame => {
-      if (!frame) {
-        return false;
-      }
+  try {
+    frames = await browser.webNavigation.getAllFrames({ tabId });
+  } catch {
+    return false;
+  }
 
-      switch (frame?.status) {
-        case 'activeElement': {
-          return frame;
-        }
-  
-        default: {
-          return false;
-        }
-      }
-    });
-  }).catch(() => false);
+  return Promise.all(
+    frames.map(frame => browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => false))
+  );
 };
 
 module.exports = sendMessageToAllFrames;

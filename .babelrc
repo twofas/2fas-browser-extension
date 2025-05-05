@@ -4,10 +4,6 @@
       "browsers": ["> 1%", "last 2 versions", "safari >= 16", "not ie > 0", "not dead"]
     },
     "modules": "commonjs"
-  }], ["minify", {
-    "builtIns": false,
-    "keepFnName": true,
-    "removeDebugger": true
   }]],
   "env": {
     "production": {

@@ -30,12 +30,12 @@ const createContextMenus = () => {
 
       return storage;
     })
-    .then(storage => {
+    .then(async storage => {
       if (storage.contextMenu) {
         const options = {
           title: browser.i18n.getMessage('shortcutDesc'),
           id: 'twofas-context-menu',
-          contexts: ['page', 'editable'],
+          contexts: ['page', 'editable'], // @TODO: Safari bug with double contextMenu on editable
           enabled: true,
           type: 'normal',
           visible: true
@@ -47,8 +47,8 @@ const createContextMenus = () => {
             32: '/images/icons/icon32.png'
           };
         }
-      
-        browser.contextMenus.removeAll();
+
+        await browser.contextMenus.removeAll();
         browser.contextMenus.create(options);
       }
 

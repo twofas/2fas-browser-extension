@@ -18,16 +18,10 @@
 //
 
 @use "sass:color";
-@import "../../global-styles/variables";
 
-&-menu {
-  // VARIABLES
-  $menu-color: $color-header;
-  $menu-hover-color: $color;
-  $menu-hover-color-dark: $color-2;
-  $menu-hover-bg: #d3d4e2;
-  $menu-hover-bg-dark: #30313b;
+@use "../../global-styles/variables" as v;
 
+.twofas-options-page-menu {
   display: flex;
   flex: 0 0 240px;
   flex-direction: column;
@@ -38,22 +32,22 @@
   width: 240px;
   z-index: 9997;
 
-  @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-    background-color: $bg;
+  @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
+    background-color: v.$bg;
     flex: 0;
     height: 54px;
     padding: 10px 0;
     width: 100%;
 
     @media (prefers-color-scheme: dark) {
-      background-color: $dark-color;
+      background-color: v.$dark-color;
     }
   }
 
   &-hamburger {
     display: none;
 
-    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
       display: block;
       left: 10px;
       position: fixed;
@@ -68,7 +62,7 @@
     justify-content: center;
     margin: 50px 0;
 
-    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
+    @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
       margin: 0;
     }
 
@@ -97,8 +91,8 @@
     flex-grow: 1;
     width: 100%;
 
-    @media all and (max-width: $screen-sm-max), all and (max-height: $op-rwd-height) {
-      background-color: $bg;
+    @media all and (max-width: v.$screen-sm-max), all and (max-height: v.$op-rwd-height) {
+      background-color: v.$bg;
       height: 100%;
       left: -240px;
       position: fixed;
@@ -109,7 +103,7 @@
       z-index: 9999;
 
       @media (prefers-color-scheme: dark) {
-        background-color: $dark-color;
+        background-color: v.$dark-color;
       }
 
       &.visible {
@@ -136,7 +130,7 @@
         a {
           align-items: center;
           border-radius: 45px;
-          color: $menu-color;
+          color: v.$color-header;
           display: inline-flex;
           flex-direction: row;
           height: 52px;
@@ -149,20 +143,20 @@
 
           &.active,
           &:hover {
-            color: $menu-hover-color;
-            background-color: $menu-hover-bg;
+            color: v.$color;
+            background-color: #d3d4e2;
 
             @media (prefers-color-scheme: dark) {
-              color: $menu-hover-color-dark;
-              background-color: $menu-hover-bg-dark;
+              color: v.$color-2;
+              background-color: #30313b;
             }
 
             .icon-settings {
-              fill: $menu-hover-color;
+              fill: v.$color;
               opacity: .6;
 
               @media (prefers-color-scheme: dark) {
-                fill: $menu-hover-color-dark;
+                fill: v.$color-2;
                 opacity: 1;
               }
             }
@@ -172,31 +166,31 @@
             .icon-support,
             .icon-check-ext {
               opacity: .6;
-              stroke: $menu-hover-color;
+              stroke: v.$color;
 
               @media (prefers-color-scheme: dark) {
-                stroke: $menu-hover-color-dark;
+                stroke: v.$color-2;
                 opacity: 1;
               }
             }
 
             span {
-              color: $menu-hover-color;
+              color: v.$color;
               opacity: .7;
               transition: color .2s ease-in-out;
 
               @media (prefers-color-scheme: dark) {
-                color: $menu-hover-color-dark;
+                color: v.$color-2;
                 opacity: 1;
               }
             }
           }
 
           &:active {
-            background-color: color.adjust($menu-hover-bg, $lightness: -10%);
+            background-color: color.adjust(#d3d4e2, $lightness: -10%);
 
             @media (prefers-color-scheme: dark) {
-              background-color: color.adjust($menu-hover-bg-dark, $lightness: -10%);
+              background-color: color.adjust(#30313b, $lightness: -10%);
             }
           }
 
@@ -207,23 +201,23 @@
             transition: fill .2s ease-in-out, stroke .2s ease-in-out, opacity .2s ease-in-out;
 
             &.icon-settings {
-              fill: $menu-color;
+              fill: v.$color-header;
             }
 
             &.icon-intro,
             &.icon-newpage,
             &.icon-support,
             &.icon-check-ext {
-              stroke: $menu-color;
+              stroke: v.$color-header;
             }
 
             &.icon-donate {
-              fill: $theme-color;
+              fill: v.$theme-color;
             }
           }
 
           span {
-            color: $menu-color;
+            color: v.$color-header;
             display: block;
             font-size: 16px;
             font-weight: 600;

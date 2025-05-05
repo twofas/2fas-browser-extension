@@ -19,21 +19,34 @@
 
 const browser = require('webextension-polyfill');
 const storeLog = require('../../partials/storeLog');
-const delay = require('../../partials/delay');
 
-const getTabData = () => {
-  return browser.runtime.sendMessage({ action: 'getTabData' })
-    .catch(err => {
-      if (err && typeof err?.toString === 'function') {
-        if (err.toString() === 'Error: Could not establish connection. Receiving end does not exist.') {
-          return delay(() => browser.runtime.sendMessage({ action: 'getTabData' }).catch(err => storeLog('error', 14, err, 'getTabData - second try')), 100);
+const getTabData = async () => {
+  let tabData = {};
+  
+  try {
+    tabData = await browser.runtime.sendMessage({ action: 'getTabData' });
+  } catch (err) {
+    if (err && typeof err?.toString === 'function') {
+      if (err?.toString() === 'Error: Could not establish connection. Receiving end does not exist.') {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        try {
+          tabData = await browser.runtime.sendMessage({ action: 'getTabData' });
+        } catch (err) {
+          await storeLog('error', 14, err, 'getTabData - second try');
+          throw new Error(err);
         }
-
-        return storeLog('error', 14, err, 'getTabData - toString');
       }
 
-      return storeLog('error', 14, err, 'getTabData - no error');
-    });
+      await storeLog('error', 14, err, 'getTabData - toString');
+      throw new Error(err);
+    }
+
+    await storeLog('error', 14, err, 'getTabData - no error variable');
+    throw new Error(err);
+  }
+
+  return tabData;
 };
 
 module.exports = getTabData;
