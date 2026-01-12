@@ -27,6 +27,9 @@ build/
 yarn.lock
 .vscode
 testFiles/
+.claude
+CLAUDE.md
+AGENTS.md
 
 # Xcode
 #
