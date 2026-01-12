@@ -134,6 +134,7 @@ const installPageProdConfig = {
       template: './src/installPage/installPage.html'
     }),
     new ESLintPlugin({
+      configType: 'eslintrc',
       formatter: require('eslint-friendly-formatter'),
       emitError: true,
       emitWarning: true,

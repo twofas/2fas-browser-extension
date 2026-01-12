@@ -81,6 +81,7 @@ const backgroundProdConfig = {
   },
   plugins: [
     new ESLintPlugin({
+      configType: 'eslintrc',
       formatter: require('eslint-friendly-formatter'),
       emitError: true,
       emitWarning: true,
