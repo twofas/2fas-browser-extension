@@ -19,94 +19,73 @@
 
 /* global navigator */
 import browser from 'webextension-polyfill';
-import getOSName from '@background/functions/getOSName.js';
+import { v4 as uuidv4 } from 'uuid';
+import getOSName from './getOSName';
+import isBrave from './isBrave';
+import getBrowserVersion from './getBrowserVersion';
 
+/**
+ * Gets browser information including name, version, and OS.
+ * @returns {Object} Object containing browser name, version, and OS.
+ */
 const getBrowserInfo = () => {
-  const userAgent = {
-    Chrome: /Chrom(?:e|ium)\/([0-9.]+)/,
-    Firefox: /Firefox\/([0-9.]+)/,
-    Opera: /(OPR|Opera)\/([0-9.]+)/,
-    Edge: /Edge?\/([0-9.]+)/,
-    Safari: /Safari?\/([0-9.]+)/
+  const randomID = uuidv4().substring(0, 4);
+  const osName = getOSName();
+  const userAgent = navigator.userAgent;
+  let browserName = 'unknown';
+
+  const nameRegex = {
+    UCBrowser: /ucbrowser/i,
+    Edge: /edg/i,
+    Vivaldi: /vivaldi/i,
+    Chromium: /chromium/i,
+    Firefox: /firefox|fxios/i,
+    Seamonkey: /seamonkey/i,
+    Chrome: /chrome|crios/i,
+    NotChrome: /opr|opera|chromium|edg|ucbrowser/i,
+    Safari: /safari/i,
+    NotSafari: /chromium|edg|ucbrowser|chrome|crios|opr|opera|fxios|firefox/i,
+    Opera: /opr|opera/i
   };
 
-  const isBrave = () => {
-    if (navigator?.userAgentData?.brands) {
-      return navigator.userAgentData.brands.filter(item => item?.brand?.includes('Brave')).length > 0;
-    } else if (navigator.brave !== undefined) {
-      return navigator.brave.isBrave.name === 'isBrave';
-    } else {
-      return false;
-    }
+  const versionRegex = {
+    UCBrowser: /(ucbrowser)\/([\d.]+)/i,
+    Edge: /(edge|edga|edgios|edg)\/([\d.]+)/i,
+    Chromium: /(chromium)\/([\d.]+)/i,
+    Firefox: /(firefox|fxios)\/([\d.]+)/i,
+    Chrome: /(chrome|crios)\/([\d.]+)/i,
+    Brave: /(chrome|crios)\/([\d.]+)/i,
+    Safari: /(version)\/([\d.]+) safari/i,
+    Opera: /(opera|opr)\/([\d.]+)/i,
+    Vivaldi: /(vivaldi)\/([\d.]+)/i,
+    unknown: null
   };
 
-  let browserVersion = navigator?.userAgentData?.brands.filter(item => {
-    if (item && item?.brand) {
-      return item?.brand?.includes('Chromium');
-    }
-
-    return false;
-  });
-
-  if (browserVersion && browserVersion.length > 0) {
-    browserVersion = browserVersion[0].version;
-  } else {
-    const uA = navigator?.userAgent?.match(userAgent[process.env.EXT_PLATFORM]);
-
-    if (process.env.EXT_PLATFORM === 'Opera') {
-      browserVersion = (uA == null || uA.length !== 3) ? browser.i18n.getMessage('unknown') : uA[2];
-    } else {
-      browserVersion = (uA == null || uA.length !== 2) ? browser.i18n.getMessage('unknown') : uA[1];
-    }
+  if (nameRegex.UCBrowser.test(userAgent)) {
+    browserName = 'UCBrowser';
+  } else if (nameRegex.Edge.test(userAgent)) {
+    browserName = 'Edge';
+  } else if (nameRegex.Vivaldi.test(userAgent)) {
+    browserName = 'Vivaldi';
+  } else if (nameRegex.Chromium.test(userAgent)) {
+    browserName = 'Chromium';
+  } else if (nameRegex.Firefox.test(userAgent) && !nameRegex.Seamonkey.test(userAgent)) {
+    browserName = 'Firefox';
+  } else if (nameRegex.Chrome.test(userAgent) && !nameRegex.NotChrome.test(userAgent)) {
+    browserName = isBrave() ? 'Brave' : 'Chrome';
+  } else if (nameRegex.Safari.test(userAgent) && !nameRegex.NotSafari.test(userAgent)) {
+    browserName = 'Safari';
+  } else if (nameRegex.Opera.test(userAgent)) {
+    browserName = 'Opera';
   }
 
-  switch (process.env.EXT_PLATFORM) {
-    case 'Chrome': {
-      const brave = isBrave();
+  const browserVersion = getBrowserVersion(userAgent, versionRegex[browserName]);
 
-      return {
-        name: `${brave ? 'Brave' : 'Chrome'} ${browser.i18n.getMessage('browserOnOs')} ${getOSName()}`,
-        browser_name: brave ? 'Brave' : 'Chrome',
-        browser_version: browserVersion
-      };
-    }
-
-    case 'Firefox': {
-      return {
-        name: `Firefox ${browser.i18n.getMessage('browserOnOs')} ${getOSName()}`,
-        browser_name: 'Firefox',
-        browser_version: browserVersion
-      };
-    }
-
-    case 'Opera': {
-      return {
-        name: `Opera ${browser.i18n.getMessage('browserOnOs')} ${getOSName()}`,
-        browser_name: 'Opera',
-        browser_version: browserVersion
-      };
-    }
-
-    case 'Edge': {
-      return {
-        name: `Microsoft Edge ${browser.i18n.getMessage('browserOnOs')} ${getOSName()}`,
-        browser_name: 'Microsoft Edge',
-        browser_version: browserVersion
-      };
-    }
-
-    case 'Safari': {
-      return {
-        name: `Safari ${browser.i18n.getMessage('browserOnOs')} ${getOSName()}`,
-        browser_name: 'Safari',
-        browser_version: browserVersion
-      }
-    }
-
-    default: {
-      throw new Error('EXT_PLATFORM is undefined');
-    }
-  }
+  return {
+    name: `${browserName} ${browser.i18n.getMessage('browserOnOs')} ${osName} (${randomID})`,
+    browser_name: browserName,
+    browser_version: browserVersion
+  };
 };
 
 export default getBrowserInfo;
