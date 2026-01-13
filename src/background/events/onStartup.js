@@ -17,21 +17,22 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import browser from 'webextension-polyfill';
-import browserAction from '@background/functions/browserAction.js';
+import { initContextMenu } from '@background/contextMenu/index.js';
+import storeLog from '@partials/storeLog.js';
 
-const onCommand = command => {
-  switch (command) {
-    case 'tokenRequest':
-    case 'tokenRequestSecondary': {
-      return browser
-        .tabs
-        .query({ active: true, currentWindow: true })
-        .then(tabs => browserAction(tabs[0]));
-    }
-
-    default: return false;
+/**
+ * Handles browser startup event.
+ * Recreates context menus which don't persist between sessions in Firefox.
+ * Note: tabData cleanup is no longer needed since we use session storage.
+ * @async
+ * @return {Promise<void>}
+ */
+const onStartup = async () => {
+  try {
+    await initContextMenu();
+  } catch (err) {
+    await storeLog('error', 1, err, 'onStartup');
   }
 };
 
-export default onCommand;
+export default onStartup;

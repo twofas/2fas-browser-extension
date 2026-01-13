@@ -19,9 +19,17 @@
 
 import config from '@/config.js';
 import TwoFasNotification from '@notification/index.js';
-import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import { saveToSessionStorage } from '@sessionStorage/index.js';
 
-const handleFrontElement = async (activeElements, tabId, storage) => {
+/**
+ * Handles the focused input element and saves it to session storage.
+ * @async
+ * @param {Array} activeElements - Array of active element information from frames.
+ * @param {number} tabId - The tab ID.
+ * @param {Object} sessionData - The session data object containing tabData.
+ * @return {Promise<void>}
+ */
+const handleFrontElement = async (activeElements, tabId, sessionData) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
@@ -34,9 +42,9 @@ const handleFrontElement = async (activeElements, tabId, storage) => {
   }
 
   if (properElements.length > 0) {
-    const tabData = storage[`tabData-${tabId}`] || {};
+    const tabData = sessionData[`tabData-${tabId}`] || {};
     tabData.lastFocusedInput = properElements[0].id;
-    await saveToLocalStorage({ [`tabData-${tabId}`]: tabData }, storage);
+    await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
     return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
   }
 

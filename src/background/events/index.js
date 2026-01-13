@@ -19,3 +19,8 @@
 
 export { default as handleConfigurationRequest } from './handleConfigurationRequest.js';
 export { default as handleLoginRequest } from './handleLoginRequest.js';
+export { default as onInstalled } from './onInstalled.js';
+export { default as onStartup } from './onStartup.js';
+export { default as onMessage } from './onMessage.js';
+export { default as onCommand } from './onCommand.js';
+export { default as onConnect } from './onConnect.js';

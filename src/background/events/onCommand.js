@@ -17,27 +17,31 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { loadFromLocalStorage, removeFromLocalStorage } from '@localStorage/index.js';
-import storeLog from '@partials/storeLog.js';
+import browser from 'webextension-polyfill';
+import browserAction from '@background/functions/browserAction.js';
 
-const onStartup = () => {
-  return loadFromLocalStorage(null)
-    .then(storage => {
-      Object.keys(storage).forEach(key => {
-        if (key === 'tabData' || key.substring(0, 8) === 'tabData-') {
-          const diffMinutes = parseInt(
-            Math.abs(
-              new Date(storage[key].timestamp).getTime() - new Date().getTime()
-            ) / (1000 * 60) % 60
-          );
+/**
+ * Handles keyboard command events.
+ * @async
+ * @param {string} command - The command name from manifest.
+ * @return {Promise<void>|boolean}
+ */
+const onCommand = async command => {
+  switch (command) {
+    case 'tokenRequest':
+    case 'tokenRequestSecondary': {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
 
-          if (diffMinutes > 15) {
-            removeFromLocalStorage(key);
-          }
-        }
-      });
-    })
-    .catch(err => storeLog('error', 1, err, 'onStartup'));
+      if (tabs && tabs[0]) {
+        return browserAction(tabs[0]);
+      }
+
+      return false;
+    }
+
+    default:
+      return false;
+  }
 };
 
-export default onStartup;
+export default onCommand;

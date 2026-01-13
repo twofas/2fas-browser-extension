@@ -26,33 +26,35 @@ import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
 import sendMessageToTab from '@partials/sendMessageToTab.js';
 
-const handleLoginRequest = (tabID, data) => {
-  const crypt = new Crypt();
+const handleLoginRequest = async (tabID, data) => {
+  let crypt = new Crypt();
+  let storage = null;
 
-  return browser.tabs.get(tabID)
-    .then(() => loadFromLocalStorage(['keys']))
-    .then(storage => {
-      const privateKey = crypt.stringToArrayBuffer(storage.keys.privateKey);
-      return crypt.importKey(privateKey, 'pkcs8', ['decrypt']);
-    })
-    .then(key => crypt.decrypt(key, crypt.stringToArrayBuffer(data.token)))
-    .then(token => crypt.decodeText(token))
-    .then(token => {
-      const loginData = data;
-      loginData.token = token;
+  try {
+    await browser.tabs.get(tabID);
 
-      return sendMessageToTab(tabID, { action: 'inputToken', ...loginData });
-    })
-    .then(() => closeRequest(tabID, data.token_request_id))
-    .catch(async err => {
-      if (err.toString().includes('No tab with id') || err.toString().includes('Invalid tab ID')) {
-        return closeRequest(tabID, data.token_request_id)
-          .then(() => TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID));
-      }
+    storage = await loadFromLocalStorage(['keys']);
+    const privateKey = crypt.stringToArrayBuffer(storage.keys.privateKey);
+    const key = await crypt.importKey(privateKey, 'pkcs8', ['decrypt']);
+    const decrypted = await crypt.decrypt(key, crypt.stringToArrayBuffer(data.token));
+    const token = crypt.decodeText(decrypted);
 
-      await storeLog('error', 8, err, 'handleLoginRequest');
-      return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
-    });
+    const loginData = { ...data, token };
+
+    await sendMessageToTab(tabID, { action: 'inputToken', ...loginData });
+    await closeRequest(tabID, data.token_request_id);
+  } catch (err) {
+    if (err.toString().includes('No tab with id') || err.toString().includes('Invalid tab ID')) {
+      await closeRequest(tabID, data.token_request_id);
+      return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
+    }
+
+    await storeLog('error', 8, err, 'handleLoginRequest');
+    return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
+  } finally {
+    crypt = null;
+    storage = null;
+  }
 };
 
 export default handleLoginRequest;

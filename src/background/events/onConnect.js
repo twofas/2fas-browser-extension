@@ -19,6 +19,11 @@
 
 import openBrowserPage from '@background/functions/openBrowserPage.js';
 
+/**
+ * Handles port connection events from content scripts.
+ * @param {Object} port - The port object for communication.
+ * @return {boolean|undefined}
+ */
 const onConnect = port => {
   if (port.name !== '2FAS') {
     return false;
@@ -33,6 +38,7 @@ const onConnect = port => {
 
     if (p._timer) {
       clearTimeout(p._timer);
+      p._timer = null;
     }
 
     p.disconnect();
@@ -46,6 +52,7 @@ const onConnect = port => {
 
     if (p._timer) {
       clearTimeout(p._timer);
+      p._timer = null;
     }
 
     p = undefined;

@@ -18,31 +18,50 @@
 //
 
 import SDK from '@sdk/index.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import { loadFromLocalStorage } from '@localStorage/index.js';
+import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 import storeLog from '@partials/storeLog.js';
 
+/**
+ * Closes a 2FA request for a specific tab.
+ * @async
+ * @param {number} tabID - The tab ID.
+ * @param {string} requestID - The request ID to close.
+ * @return {Promise<boolean|void>}
+ */
 const closeRequest = async (tabID, requestID) => {
-  let storage;
+  let storage = null;
+  let sessionData = null;
 
   try {
-    storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
+    storage = await loadFromLocalStorage(['extensionID']);
+    sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    return storeLog('error', 30, err);
-  }
-
-  if (!storage || !storage[`tabData-${tabID}`]?.requestID || requestID !== storage[`tabData-${tabID}`]?.requestID) {
+    await storeLog('error', 30, err);
+    storage = null;
+    sessionData = null;
     return false;
   }
 
-  return new SDK().close2FARequest(storage.extensionID, storage[`tabData-${tabID}`].requestID, true)
-    .then(() => {
-      const tabObject = structuredClone(storage[`tabData-${tabID}`]);
-      delete tabObject.requestID;
+  if (!sessionData?.[`tabData-${tabID}`]?.requestID || requestID !== sessionData[`tabData-${tabID}`]?.requestID) {
+    storage = null;
+    sessionData = null;
+    return false;
+  }
 
-      return saveToLocalStorage({ [`tabData-${tabID}`]: tabObject });
-    })
-    .then(() => { storage = null; })
-    .catch(err => storeLog('error', 30, err, storage[`tabData-${tabID}`]?.url));
+  try {
+    await new SDK().close2FARequest(storage.extensionID, sessionData[`tabData-${tabID}`].requestID, true);
+
+    const tabObject = structuredClone(sessionData[`tabData-${tabID}`]);
+    delete tabObject.requestID;
+
+    await saveToSessionStorage({ [`tabData-${tabID}`]: tabObject });
+  } catch (err) {
+    await storeLog('error', 30, err, sessionData[`tabData-${tabID}`]?.url);
+  } finally {
+    storage = null;
+    sessionData = null;
+  }
 };
 
 export default closeRequest;

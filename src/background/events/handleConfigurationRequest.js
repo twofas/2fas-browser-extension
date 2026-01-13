@@ -23,44 +23,42 @@ import TwoFasNotification from '@notification/index.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
 
-const handleConfigurationRequest = (tabID, data) => {
-  return loadFromLocalStorage(['configured', 'devices'])
-    .then(storage => {
-      if (!storage.configured) {
-        return saveToLocalStorage({ configured: true }, storage);
+const handleConfigurationRequest = async (tabID, data) => {
+  let storage = null;
+
+  try {
+    storage = await loadFromLocalStorage(['configured', 'devices']);
+
+    if (!storage.configured) {
+      storage = await saveToLocalStorage({ configured: true }, storage);
+    }
+
+    let devices = [];
+    let exist = false;
+    const { device_id, device_public_key } = data; // eslint-disable-line camelcase
+
+    if (storage.devices) {
+      devices = storage.devices;
+    }
+
+    devices.forEach(device => {
+      if (device.device_id === device_id) { // eslint-disable-line camelcase
+        exist = true;
       }
-
-      return storage;
-    })
-    .then(storage => {
-      let devices = [];
-      let exist = false;
-      const { device_id, device_public_key } = data; // eslint-disable-line camelcase
-
-      if (storage.devices) {
-        devices = storage.devices;
-      }
-
-      devices.map(device => {
-        if (device.device_id === device_id) { // eslint-disable-line camelcase
-          exist = true;
-        }
-
-        return device;
-      });
-
-      if (!exist) {
-        devices.push({ device_id, device_public_key }); // eslint-disable-line camelcase
-        return saveToLocalStorage({ devices }, storage);
-      }
-
-      return storage;
-    })
-    .then(configurationComplete)
-    .catch(async err => {
-      await storeLog('error', 7, err, 'configurationRequest');
-      return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
     });
+
+    if (!exist) {
+      devices.push({ device_id, device_public_key }); // eslint-disable-line camelcase
+      storage = await saveToLocalStorage({ devices }, storage);
+    }
+
+    await configurationComplete(storage);
+  } catch (err) {
+    await storeLog('error', 7, err, 'configurationRequest');
+    return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
+  } finally {
+    storage = null;
+  }
 };
 
 export default handleConfigurationRequest;
