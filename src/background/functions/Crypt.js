@@ -55,8 +55,7 @@ class Crypt {
   }
 
   ArrayBufferToString (key) {
-    const buf = new Uint8Array(key);
-    return ab2b64(buf);
+    return ab2b64(key);
   }
 
   stringToArrayBuffer (string) {

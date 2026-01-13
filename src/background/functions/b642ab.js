@@ -18,8 +18,18 @@
 //
 
 /* global atob */
+
+/** 
+* Converts a base64 string to an ArrayBuffer.
+* @param {string} base64string - The base64 string to convert to an ArrayBuffer.
+* @return {ArrayBuffer} The resulting ArrayBuffer from the base64 string.
+*/
 const b642ab = base64string => {
-  return Uint8Array.from(atob(base64string), c => c.charCodeAt(0));
+  if (typeof base64string !== 'string') {
+    throw new TypeError('Base64ToArrayBuffer: Expected input to be a string');
+  }
+
+  return Uint8Array.from(atob(base64string), c => c.charCodeAt(0)).buffer;
 }
 
 export default b642ab;
