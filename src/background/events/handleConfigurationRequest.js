@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const configurationComplete = require('../../installPage/functions/configurationComplete');
-const TwoFasNotification = require('../../notification');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
+import config from '@/config.js';
+import configurationComplete from '@/installPage/functions/configurationComplete.js';
+import TwoFasNotification from '@notification/index.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
 
 const handleConfigurationRequest = (tabID, data) => {
   return loadFromLocalStorage(['configured', 'devices'])
@@ -63,4 +63,4 @@ const handleConfigurationRequest = (tabID, data) => {
     });
 };
 
-module.exports = handleConfigurationRequest;
+export default handleConfigurationRequest;

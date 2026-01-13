@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import S from '@/selectors.js';
 
 const setExtVersion = () => {
   const version = browser.runtime.getManifest().version;
@@ -28,4 +28,4 @@ const setExtVersion = () => {
   });
 };
 
-module.exports = setExtVersion;
+export default setExtVersion;

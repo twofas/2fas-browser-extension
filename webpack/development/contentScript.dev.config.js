@@ -20,6 +20,7 @@
 // UTILS
 const config = require('../utils/config');
 const DotenvConfig = require('../utils/dotenvConfig');
+const aliases = require('../utils/aliases');
 
 // PACKAGES
 const webpack = require('webpack');
@@ -73,6 +74,9 @@ const contentScriptDevConfig = {
         use: [{ loader: 'svg-inline-loader' }]
       }
     ]
+  },
+  resolve: {
+    alias: aliases
   },
   plugins: [
     new StyleLintPlugin({

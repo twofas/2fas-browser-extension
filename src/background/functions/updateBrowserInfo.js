@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const storeLog = require('../../partials/storeLog');
-const { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } = require('./update');
+import storeLog from '@partials/storeLog.js';
+import { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } from '@background/functions/update/index.js';
 
 const updateBrowserInfo = browserInfo => {
   return verifyStorageIntegrity(browserInfo)
@@ -27,4 +27,4 @@ const updateBrowserInfo = browserInfo => {
     .catch(err => storeLog('error', 6, err, 'updateBrowserInfo'));
 };
 
-module.exports = updateBrowserInfo;
+export default updateBrowserInfo;

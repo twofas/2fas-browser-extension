@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const notification = require('../../content/functions/notification');
+import notification from '@/content/functions/notification.js';
 
 const showFrontEndPush = (notificationObject, timeout) => {
   const notifObj = {
@@ -29,4 +29,4 @@ const showFrontEndPush = (notificationObject, timeout) => {
   return notification(notifObj);
 };
 
-module.exports = showFrontEndPush;
+export default showFrontEndPush;

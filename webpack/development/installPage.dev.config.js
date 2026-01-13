@@ -20,6 +20,7 @@
 // UTILS
 const config = require('../utils/config');
 const DotenvConfig = require('../utils/dotenvConfig');
+const aliases = require('../utils/aliases');
 
 // PACKAGES
 const webpack = require('webpack');
@@ -99,6 +100,7 @@ const installPageDevConfig = {
   },
   resolve: {
     modules: ['node_modules'],
+    alias: aliases,
     fallback: {
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify')

@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const SDK = require('../../sdk');
-const Crypt = require('./Crypt');
-const storeLog = require('../../partials/storeLog');
-const defaultAutoSubmitExcludedDomains = require('../../defaultAutoSubmitExcludedDomains');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import SDK from '@sdk/index.js';
+import Crypt from '@background/functions/Crypt.js';
+import storeLog from '@partials/storeLog.js';
+import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 
 const generateDefaultStorage = browserInfo => {
   const crypt = new Crypt();
@@ -82,4 +82,4 @@ const generateDefaultStorage = browserInfo => {
     .catch(err => storeLog('error', 28, err, 'generateDefaultStorage'));
 };
 
-module.exports = generateDefaultStorage;
+export default generateDefaultStorage;

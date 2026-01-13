@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const createFirefoxOptionsMenu = require('./createFirefoxOptionsMenu');
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import createFirefoxOptionsMenu from '@background/functions/createFirefoxOptionsMenu.js';
 
 const createContextMenus = () => {
   return loadFromLocalStorage(['contextMenu'])
@@ -40,7 +40,7 @@ const createContextMenus = () => {
           type: 'normal',
           visible: true
         };
-      
+
         if (process.env.EXT_PLATFORM === 'Firefox' || process.env.EXT_PLATFORM === 'Safari') {
           options.icons = {
             16: '/images/icons/icon16.png',
@@ -57,4 +57,4 @@ const createContextMenus = () => {
     .catch(() => {});
 };
 
-module.exports = createContextMenus;
+export default createContextMenus;

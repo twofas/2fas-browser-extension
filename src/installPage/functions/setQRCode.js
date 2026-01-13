@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const qrTimeout = require('./qrTimeout');
+import S from '@/selectors.js';
+import qrTimeout from '@installPage/functions/qrTimeout.js';
 
 const setQRCode = (imageURL, channel, extensionID) => {
   return new Promise(() => {
@@ -41,4 +41,4 @@ const setQRCode = (imageURL, channel, extensionID) => {
   });
 };
 
-module.exports = setQRCode;
+export default setQRCode;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const showConfirmModal = (header, text, func = null) => {
   const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
@@ -41,4 +41,4 @@ const showConfirmModal = (header, text, func = null) => {
   }
 };
 
-module.exports = showConfirmModal;
+export default showConfirmModal;

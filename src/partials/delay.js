@@ -26,4 +26,4 @@ const delay = (f, t) => {
   });
 };
 
-module.exports = delay;
+export default delay;

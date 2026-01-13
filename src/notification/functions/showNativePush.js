@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const showNativePush = (notificationObject, alert) => {
   const notificationOptions = {
@@ -38,4 +38,4 @@ const showNativePush = (notificationObject, alert) => {
   return browser.notifications.create('', notificationOptions);
 };
 
-module.exports = showNativePush;
+export default showNativePush;

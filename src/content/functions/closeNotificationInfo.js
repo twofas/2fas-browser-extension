@@ -26,4 +26,4 @@ const closeNotificationInfo = n => {
   }, 300);
 };
 
-module.exports = closeNotificationInfo;
+export default closeNotificationInfo;

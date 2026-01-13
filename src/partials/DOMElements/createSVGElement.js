@@ -24,4 +24,4 @@ const createSVGElement = data => {
   return svg.firstChild;
 };
 
-module.exports = createSVGElement;
+export default createSVGElement;

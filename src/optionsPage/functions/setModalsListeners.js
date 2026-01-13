@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const hideConfirmModal = require('./hideConfirmModal');
-const hideDomainModal = require('./hideDomainModal');
-const confirmModalBackdropClick = require('./confirmModalBackdropClick');
-const domainModalBackdropClick = require('./domainModalBackdropClick');
-const domainModalFormSubmit = require('./domainModalFormSubmit');
-const showDomainModal = require('./showDomainModal');
+import S from '@/selectors.js';
+import hideConfirmModal from '@optionsPage/functions/hideConfirmModal.js';
+import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
+import confirmModalBackdropClick from '@optionsPage/functions/confirmModalBackdropClick.js';
+import domainModalBackdropClick from '@optionsPage/functions/domainModalBackdropClick.js';
+import domainModalFormSubmit from '@optionsPage/functions/domainModalFormSubmit.js';
+import showDomainModal from '@optionsPage/functions/showDomainModal.js';
 
 const setModalsListeners = () => {
   const confirmModalCancel = document.querySelectorAll(S.optionsPage.confirmModal.cancel);
@@ -57,4 +57,4 @@ const setModalsListeners = () => {
   })
 };
 
-module.exports = setModalsListeners;
+export default setModalsListeners;

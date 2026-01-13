@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const SDK = require('../../sdk');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
+import SDK from '@sdk/index.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
 
 const closeRequest = async (tabID, requestID) => {
   let storage;
@@ -45,4 +45,4 @@ const closeRequest = async (tabID, requestID) => {
     .catch(err => storeLog('error', 30, err, storage[`tabData-${tabID}`]?.url));
 };
 
-module.exports = closeRequest;
+export default closeRequest;

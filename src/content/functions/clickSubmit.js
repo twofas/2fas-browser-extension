@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const getFormSubmitElements = require('./getFormSubmitElements');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const delay = require('../../partials/delay');
-const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
+import getFormSubmitElements from '@content/functions/getFormSubmitElements.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import storeLog from '@partials/storeLog.js';
+import delay from '@partials/delay.js';
+import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 
 const closest = (counts, goal) => {
   return counts.indexOf(
@@ -111,4 +111,4 @@ const clickSubmit = (inputElement, siteURL) => {
     });
 };
 
-module.exports = clickSubmit;
+export default clickSubmit;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.loadFromLocalStorage = require('./loadFromLocalStorage');
-exports.saveToLocalStorage = require('./saveToLocalStorage');
-exports.clearLocalStorage = require('./clearLocalStorage');
-exports.removeFromLocalStorage = require('./removeFromLocalStorage');
+export { default as loadFromLocalStorage } from './loadFromLocalStorage.js';
+export { default as saveToLocalStorage } from './saveToLocalStorage.js';
+export { default as clearLocalStorage } from './clearLocalStorage.js';
+export { default as removeFromLocalStorage } from './removeFromLocalStorage.js';

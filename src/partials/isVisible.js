@@ -88,4 +88,4 @@ const isVisible = domElement => {
   return true;
 };
 
-module.exports = isVisible;
+export default isVisible;

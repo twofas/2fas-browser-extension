@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const storeLog = require('../../partials/storeLog');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const TwoFasNotification = require('../../notification');
-const sendMessageToTab = require('../../partials/sendMessageToTab');
+import config from '@/config.js';
+import storeLog from '@partials/storeLog.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import TwoFasNotification from '@notification/index.js';
+import sendMessageToTab from '@partials/sendMessageToTab.js';
 
 const sendNotificationInfo = tab => {
   return loadFromLocalStorage(['nativePush'])
@@ -38,4 +38,4 @@ const sendNotificationInfo = tab => {
     });
 };
 
-module.exports = sendNotificationInfo;
+export default sendNotificationInfo;

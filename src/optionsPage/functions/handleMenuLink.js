@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const handleMenuLink = function (e) {
   e.preventDefault();
@@ -47,4 +47,4 @@ const handleMenuLink = function (e) {
   });
 }
 
-module.exports = handleMenuLink;
+export default handleMenuLink;

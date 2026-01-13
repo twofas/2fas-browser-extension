@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const isInFrame = require('./isInFrame');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const iconSrc = require('../../images/notification-logo.svg');
-const copySrc = require('../../images/copy-icon.svg');
-const closeSrc = require('../../images/notification-close.svg');
-const S = require('../../selectors');
+import config from '@/config.js';
+import isInFrame from '@content/functions/isInFrame.js';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import iconSrc from '@images/notification-logo.svg';
+import copySrc from '@images/copy-icon.svg';
+import closeSrc from '@images/notification-close.svg';
+import S from '@/selectors.js';
 
 const tokenNotification = token => {
   if (isInFrame()) {
@@ -143,4 +143,4 @@ const tokenNotification = token => {
   }, 30600);
 };
 
-module.exports = tokenNotification;
+export default tokenNotification;

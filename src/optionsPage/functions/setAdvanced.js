@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleAdvancedHeaderClick = require('./handleAdvancedHeaderClick');
-const handleLoggingChange = require('./handleLoggingChange');
-const handleContextMenuChange = require('./handleContextMenuChange');
-const handlePushChange = require('./handlePushChange');
-const handleSafariReset = require('./handleSafariReset');
-const sendTestNotification = require('./sendTestNotification');
+import S from '@/selectors.js';
+import handleAdvancedHeaderClick from '@optionsPage/functions/handleAdvancedHeaderClick.js';
+import handleLoggingChange from '@optionsPage/functions/handleLoggingChange.js';
+import handleContextMenuChange from '@optionsPage/functions/handleContextMenuChange.js';
+import handlePushChange from '@optionsPage/functions/handlePushChange.js';
+import handleSafariReset from '@optionsPage/functions/handleSafariReset.js';
+import sendTestNotification from '@optionsPage/functions/sendTestNotification.js';
 
 const setAdvanced = () => {
   const advancedHeader = document.querySelector(S.optionsPage.advanced.header);
@@ -56,4 +56,4 @@ const setAdvanced = () => {
   }
 };
 
-module.exports = setAdvanced;
+export default setAdvanced;

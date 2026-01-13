@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const openOptionsPage = e => {
   if (e) {
@@ -38,4 +38,4 @@ const openOptionsPage = e => {
   });
 };
 
-module.exports = openOptionsPage;
+export default openOptionsPage;

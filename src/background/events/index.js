@@ -17,5 +17,5 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.handleConfigurationRequest = require('./handleConfigurationRequest');
-exports.handleLoginRequest = require('./handleLoginRequest');
+export { default as handleConfigurationRequest } from './handleConfigurationRequest.js';
+export { default as handleLoginRequest } from './handleLoginRequest.js';

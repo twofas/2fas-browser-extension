@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { createElement, createTextElement } = require('../../partials/DOMElements');
+import browser from 'webextension-polyfill';
+import { createElement, createTextElement } from '@partials/DOMElements';
 
 const generateEmptyDeviceRow = tbody => {
   let t = {
@@ -40,4 +40,4 @@ const generateEmptyDeviceRow = tbody => {
   t = null;
 };
 
-module.exports = generateEmptyDeviceRow;
+export default generateEmptyDeviceRow;

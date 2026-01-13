@@ -24,4 +24,4 @@ const createElement = (tagName, className = '') => {
   return el;
 };
 
-module.exports = createElement;
+export default createElement;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const saveToLocalStorage = (data, storageObj = {}) => {
   return browser.storage.local.set(data)
@@ -28,4 +28,4 @@ const saveToLocalStorage = (data, storageObj = {}) => {
     });
 };
 
-module.exports = saveToLocalStorage;
+export default saveToLocalStorage;

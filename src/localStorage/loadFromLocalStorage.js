@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const loadFromLocalStorage = key => {
   return browser.storage.local.get(key)
@@ -27,4 +27,4 @@ const loadFromLocalStorage = key => {
     });
 };
 
-module.exports = loadFromLocalStorage;
+export default loadFromLocalStorage;

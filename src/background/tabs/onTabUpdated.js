@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const SDK = require('../../sdk');
-const checkTabCS = require('../functions/checkTabCS');
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import SDK from '@sdk/index.js';
+import checkTabCS from '@background/functions/checkTabCS.js';
 
 const onTabUpdated = async (tabID, changeInfo) => {
   if (!changeInfo) {
@@ -61,4 +61,4 @@ const onTabUpdated = async (tabID, changeInfo) => {
     .catch(() => {}); // ignore error
 };
 
-module.exports = onTabUpdated;
+export default onTabUpdated;

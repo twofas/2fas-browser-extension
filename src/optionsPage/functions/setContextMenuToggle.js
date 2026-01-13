@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
 const setContextMenuToggle = () => {
   return loadFromLocalStorage(['contextMenu'])
@@ -40,4 +40,4 @@ const setContextMenuToggle = () => {
     .catch(() => {});
 };
 
-module.exports = setContextMenuToggle;
+export default setContextMenuToggle;

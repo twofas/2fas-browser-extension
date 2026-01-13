@@ -20,6 +20,7 @@
 // UTILS
 const config = require('../utils/config');
 const DotenvConfig = require('../utils/dotenvConfig');
+const aliases = require('../utils/aliases');
 
 // PACKAGES
 const webpack = require('webpack');
@@ -85,6 +86,9 @@ const contentScriptProdConfig = {
       new CssMinimizerPlugin()
     ],
     nodeEnv: 'production'
+  },
+  resolve: {
+    alias: aliases
   },
   plugins: [
     new ESLintPlugin({

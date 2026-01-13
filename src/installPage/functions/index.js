@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.configurationComplete = require('./configurationComplete');
-exports.generateQRCode = require('./generateQRCode');
-exports.installContainerHandlers = require('./installContainerHandlers');
-exports.qrTimeout = require('./qrTimeout');
-exports.setQRCode = require('./setQRCode');
-exports.showIntegrityError = require('./showIntegrityError');
+export { default as configurationComplete } from './configurationComplete.js';
+export { default as generateQRCode } from './generateQRCode.js';
+export { default as installContainerHandlers } from './installContainerHandlers.js';
+export { default as qrTimeout } from './qrTimeout.js';
+export { default as setQRCode } from './setQRCode.js';
+export { default as showIntegrityError } from './showIntegrityError.js';

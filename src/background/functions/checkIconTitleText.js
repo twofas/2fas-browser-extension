@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const showNativePush = require('../../notification/functions/showNativePush');
-const config = require('../../config');
+import browser from 'webextension-polyfill';
+import showNativePush from '@notification/functions/showNativePush.js';
+import config from '@/config.js';
 
 const checkIconTitleText = async tabID => {
   if (
@@ -43,4 +43,4 @@ const checkIconTitleText = async tabID => {
   return true;
 };
 
-module.exports = checkIconTitleText;
+export default checkIconTitleText;

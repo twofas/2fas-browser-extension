@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
 const handlePushChange = e => {
   return saveToLocalStorage({ nativePush: e.target.value === 'native' });
 };
 
-module.exports = handlePushChange;
+export default handlePushChange;

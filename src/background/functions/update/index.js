@@ -17,6 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.updateBrowserExtension = require('./updateBrowserExtension');
-exports.updateIncognitoAccess = require('./updateIncognitoAccess');
-exports.verifyStorageIntegrity = require('./verifyStorageIntegrity');
+export { default as updateBrowserExtension } from './updateBrowserExtension.js';
+export { default as updateIncognitoAccess } from './updateIncognitoAccess.js';
+export { default as verifyStorageIntegrity } from './verifyStorageIntegrity.js';

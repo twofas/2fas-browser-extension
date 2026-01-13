@@ -25,4 +25,4 @@ const getTokenInputs = inputID => {
   return document.querySelector(`*[data-twofas-input="${inputID}"]`);
 };
 
-module.exports = getTokenInputs;
+export default getTokenInputs;

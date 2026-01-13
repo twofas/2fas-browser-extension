@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const createTextElement = require('../../partials/DOMElements/createTextElement');
-const generateEmptyShortcutBox = require('./generateEmptyShortcutBox');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import createTextElement from '@partials/DOMElements/createTextElement.js';
+import generateEmptyShortcutBox from '@optionsPage/functions/generateEmptyShortcutBox.js';
+import S from '@/selectors.js';
 
 const generateShortcutBox = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
@@ -102,4 +102,4 @@ const generateShortcutBox = () => {
     });
 };
 
-module.exports = generateShortcutBox;
+export default generateShortcutBox;

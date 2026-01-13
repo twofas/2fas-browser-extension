@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const browserAction = require('./browserAction');
-const openBrowserPage = require('./openBrowserPage');
+import browser from 'webextension-polyfill';
+import browserAction from '@background/functions/browserAction.js';
+import openBrowserPage from '@background/functions/openBrowserPage.js';
 
 const onContextMenuClick = (info, tab) => {
   if (info?.menuItemId === 'twofas-firefox-options-menu') {
@@ -31,4 +31,4 @@ const onContextMenuClick = (info, tab) => {
   }
 };
 
-module.exports = onContextMenuClick;
+export default onContextMenuClick;

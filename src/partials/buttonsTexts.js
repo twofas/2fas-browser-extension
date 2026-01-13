@@ -100,4 +100,4 @@ const buttonsTexts = [
   'наступний крок'
 ];
 
-module.exports = buttonsTexts;
+export default buttonsTexts;

@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const setIcon = require('./setIcon');
-const dummyGetLocalStorage = require('./dummyGetLocalStorage');
+import browser from 'webextension-polyfill';
+import setIcon from '@background/functions/setIcon.js';
+import dummyGetLocalStorage from '@background/functions/dummyGetLocalStorage.js';
 
 const checkTabCS = async tabId => {
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -65,4 +65,4 @@ const checkTabCS = async tabId => {
   }
 };
 
-module.exports = checkTabCS;
+export default checkTabCS;

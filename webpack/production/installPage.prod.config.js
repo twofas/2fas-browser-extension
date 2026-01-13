@@ -20,6 +20,7 @@
 // UTILS
 const config = require('../utils/config');
 const DotenvConfig = require('../utils/dotenvConfig');
+const aliases = require('../utils/aliases');
 
 // PACKAGES
 const webpack = require('webpack');
@@ -112,7 +113,8 @@ const installPageProdConfig = {
     nodeEnv: 'production'
   },
   resolve: {
-    modules: ['node_modules']
+    modules: ['node_modules'],
+    alias: aliases
   },
   plugins: [
     new webpack.DefinePlugin({

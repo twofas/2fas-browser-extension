@@ -95,4 +95,4 @@ const ignoreButtonTexts = () => {
   ];
 };
 
-module.exports = ignoreButtonTexts;
+export default ignoreButtonTexts;

@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus, dummyGetLocalStorage, setIcon } = require('./functions');
-const { onTabRemoved, onTabUpdated, onTabActivated } = require('./tabs');
+import browser from 'webextension-polyfill';
+import { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
+import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 const browserInfo = getBrowserInfo();
 if (process.env.EXT_PLATFORM === 'Firefox') {

@@ -29,4 +29,4 @@ const onTabFocused = (onFocus, onBlur) => {
   }
 };
 
-module.exports = onTabFocused;
+export default onTabFocused;

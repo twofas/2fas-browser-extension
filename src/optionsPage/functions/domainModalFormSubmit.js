@@ -18,14 +18,14 @@
 //
 
 /* global FormData */
-const browser = require('webextension-polyfill');
-const S = require('../../selectors');
-const generateDomainsList = require('./generateDomainsList');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const TwoFasNotification = require('../../notification');
-const config = require('../../config');
-const storeLog = require('../../partials/storeLog');
-const hideDomainModal = require('./hideDomainModal');
+import browser from 'webextension-polyfill';
+import S from '@/selectors.js';
+import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import TwoFasNotification from '@notification';
+import config from '@/config.js';
+import storeLog from '@partials/storeLog.js';
+import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
 const isValidUrl = urlString => {
   const urlRegex = /^(((http|https):\/\/|)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}(:[0-9]{1,5})?(\/.*)?)$/;
@@ -96,4 +96,4 @@ const domainModalFormSubmit = e => {
     });
 };
 
-module.exports = domainModalFormSubmit;
+export default domainModalFormSubmit;

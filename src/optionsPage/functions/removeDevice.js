@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const SDK = require('../../sdk');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const removeDeviceFromDOM = require('./removeDeviceFromDOM');
-const showConfirmModal = require('./showConfirmModal');
-const TwoFasNotification = require('../../notification');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import SDK from '@sdk';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import storeLog from '@partials/storeLog.js';
+import removeDeviceFromDOM from '@optionsPage/functions/removeDeviceFromDOM.js';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import TwoFasNotification from '@notification';
 
 const removeDevice = function (e) {
   e.preventDefault();
@@ -76,4 +76,4 @@ const removeDevice = function (e) {
   );
 }
 
-module.exports = removeDevice;
+export default removeDevice;

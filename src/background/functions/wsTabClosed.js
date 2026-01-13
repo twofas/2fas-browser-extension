@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const closeWSChannel = require('./closeWSChannel');
+import closeWSChannel from '@background/functions/closeWSChannel.js';
 
 const wsTabClosed = (tabIDChanged, tabIDws, channel, timeoutID) => {
   if (tabIDChanged === tabIDws) {
@@ -26,4 +26,4 @@ const wsTabClosed = (tabIDChanged, tabIDws, channel, timeoutID) => {
   }
 };
 
-module.exports = wsTabClosed;
+export default wsTabClosed;

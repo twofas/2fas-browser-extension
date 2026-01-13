@@ -17,15 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const browser = require('webextension-polyfill');
-const i18n = require('../partials/i18n');
-const SDK = require('../sdk');
-const TwoFasNotification = require('../notification');
-const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
-const subscribeChannel = require('../background/functions/subscribeChannel');
-const { delay, extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } = require('../partials');
-const { generateQRCode, installContainerHandlers, showIntegrityError } = require('./functions');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import i18n from '@partials/i18n.js';
+import SDK from '@sdk';
+import TwoFasNotification from '@/notification';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import subscribeChannel from '@/background/functions/subscribeChannel.js';
+import { delay, extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } from '@partials';
+import { generateQRCode, installContainerHandlers, showIntegrityError } from '@installPage/functions';
 
 const installPageError = async err => {
   await storeLog('error', 20, err, 'installPage');

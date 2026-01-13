@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const handleAdvancedHeaderClick = e => {
   e.preventDefault();
@@ -27,4 +27,4 @@ const handleAdvancedHeaderClick = e => {
   document.querySelector(S.optionsPage.advanced.content).classList.toggle('visible');
 };
 
-module.exports = handleAdvancedHeaderClick;
+export default handleAdvancedHeaderClick;

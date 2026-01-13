@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
-const storeLog = require('../../partials/storeLog');
+import config from '@/config.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } from '@content/functions';
+import storeLog from '@partials/storeLog.js';
 
 const contentOnMessage = (request, sender, sendResponse, tabData) => {
   if (!request || !request.action) {
@@ -121,4 +121,4 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
   return true;
 };
 
-module.exports = contentOnMessage;
+export default contentOnMessage;

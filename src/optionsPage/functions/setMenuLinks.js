@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleMenuLink = require('./handleMenuLink');
+import S from '@/selectors.js';
+import handleMenuLink from '@optionsPage/functions/handleMenuLink.js';
 
 const setMenuLinks = () => {
   const menuLinks = document.querySelectorAll(S.optionsPage.menuLink);
   menuLinks.forEach(el => el.addEventListener('click', handleMenuLink));
 };
 
-module.exports = setMenuLinks;
+export default setMenuLinks;

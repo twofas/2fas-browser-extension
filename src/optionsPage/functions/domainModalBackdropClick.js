@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hideDomainModal = require('./hideDomainModal');
+import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
 const domainModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
@@ -27,4 +27,4 @@ const domainModalBackdropClick = e => {
   }
 };
 
-module.exports = domainModalBackdropClick;
+export default domainModalBackdropClick;

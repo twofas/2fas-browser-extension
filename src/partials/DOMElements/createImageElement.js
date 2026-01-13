@@ -25,4 +25,4 @@ const createImageElement = (src, alt) => {
   return img;
 };
 
-module.exports = createImageElement;
+export default createImageElement;

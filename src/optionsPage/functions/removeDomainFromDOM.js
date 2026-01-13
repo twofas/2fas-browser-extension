@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const generateEmptyDomainRow = require('./generateEmptyDomainRow');
-const S = require('../../selectors');
+import generateEmptyDomainRow from '@optionsPage/functions/generateEmptyDomainRow.js';
+import S from '@/selectors.js';
 
 const removeDomainFromDOM = domain => {
   const tr = document.querySelector(`tr[data-domain="${domain}"]`);
@@ -36,4 +36,4 @@ const removeDomainFromDOM = domain => {
   return true;
 };
 
-module.exports = removeDomainFromDOM;
+export default removeDomainFromDOM;

@@ -17,17 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const buttonsTexts = require('../../partials/buttonsTexts');
-const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
+import buttonsTexts from '@partials/buttonsTexts.js';
+import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
+import inputsSelectors from '@partials/inputsSelectors.js';
+import formSubmitSelectors from '@partials/formSubmitSelectors.js';
+import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 
 const getFormElements = () => {
-  const inputsSelector = require('../../partials/inputsSelectors')();
-  let submits = require('../../partials/formSubmitSelectors')();
+  const inputsSelector = inputsSelectors();
+  let submits = formSubmitSelectors();
   let submitTextCheck = false;
 
   let submitsLength = document.querySelectorAll(submits).length;
+
   if (submitsLength <= 0) {
-    submits = require('../../partials/formSubmitSecondSelectors')();
+    submits = formSubmitSecondSelectors();
   }
 
   submitsLength = document.querySelectorAll(submits).length;
@@ -78,4 +82,4 @@ const getFormElements = () => {
   });
 };
 
-module.exports = getFormElements;
+export default getFormElements;

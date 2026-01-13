@@ -17,6 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.onTabActivated = require('./onTabActivated');
-exports.onTabRemoved = require('./onTabRemoved');
-exports.onTabUpdated = require('./onTabUpdated');
+export { default as onTabActivated } from './onTabActivated.js';
+export { default as onTabRemoved } from './onTabRemoved.js';
+export { default as onTabUpdated } from './onTabUpdated.js';

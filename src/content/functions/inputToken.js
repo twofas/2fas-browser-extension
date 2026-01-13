@@ -18,10 +18,10 @@
 //
 
 /* global Event, KeyboardEvent, InputEvent */
-const runTasksWithDelay = require('../../partials/runTasksWithDelay');
-const getTabData = require('./getTabData');
-const clickSubmit = require('./clickSubmit');
-const clearAfterInputToken = require('./clearAfterInputToken');
+import runTasksWithDelay from '@partials/runTasksWithDelay.js';
+import getTabData from '@content/functions/getTabData.js';
+import clickSubmit from '@content/functions/clickSubmit.js';
+import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
 
 const inputToken = (request, inputElement, siteURL) => {
   return new Promise(resolve => {
@@ -42,21 +42,25 @@ const inputToken = (request, inputElement, siteURL) => {
     for (let i = 0; i < tokenLength; i++) {
       promises.push(
         () => new Promise(resolve => {
+          const digit = request.token[i];
+          const digitNum = Number(digit);
+          const keyCode = 48 + digitNum;
+
           if (document.activeElement !== inputElement) {
             document.activeElement.value = '';
           }
 
-          document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
-          document.activeElement.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, cancelable: true, charCode: 48 + parseInt(request.token[i], 10), code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
-          
+          document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
+          document.activeElement.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, cancelable: true, charCode: keyCode, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
+
           if (document.activeElement.type.toLowerCase() === 'number') {
-            document.activeElement.value += parseInt(request.token[i], 10);
+            document.activeElement.value += digitNum;
           } else {
-            document.activeElement.value += request.token[i];
+            document.activeElement.value += digit;
           }
 
-          document.activeElement.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, data: request.token[i], inputType: 'insertText', which: 0 }));
-          document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${request.token[i]}`, ctrlKey: false, key: request.token[i], keyCode: 48 + parseInt(request.token[i], 10), location: 0, metaKey: false, repeat: false, shiftKey: false, which: 48 + parseInt(request.token[i], 10) }));
+          document.activeElement.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, data: digit, inputType: 'insertText', which: 0 }));
+          document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
           document.activeElement.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 
           return resolve();
@@ -88,4 +92,4 @@ const inputToken = (request, inputElement, siteURL) => {
   });
 };
 
-module.exports = inputToken;
+export default inputToken;

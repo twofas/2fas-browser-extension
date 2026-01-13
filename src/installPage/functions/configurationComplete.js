@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const configurationComplete = () => {
   document.querySelector(S.installPage.newDevice).classList.add('hidden');
@@ -28,4 +28,4 @@ const configurationComplete = () => {
   }
 };
 
-module.exports = configurationComplete;
+export default configurationComplete;

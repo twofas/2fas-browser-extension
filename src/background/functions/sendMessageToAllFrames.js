@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const sendMessageToAllFrames = async (tabId, message) => {
   let frames;
@@ -43,4 +43,4 @@ const sendMessageToAllFrames = async (tabId, message) => {
   );
 };
 
-module.exports = sendMessageToAllFrames;
+export default sendMessageToAllFrames;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const handleTargetBlank = () => {
   if (process.env.EXT_PLATFORM !== 'Safari') {
@@ -42,4 +42,4 @@ const handleTargetBlank = () => {
   });
 };
 
-module.exports = handleTargetBlank;
+export default handleTargetBlank;

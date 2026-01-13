@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 
 const dummyGetLocalStorage = () => {
   return loadFromLocalStorage('extensionID')
@@ -26,4 +26,4 @@ const dummyGetLocalStorage = () => {
     });
 };
 
-module.exports = dummyGetLocalStorage;
+export default dummyGetLocalStorage;

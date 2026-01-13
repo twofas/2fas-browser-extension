@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const createFirefoxOptionsMenu = () => {
   if (process.env.EXT_PLATFORM === 'Firefox') {
@@ -32,4 +32,4 @@ const createFirefoxOptionsMenu = () => {
   }
 };
 
-module.exports = createFirefoxOptionsMenu;
+export default createFirefoxOptionsMenu;

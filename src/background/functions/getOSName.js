@@ -18,7 +18,7 @@
 //
 
 /* global navigator */
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const getOSName = () => {
   let osName = browser.i18n.getMessage('unknownOS');
@@ -46,4 +46,4 @@ const getOSName = () => {
   return osName;
 };
 
-module.exports = getOSName;
+export default getOSName;

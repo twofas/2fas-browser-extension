@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const showConfirmModal = require('./showConfirmModal');
-const clearLocalStorage = require('../../localStorage/clearLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const delay = require('../../partials/delay');
+import browser from 'webextension-polyfill';
+import config from '@/config.js';
+import TwoFasNotification from '@notification';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import clearLocalStorage from '@localStorage/clearLocalStorage.js';
+import storeLog from '@partials/storeLog.js';
+import delay from '@partials/delay.js';
 
 const handleSafariReset = () => {
   showConfirmModal(
@@ -41,4 +41,4 @@ const handleSafariReset = () => {
   );
 };
 
-module.exports = handleSafariReset;
+export default handleSafariReset;

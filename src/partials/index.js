@@ -17,24 +17,24 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.buttonsTexts = require('./buttonsTexts');
-exports.delay = require('./delay');
-exports.extNameUpdate = require('./extNameUpdate');
-exports.extPageOnMessage = require('./extPageOnMessage');
-exports.formSubmitSelectors = require('./formSubmitSelectors');
-exports.formSubmitSecondSelectors = require('./formSubmitSecondSelectors');
-exports.handleTargetBlank = require('./handleTargetBlank');
-exports.hidePreloader = require('./hidePreloader');
-exports.i18n = require('./i18n');
-exports.ignoreButtonSelectors = require('./ignoreButtonSelectors');
-exports.ignoreButtonTexts = require('./ignoreButtonTexts');
-exports.inputsSelectors = require('./inputsSelectors');
-exports.months = require('./months');
-exports.onTabFocused = require('./onTabFocused');
-exports.openShortcutEdit = require('./openShortcutEdit');
-exports.runTasksWithDelay = require('./runTasksWithDelay');
-exports.sendMessageToTab = require('./sendMessageToTab');
-exports.storageValidation = require('./storageValidation');
-exports.storeLog = require('./storeLog');
-exports.uniqueOnly = require('./uniqueOnly');
-exports.wait = require('./wait');
+export { default as buttonsTexts } from './buttonsTexts.js';
+export { default as delay } from './delay.js';
+export { default as extNameUpdate } from './extNameUpdate.js';
+export { default as extPageOnMessage } from './extPageOnMessage.js';
+export { default as formSubmitSelectors } from './formSubmitSelectors.js';
+export { default as formSubmitSecondSelectors } from './formSubmitSecondSelectors.js';
+export { default as handleTargetBlank } from './handleTargetBlank.js';
+export { default as hidePreloader } from './hidePreloader.js';
+export { default as i18n } from './i18n.js';
+export { default as ignoreButtonSelectors } from './ignoreButtonSelectors.js';
+export { default as ignoreButtonTexts } from './ignoreButtonTexts.js';
+export { default as inputsSelectors } from './inputsSelectors.js';
+export { default as months } from './months.js';
+export { default as onTabFocused } from './onTabFocused.js';
+export { default as openShortcutEdit } from './openShortcutEdit.js';
+export { default as runTasksWithDelay } from './runTasksWithDelay.js';
+export { default as sendMessageToTab } from './sendMessageToTab.js';
+export { default as storageValidation } from './storageValidation.js';
+export { default as storeLog } from './storeLog.js';
+export { default as uniqueOnly } from './uniqueOnly.js';
+export { default as wait } from './wait.js';

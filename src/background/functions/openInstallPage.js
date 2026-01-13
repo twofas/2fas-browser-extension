@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const openInstallPage = () => {
   return browser.tabs.create({ url: 'installPage/installPage.html' });
 };
 
-module.exports = openInstallPage;
+export default openInstallPage;

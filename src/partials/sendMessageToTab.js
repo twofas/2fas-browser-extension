@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const config = require('../config');
-const TwoFasNotification = require('../notification');
+import browser from 'webextension-polyfill';
+import config from '../config.js';
+import TwoFasNotification from '../notification/index.js';
 
 const sendMessageToTab = (tabID, message) => {
   return browser.tabs.sendMessage(tabID, message)
@@ -50,4 +50,4 @@ const sendMessageToTab = (tabID, message) => {
     });
 };
 
-module.exports = sendMessageToTab;
+export default sendMessageToTab;

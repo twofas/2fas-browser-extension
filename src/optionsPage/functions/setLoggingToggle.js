@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
 const setLoggingToggle = () => {
   return loadFromLocalStorage(['logging'])
@@ -40,4 +40,4 @@ const setLoggingToggle = () => {
     .catch(() => {});
 };
 
-module.exports = setLoggingToggle;
+export default setLoggingToggle;

@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, removeFromLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
+import { loadFromLocalStorage, removeFromLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
 
 const onStartup = () => {
   return loadFromLocalStorage(null)
     .then(storage => {
-      return Object.keys(storage).map(key => {
+      Object.keys(storage).forEach(key => {
         if (key === 'tabData' || key.substring(0, 8) === 'tabData-') {
           const diffMinutes = parseInt(
             Math.abs(
@@ -32,16 +32,12 @@ const onStartup = () => {
           );
 
           if (diffMinutes > 15) {
-            return removeFromLocalStorage(key)
+            removeFromLocalStorage(key);
           }
-
-          return null;
         }
-
-        return null;
       });
     })
     .catch(err => storeLog('error', 1, err, 'onStartup'));
 };
 
-module.exports = onStartup;
+export default onStartup;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
 const setPushRadio = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
@@ -62,4 +62,4 @@ const setPushRadio = () => {
     .catch(() => {});
 };
 
-module.exports = setPushRadio;
+export default setPushRadio;

@@ -26,4 +26,4 @@ const clearFormElementsNumber = () => {
   });
 };
 
-module.exports = clearFormElementsNumber;
+export default clearFormElementsNumber;

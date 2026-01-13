@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const generateEmptyDomainRow = require('./generateEmptyDomainRow');
-const S = require('../../selectors');
-const trashSVG = require('../../images/page-icons/trash.svg');
-const removeDomain = require('./removeDomain');
+import browser from 'webextension-polyfill';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import generateEmptyDomainRow from '@optionsPage/functions/generateEmptyDomainRow.js';
+import S from '@/selectors.js';
+import trashSVG from '@images/page-icons/trash.svg';
+import removeDomain from '@optionsPage/functions/removeDomain.js';
 
 const generateDomainsList = list => {
   if (!list) {
@@ -41,7 +41,7 @@ const generateDomainsList = list => {
     generateEmptyDomainRow(tbody);
   }
 
-  list.map(domain => {
+  list.forEach(domain => {
     let t = {
       tr: null,
       td: [null, null],
@@ -74,9 +74,7 @@ const generateDomainsList = list => {
 
     tbody.appendChild(t.tr);
     t = null;
-
-    return domain;
   });
 };
 
-module.exports = generateDomainsList;
+export default generateDomainsList;

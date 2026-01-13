@@ -119,4 +119,4 @@ const inputsSelectors = () => {
   return `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${baseSelectors}`;
 };
 
-module.exports = inputsSelectors;
+export default inputsSelectors;

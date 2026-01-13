@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
-const config = require('../config');
-const SDK = require('../sdk');
+import { loadFromLocalStorage, saveToLocalStorage } from '../localStorage/index.js';
+import config from '../config.js';
+import SDK from '../sdk/index.js';
 
 const logURL = url => {
   return url
@@ -124,4 +124,4 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     });
 };
 
-module.exports = storeLog;
+export default storeLog;

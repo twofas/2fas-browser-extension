@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const S = require('../../selectors');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import S from '@/selectors.js';
 
 const setPinInfo = () => {
   return loadFromLocalStorage('pinInfo')
@@ -33,4 +33,4 @@ const setPinInfo = () => {
     });
 };
 
-module.exports = setPinInfo;
+export default setPinInfo;

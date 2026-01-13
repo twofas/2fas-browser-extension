@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const storeLog = require('../../partials/storeLog');
+import browser from 'webextension-polyfill';
+import storeLog from '@partials/storeLog.js';
 
 const getTabData = async () => {
   let tabData = {};
@@ -49,4 +49,4 @@ const getTabData = async () => {
   return tabData;
 };
 
-module.exports = getTabData;
+export default getTabData;

@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const createContextMenus = require('../../background/functions/createContextMenus');
+import browser from 'webextension-polyfill';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import createContextMenus from '@/background/functions/createContextMenus.js';
 
 const handleContextMenuChange = e => {
   return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
@@ -35,4 +35,4 @@ const handleContextMenuChange = e => {
     });
 };
 
-module.exports = handleContextMenuChange;
+export default handleContextMenuChange;

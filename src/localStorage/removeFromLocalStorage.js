@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const removeFromLocalStorage = key => {
   return browser.storage.local.remove(key.toString())
@@ -28,4 +28,4 @@ const removeFromLocalStorage = key => {
     });
 };
 
-module.exports = removeFromLocalStorage;
+export default removeFromLocalStorage;

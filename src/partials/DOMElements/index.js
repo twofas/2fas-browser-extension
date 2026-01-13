@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.createElement = require('./createElement');
-exports.createImageElement = require('./createImageElement');
-exports.createSVGElement = require('./createSVGElement');
-exports.createTextElement = require('./createTextElement');
+export { default as createElement } from './createElement.js';
+export { default as createImageElement } from './createImageElement.js';
+export { default as createSVGElement } from './createSVGElement.js';
+export { default as createTextElement } from './createTextElement.js';

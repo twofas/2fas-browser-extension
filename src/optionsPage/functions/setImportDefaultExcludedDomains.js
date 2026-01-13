@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleImportDefaultExcludedDomains = require('./handleImportDefaultExcludedDomains');
+import S from '@/selectors.js';
+import handleImportDefaultExcludedDomains from '@optionsPage/functions/handleImportDefaultExcludedDomains.js';
 
 const setImportDefaultExcludedDomains = () => {
   const importDefaultListBtn = document.querySelector(S.optionsPage.autoSubmit.importDefault);
   importDefaultListBtn.addEventListener('click', handleImportDefaultExcludedDomains);
 };
 
-module.exports = setImportDefaultExcludedDomains;
+export default setImportDefaultExcludedDomains;

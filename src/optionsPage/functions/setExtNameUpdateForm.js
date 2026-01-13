@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const extNameUpdate = require('../../partials/extNameUpdate');
+import S from '@/selectors.js';
+import extNameUpdate from '@partials/extNameUpdate.js';
 
 const setExtNameUpdateForm = storage => {
   const extNameUpdateForm = document.querySelector(S.extName.updateForm);
   extNameUpdateForm.addEventListener('submit', e => extNameUpdate(storage, e));
 };
 
-module.exports = setExtNameUpdateForm;
+export default setExtNameUpdateForm;

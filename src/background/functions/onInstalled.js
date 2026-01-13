@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const openInstallPage = require('./openInstallPage');
-const storeLog = require('../../partials/storeLog');
-const updateBrowserInfo = require('./updateBrowserInfo');
-const createContextMenus = require('./createContextMenus');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const checkSafariStorage = require('./checkSafariStorage');
+import openInstallPage from '@background/functions/openInstallPage.js';
+import storeLog from '@partials/storeLog.js';
+import updateBrowserInfo from '@background/functions/updateBrowserInfo.js';
+import createContextMenus from '@background/functions/createContextMenus.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 
 const onInstalled = (details, browserInfo) => {
   if (process.env.EXT_PLATFORM !== 'Firefox') {
@@ -42,4 +42,4 @@ const onInstalled = (details, browserInfo) => {
     .catch(err => storeLog('error', 9, err, 'onInstalled'));
 };
 
-module.exports = onInstalled;
+export default onInstalled;

@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const TwoFasNotification = require('../../notification');
-const initBEAction = require('./initBEAction');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const sendNotificationInfo = require('./sendNotificationInfo');
-const checkIconTitleText = require('./checkIconTitleText');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import TwoFasNotification from '@notification/index.js';
+import initBEAction from '@background/functions/initBEAction.js';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import sendNotificationInfo from '@background/functions/sendNotificationInfo.js';
+import checkIconTitleText from '@background/functions/checkIconTitleText.js';
 
 const browserActionConfigured = async (tab, data) => {
   const url = new URL(tab?.url);
@@ -67,4 +67,4 @@ const browserActionConfigured = async (tab, data) => {
   return false;
 };
 
-module.exports = browserActionConfigured;
+export default browserActionConfigured;

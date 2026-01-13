@@ -27,4 +27,4 @@ const createTextElement = (tagName, text, className = '') => {
   return el;
 };
 
-module.exports = createTextElement;
+export default createTextElement;

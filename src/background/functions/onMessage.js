@@ -18,10 +18,10 @@
 //
 
 /* global URL */
-const getBrowserInfo = require('./getBrowserInfo');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const storeLog = require('../../partials/storeLog');
-const TwoFasNotification = require('../../notification');
+import getBrowserInfo from '@background/functions/getBrowserInfo.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import storeLog from '@partials/storeLog.js';
+import TwoFasNotification from '@notification/index.js';
 
 const onMessage = (request, sender, sendResponse) => {
   if (!request || !request.action) {
@@ -80,7 +80,7 @@ const onMessage = (request, sender, sendResponse) => {
       TwoFasNotification.show(request.data, request.tabID).then(() => {
         sendResponse({ status: 'ok' });
       });
-      
+
       break;
     }
 
@@ -93,4 +93,4 @@ const onMessage = (request, sender, sendResponse) => {
   return true;
 };
 
-module.exports = onMessage;
+export default onMessage;

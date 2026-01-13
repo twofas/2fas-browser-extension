@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.sendFrontEndPushAction = require('./sendFrontEndPushAction');
-exports.showFrontEndPush = require('./showFrontEndPush');
-exports.showNativePush = require('./showNativePush');
-exports.showNativePushWithoutTimeout = require('./showNativePushWithoutTimeout');
+export { default as sendFrontEndPushAction } from './sendFrontEndPushAction.js';
+export { default as showFrontEndPush } from './showFrontEndPush.js';
+export { default as showNativePush } from './showNativePush.js';
+export { default as showNativePushWithoutTimeout } from './showNativePushWithoutTimeout.js';

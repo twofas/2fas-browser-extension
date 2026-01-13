@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const handlePinInfoNext = () => {
   const slider = document.querySelector(S.optionsPage.pin.slider);
@@ -27,4 +27,4 @@ const handlePinInfoNext = () => {
   }
 };
 
-module.exports = handlePinInfoNext;
+export default handlePinInfoNext;

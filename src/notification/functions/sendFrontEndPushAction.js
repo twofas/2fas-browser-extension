@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
   return browser.tabs.sendMessage(tabID, {
@@ -28,4 +28,4 @@ const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
   });
 };
 
-module.exports = sendFrontEndPushAction;
+export default sendFrontEndPushAction;

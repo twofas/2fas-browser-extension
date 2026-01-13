@@ -17,16 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import config from '@/config.js';
+import TwoFasNotification from '@notification/index.js';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
 const handleFrontElement = async (activeElements, tabId, storage) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
-    properElements = activeElements.filter(el => 
-      el?.id && 
+    properElements = activeElements.filter(el =>
+      el?.id &&
       (typeof el?.id === 'string' || el?.id instanceof String) &&
       el?.id?.length > 0 &&
       (el?.nodeName === 'input' || el?.nodeName === 'textarea')
@@ -43,4 +43,4 @@ const handleFrontElement = async (activeElements, tabId, storage) => {
   return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);
 };
 
-module.exports = handleFrontElement;
+export default handleFrontElement;

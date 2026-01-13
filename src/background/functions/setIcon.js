@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+import browser from 'webextension-polyfill';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 
 const getIconObj = async (tabID, isActive) => {
   const MAX_TYPE = 2;
-  
+
   let type = 0;
   let typeFilename = '';
   let iconFileName = '';
@@ -75,4 +75,4 @@ const setIcon = async (tabID, isActive = true, changeTitle = false) => {
   }
 };
 
-module.exports = setIcon;
+export default setIcon;

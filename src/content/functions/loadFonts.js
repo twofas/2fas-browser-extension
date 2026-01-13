@@ -18,13 +18,13 @@
 //
 
 /* global FontFace */
+import browser from 'webextension-polyfill';
+
 // NEWEGG ETC. FIX
 const loadFonts = () => {
   if (document.fonts.check('bold 16px Montserrat') && document.fonts.check('normal 16px Montserrat')) {
     return false;
   }
-
-  const browser = require('webextension-polyfill');
 
   let fonts = [
     new FontFace(
@@ -47,4 +47,4 @@ const loadFonts = () => {
   }, { once: true });
 };
 
-module.exports = loadFonts;
+export default loadFonts;

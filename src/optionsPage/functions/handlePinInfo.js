@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const S = require('../../selectors');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import S from '@/selectors.js';
 
 const handlePinInfo = () => {
   const view = document.querySelector(S.optionsPage.pin.info);
@@ -27,4 +27,4 @@ const handlePinInfo = () => {
   return saveToLocalStorage({ pinInfo: true });
 };
 
-module.exports = handlePinInfo;
+export default handlePinInfo;

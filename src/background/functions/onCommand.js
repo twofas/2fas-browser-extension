@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const browserAction = require('./browserAction');
+import browser from 'webextension-polyfill';
+import browserAction from '@background/functions/browserAction.js';
 
 const onCommand = command => {
   switch (command) {
@@ -34,4 +34,4 @@ const onCommand = command => {
   }
 };
 
-module.exports = onCommand;
+export default onCommand;

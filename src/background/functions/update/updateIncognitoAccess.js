@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
-const storeLog = require('../../../partials/storeLog');
-const checkTabCS = require('../checkTabCS');
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import checkTabCS from '@background/functions/checkTabCS.js';
 
 const updateIncognitoAccess = async () => {
   let storage = null;
@@ -44,4 +44,4 @@ const updateIncognitoAccess = async () => {
   }
 };
 
-module.exports = updateIncognitoAccess;
+export default updateIncognitoAccess;

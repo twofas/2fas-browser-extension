@@ -17,12 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const showDomainModal = e => {
   e.preventDefault();
   e.stopPropagation();
-  
+
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
   const inputEl = document.querySelector(S.optionsPage.domainModal.input);
@@ -35,4 +35,4 @@ const showDomainModal = e => {
   }, 200);
 };
 
-module.exports = showDomainModal;
+export default showDomainModal;

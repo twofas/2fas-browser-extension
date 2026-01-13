@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const clearLocalStorage = () => {
   return browser.storage.local.clear()
@@ -27,4 +27,4 @@ const clearLocalStorage = () => {
     });
 };
 
-module.exports = clearLocalStorage;
+export default clearLocalStorage;

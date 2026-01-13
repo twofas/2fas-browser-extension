@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const generateEmptyDeviceRow = require('./generateEmptyDeviceRow');
-const S = require('../../selectors');
+import generateEmptyDeviceRow from '@optionsPage/functions/generateEmptyDeviceRow.js';
+import S from '@/selectors.js';
 
 const removeDeviceFromDOM = deviceID => {
   const tr = document.querySelector(`tr[data-device-id="${deviceID}"]`);
@@ -36,4 +36,4 @@ const removeDeviceFromDOM = deviceID => {
   return true;
 };
 
-module.exports = removeDeviceFromDOM;
+export default removeDeviceFromDOM;

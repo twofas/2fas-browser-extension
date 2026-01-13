@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
 const handleAutoSubmitChange = e => {
   return saveToLocalStorage({ autoSubmitEnabled: e.currentTarget.checked });
 };
 
-module.exports = handleAutoSubmitChange;
+export default handleAutoSubmitChange;

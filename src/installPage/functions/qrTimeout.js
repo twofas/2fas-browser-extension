@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const S = require('../../selectors');
+import config from '@/config.js';
+import TwoFasNotification from '@/notification';
+import S from '@/selectors.js';
 
 const qrTimeout = (QRImgs, channel) => {
   let t;
@@ -96,4 +96,4 @@ const qrTimeout = (QRImgs, channel) => {
   return t;
 };
 
-module.exports = qrTimeout;
+export default qrTimeout;

@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const TwoFasNotification = require('../../notification');
-const config = require('../../config');
+import TwoFasNotification from '@notification';
+import config from '@/config.js';
 
 const sendTestNotification = () => {
   return TwoFasNotification.show(config.Texts.Info.Test);
 };
 
-module.exports = sendTestNotification;
+export default sendTestNotification;

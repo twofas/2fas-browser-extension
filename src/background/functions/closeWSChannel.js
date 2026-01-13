@@ -23,4 +23,4 @@ const closeWSChannel = channel => {
   }
 };
 
-module.exports = closeWSChannel;
+export default closeWSChannel;

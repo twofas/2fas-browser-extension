@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const browser = require('webextension-polyfill');
-const storeLog = require('./storeLog');
-const TwoFasNotification = require('../notification');
+import config from '../config.js';
+import browser from 'webextension-polyfill';
+import storeLog from './storeLog.js';
+import TwoFasNotification from '../notification/index.js';
 
 const openShortcutEdit = function (e) {
   e.preventDefault();
@@ -44,4 +44,4 @@ const openShortcutEdit = function (e) {
   port.disconnect();
 };
 
-module.exports = openShortcutEdit;
+export default openShortcutEdit;

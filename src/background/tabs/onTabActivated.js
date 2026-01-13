@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const checkTabCS = require('../functions/checkTabCS');
+import checkTabCS from '@background/functions/checkTabCS.js';
 
 const onTabActivated = ({ tabId }) => {
   return checkTabCS(tabId);
 };
 
-module.exports = onTabActivated;
+export default onTabActivated;

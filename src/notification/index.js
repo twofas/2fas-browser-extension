@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { sendFrontEndPushAction, showFrontEndPush, showNativePush, showNativePushWithoutTimeout } = require('./functions');
-const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
-const S = require('../selectors');
+import { sendFrontEndPushAction, showFrontEndPush, showNativePush, showNativePushWithoutTimeout } from '@notification/functions';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import S from '@/selectors.js';
 
 class twoFasNotification {
   static show (notificationObject, tabID = null, alert = false) {
@@ -68,4 +68,4 @@ class twoFasNotification {
   }
 }
 
-module.exports = twoFasNotification;
+export default twoFasNotification;

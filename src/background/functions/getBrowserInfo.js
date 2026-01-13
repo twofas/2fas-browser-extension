@@ -18,8 +18,8 @@
 //
 
 /* global navigator */
-const browser = require('webextension-polyfill');
-const getOSName = require('./getOSName');
+import browser from 'webextension-polyfill';
+import getOSName from '@background/functions/getOSName.js';
 
 const getBrowserInfo = () => {
   const userAgent = {
@@ -109,4 +109,4 @@ const getBrowserInfo = () => {
   }
 };
 
-module.exports = getBrowserInfo;
+export default getBrowserInfo;

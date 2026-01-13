@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const generateShortcutLink = () => {
   const editBtn = document.querySelector(S.optionsPage.shortcut.edit);
@@ -50,4 +50,4 @@ const generateShortcutLink = () => {
   editBtn.setAttribute('data-shortcut-link', link);
 };
 
-module.exports = generateShortcutLink;
+export default generateShortcutLink;

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const ignoreButtonSelectors = require('./ignoreButtonSelectors');
+import ignoreButtonSelectors from './ignoreButtonSelectors.js';
 
 const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
@@ -47,4 +47,4 @@ const formSubmitSecondSelectors = () => {
   return buttonSelectors.join(',') + ',' + linkSelectors.join(',');
 };
 
-module.exports = formSubmitSecondSelectors;
+export default formSubmitSecondSelectors;

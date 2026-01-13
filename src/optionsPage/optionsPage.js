@@ -17,15 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const browser = require('webextension-polyfill');
-const i18n = require('../partials/i18n');
-const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
-const TwoFasNotification = require('../notification');
-const SDK = require('../sdk');
-const extPageOnMessage = require('../partials/extPageOnMessage');
-const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect } = require('./functions');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import i18n from '@partials/i18n.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import TwoFasNotification from '@notification';
+import SDK from '@sdk';
+import extPageOnMessage from '@partials/extPageOnMessage.js';
+import { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } from '@partials';
+import { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect } from '@optionsPage/functions';
 
 const init = async storage => {
   i18n();

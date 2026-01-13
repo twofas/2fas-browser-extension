@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const createTextElement = require('../../partials/DOMElements/createTextElement');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import createTextElement from '@partials/DOMElements/createTextElement.js';
+import S from '@/selectors.js';
 
 const generateEmptyShortcutBox = box => {
   const btnBox = createTextElement('div', browser.i18n.getMessage('unknown').toUpperCase());
@@ -43,4 +43,4 @@ const generateEmptyShortcutBox = box => {
   }
 };
 
-module.exports = generateEmptyShortcutBox;
+export default generateEmptyShortcutBox;

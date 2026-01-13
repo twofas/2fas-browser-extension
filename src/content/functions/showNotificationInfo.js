@@ -17,15 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { createElement, createTextElement, createSVGElement } = require('../../partials/DOMElements');
-const iconSrc = require('../../images/notification-logo.svg');
-const config = require('../../config');
-const closeNotificationInfo = require('./closeNotificationInfo');
-const neverShowNotificationInfo = require('./neverShowNotificationInfo');
-const isInFrame = require('./isInFrame');
-const openOptionsPage = require('./openOptionsPage');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import { createElement, createTextElement, createSVGElement } from '@partials/DOMElements';
+import iconSrc from '@images/notification-logo.svg';
+import config from '@/config.js';
+import closeNotificationInfo from '@content/functions/closeNotificationInfo.js';
+import neverShowNotificationInfo from '@content/functions/neverShowNotificationInfo.js';
+import isInFrame from '@content/functions/isInFrame.js';
+import openOptionsPage from '@content/functions/openOptionsPage.js';
+import S from '@/selectors.js';
 
 const showNotificationInfo = () => {
   if (isInFrame()) {
@@ -112,4 +112,4 @@ const showNotificationInfo = () => {
   });
 };
 
-module.exports = showNotificationInfo;
+export default showNotificationInfo;

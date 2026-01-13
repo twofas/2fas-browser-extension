@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const openInstallPage = require('./openInstallPage');
-const storeLog = require('../../partials/storeLog');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import openInstallPage from '@background/functions/openInstallPage.js';
+import storeLog from '@partials/storeLog.js';
 
 const checkSafariStorage = browserInfo => {
   return loadFromLocalStorage(null)
@@ -42,4 +42,4 @@ const checkSafariStorage = browserInfo => {
     .catch(err => storeLog('error', 35, err, 'checkSafariStorage'));
 };
 
-module.exports = checkSafariStorage;
+export default checkSafariStorage;

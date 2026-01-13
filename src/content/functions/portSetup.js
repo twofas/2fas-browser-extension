@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const portSetup = async () => {
   const portConnect = () => {
@@ -41,7 +41,7 @@ const portSetup = async () => {
     });
   };
 
-  while (true) {
+  while (browser?.runtime?.id) {
     const port = await portConnect();
 
     port.onDisconnect.removeListener(port._resolve);
@@ -51,4 +51,4 @@ const portSetup = async () => {
   }
 };
 
-module.exports = portSetup;
+export default portSetup;

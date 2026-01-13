@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const config = require('../../config');
-const closeRequest = require('../functions/closeRequest');
-const TwoFasNotification = require('../../notification');
-const Crypt = require('../functions/Crypt');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const sendMessageToTab = require('../../partials/sendMessageToTab');
+import browser from 'webextension-polyfill';
+import config from '@/config.js';
+import closeRequest from '@background/functions/closeRequest.js';
+import TwoFasNotification from '@notification/index.js';
+import Crypt from '@background/functions/Crypt.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import storeLog from '@partials/storeLog.js';
+import sendMessageToTab from '@partials/sendMessageToTab.js';
 
 const handleLoginRequest = (tabID, data) => {
   const crypt = new Crypt();
@@ -55,4 +55,4 @@ const handleLoginRequest = (tabID, data) => {
     });
 };
 
-module.exports = handleLoginRequest;
+export default handleLoginRequest;

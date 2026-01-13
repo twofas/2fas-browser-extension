@@ -18,12 +18,12 @@
 //
 
 /* global FormData */
-const config = require('../config');
-const SDK = require('../sdk');
-const TwoFasNotification = require('../notification');
-const storeLog = require('./storeLog');
-const saveToLocalStorage = require('../localStorage/saveToLocalStorage');
-const S = require('../selectors');
+import config from '../config.js';
+import SDK from '../sdk/index.js';
+import TwoFasNotification from '../notification/index.js';
+import storeLog from './storeLog.js';
+import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
+import S from '../selectors.js';
 
 let updateTimeout = false;
 
@@ -86,4 +86,4 @@ const extNameUpdate = (storage, e) => {
     });
 };
 
-module.exports = extNameUpdate;
+export default extNameUpdate;

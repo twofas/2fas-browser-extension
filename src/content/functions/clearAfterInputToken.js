@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage')
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
 const clearAfterInputToken = (inputElement, tabID) => {
   // CLEAR INPUT
@@ -40,4 +40,4 @@ const clearAfterInputToken = (inputElement, tabID) => {
     .catch(() => {});
 };
 
-module.exports = clearAfterInputToken;
+export default clearAfterInputToken;

@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleHamburgerClick = require('./handleHamburgerClick');
+import S from '@/selectors.js';
+import handleHamburgerClick from '@optionsPage/functions/handleHamburgerClick.js';
 
 const setHamburger = () => {
   const hamburger = document.querySelector(S.optionsPage.hamburger.element);
@@ -28,4 +28,4 @@ const setHamburger = () => {
   }
 };
 
-module.exports = setHamburger;
+export default setHamburger;

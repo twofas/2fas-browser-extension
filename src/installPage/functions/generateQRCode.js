@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const qrcode = require('qrcode');
+import qrcode from 'qrcode';
 
 const generateQRCode = configLink => {
   return qrcode.toDataURL(configLink, {
@@ -29,4 +29,4 @@ const generateQRCode = configLink => {
   });
 };
 
-module.exports = generateQRCode;
+export default generateQRCode;

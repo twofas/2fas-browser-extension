@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const defaultAutoSubmitExcludedDomains = require('../../defaultAutoSubmitExcludedDomains');
-const uniqueOnly = require('../../partials/uniqueOnly');
-const generateDomainsList = require('./generateDomainsList');
-const TwoFasNotification = require('../../notification');
-const config = require('../../config');
-const storeLog = require('../../partials/storeLog');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
+import uniqueOnly from '@partials/uniqueOnly.js';
+import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
+import TwoFasNotification from '@notification';
+import config from '@/config.js';
+import storeLog from '@partials/storeLog.js';
 
 const handleImportDefaultExcludedDomains = e => {
   e.preventDefault();
@@ -47,4 +47,4 @@ const handleImportDefaultExcludedDomains = e => {
     });
 };
 
-module.exports = handleImportDefaultExcludedDomains;
+export default handleImportDefaultExcludedDomains;

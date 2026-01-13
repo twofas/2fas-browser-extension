@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const closeNotificationInfo = require('./closeNotificationInfo');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const TwoFasNotification = require('../../notification');
+import config from '@/config.js';
+import closeNotificationInfo from '@content/functions/closeNotificationInfo.js';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import storeLog from '@partials/storeLog.js';
+import TwoFasNotification from '@/notification';
 
 const neverShowNotificationInfo = n => {
   return saveToLocalStorage({ notifications: true })
@@ -32,4 +32,4 @@ const neverShowNotificationInfo = n => {
     });
 };
 
-module.exports = neverShowNotificationInfo;
+export default neverShowNotificationInfo;

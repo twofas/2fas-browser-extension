@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handlePinInfo = require('./handlePinInfo');
-const handlePinInfoNext = require('./handlePinInfoNext');
-const handlePinInfoPrev = require('./handlePinInfoPrev');
+import S from '@/selectors.js';
+import handlePinInfo from '@optionsPage/functions/handlePinInfo.js';
+import handlePinInfoNext from '@optionsPage/functions/handlePinInfoNext.js';
+import handlePinInfoPrev from '@optionsPage/functions/handlePinInfoPrev.js';
 
 const setPinInfoBtns = () => {
   const gotIt = document.querySelector(S.optionsPage.pin.gotIt);
@@ -42,4 +42,4 @@ const setPinInfoBtns = () => {
   }
 };
 
-module.exports = setPinInfoBtns;
+export default setPinInfoBtns;

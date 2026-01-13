@@ -18,11 +18,11 @@
 //
 
 import './styles/content_script.scss';
-const browser = require('webextension-polyfill');
-const { getTabData, portSetup } = require('./functions');
-const contentOnMessage = require('./events/contentOnMessage');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
-const storeLog = require('../partials/storeLog');
+import browser from 'webextension-polyfill';
+import { getTabData, portSetup } from '@content/functions';
+import contentOnMessage from '@content/events/contentOnMessage.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import storeLog from '@partials/storeLog.js';
 
 let tabData;
 let storage;

@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../../localStorage/loadFromLocalStorage');
-const generateDefaultStorage = require('../generateDefaultStorage');
-const storeLog = require('../../../partials/storeLog');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import storeLog from '@partials/storeLog.js';
 
 const verifyStorageIntegrity = browserInfo => {
   return loadFromLocalStorage(['keys', 'extensionID'])
@@ -38,4 +38,4 @@ const verifyStorageIntegrity = browserInfo => {
     .catch(err => storeLog('error', 29, err, 'verifyStorageIntegrity'));
 };
 
-module.exports = verifyStorageIntegrity;
+export default verifyStorageIntegrity;

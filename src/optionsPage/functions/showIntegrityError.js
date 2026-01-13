@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const showIntegrityError = () => {
   const el = document.querySelector(S.optionsPage.integrityError);
   el.classList.add('show-integrity-error');
 };
 
-module.exports = showIntegrityError;
+export default showIntegrityError;

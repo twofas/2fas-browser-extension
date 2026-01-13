@@ -144,4 +144,4 @@ class SDK {
   }
 }
 
-module.exports = SDK;
+export default SDK;

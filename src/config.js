@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const t = require('./_locales/en/notifications.json');
+import browser from 'webextension-polyfill';
+import t from './_locales/en/notifications.json';
 
 const config = {
   WebSocketTimeout: 3, // in minutes
@@ -172,4 +172,4 @@ const config = {
   }
 };
 
-module.exports = config;
+export default config;

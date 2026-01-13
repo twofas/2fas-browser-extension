@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const subscribeChannel = require('./subscribeChannel');
-const TwoFasNotification = require('../../notification');
-const SDK = require('../../sdk');
-const storeLog = require('../../partials/storeLog');
-const sendMessageToAllFrames = require('./sendMessageToAllFrames');
-const handleFrontElement = require('./handleFrontElement');
+import config from '@/config.js';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import subscribeChannel from '@background/functions/subscribeChannel.js';
+import TwoFasNotification from '@notification/index.js';
+import SDK from '@sdk/index.js';
+import storeLog from '@partials/storeLog.js';
+import sendMessageToAllFrames from '@background/functions/sendMessageToAllFrames.js';
+import handleFrontElement from '@background/functions/handleFrontElement.js';
 
 const initBEAction = (url, tab, storageData) => {
   const now = new Date().getTime();
@@ -86,4 +86,4 @@ const initBEAction = (url, tab, storageData) => {
   }
 };
 
-module.exports = initBEAction;
+export default initBEAction;

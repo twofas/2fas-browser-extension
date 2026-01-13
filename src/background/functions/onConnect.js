@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const openBrowserPage = require('./openBrowserPage');
+import openBrowserPage from '@background/functions/openBrowserPage.js';
 
 const onConnect = port => {
   if (port.name !== '2FAS') {
@@ -27,11 +27,11 @@ const onConnect = port => {
   const forceReconnect = p => {
     p.onDisconnect.removeListener(onPortDisconnect);
     p.onMessage.removeListener(onPortMessage);
-    
+
     if (p._timer) {
       clearTimeout(p._timer);
     }
-    
+
     p.disconnect();
     p = undefined;
   };
@@ -39,7 +39,7 @@ const onConnect = port => {
   const onPortDisconnect = p => {
     p.onMessage.removeListener(onPortMessage);
     p.onDisconnect.removeListener(onPortDisconnect);
-    
+
     if (p._timer) {
       clearTimeout(p._timer);
     }
@@ -64,4 +64,4 @@ const onConnect = port => {
   port._timer = setTimeout(forceReconnect, 250e3, port);
 };
 
-module.exports = onConnect;
+export default onConnect;

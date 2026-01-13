@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const isInFrame = require('./isInFrame');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const iconSrc = require('../../images/notification-logo.svg');
-const S = require('../../selectors');
+import isInFrame from '@content/functions/isInFrame.js';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import iconSrc from '@images/notification-logo.svg';
+import S from '@/selectors.js';
 
 const notification = request => {
   if (isInFrame()) {
@@ -97,4 +97,4 @@ const notification = request => {
   }
 };
 
-module.exports = notification;
+export default notification;

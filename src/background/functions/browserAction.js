@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const openInstallPage = require('./openInstallPage');
-const browserActionConfigured = require('./browserActionConfigured');
-const storeLog = require('../../partials/storeLog');
-const TwoFasNotification = require('../../notification');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import openInstallPage from '@background/functions/openInstallPage.js';
+import browserActionConfigured from '@background/functions/browserActionConfigured.js';
+import storeLog from '@partials/storeLog.js';
+import TwoFasNotification from '@notification/index.js';
 
 const browserAction = tab => {
   if (!tab || !tab?.url) {
@@ -49,4 +49,4 @@ const browserAction = tab => {
     .catch(err => storeLog('error', 4, err, tab?.url || 'browserAction'));
 };
 
-module.exports = browserAction;
+export default browserAction;

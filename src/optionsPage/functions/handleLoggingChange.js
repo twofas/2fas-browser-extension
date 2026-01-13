@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
 const handleLoggingChange = e => {
   return saveToLocalStorage({ logging: e.currentTarget.checked });
 };
 
-module.exports = handleLoggingChange;
+export default handleLoggingChange;

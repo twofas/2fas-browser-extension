@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
 const i18n = () => {
   let elements = document.querySelectorAll('[data-i18n]');
@@ -48,4 +48,4 @@ const i18n = () => {
   elements = null;
 };
 
-module.exports = i18n;
+export default i18n;

@@ -18,8 +18,8 @@
 //
 
 /* global TextEncoder, TextDecoder, crypto */
-const ab2b64 = require('./ab2b64');
-const b642ab = require('./b642ab');
+import ab2b64 from '@background/functions/ab2b64.js';
+import b642ab from '@background/functions/b642ab.js';
 
 class Crypt {
   constructor () {
@@ -89,4 +89,4 @@ class Crypt {
   }
 }
 
-module.exports = Crypt;
+export default Crypt;

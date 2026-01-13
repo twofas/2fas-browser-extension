@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../selectors');
+import S from '../selectors.js';
 
 const hidePreloader = (installPage = false, state = undefined) => {
   const preloadElement = document.querySelector(S.preload);
@@ -53,4 +53,4 @@ const hidePreloader = (installPage = false, state = undefined) => {
   }, 450);
 };
 
-module.exports = hidePreloader;
+export default hidePreloader;

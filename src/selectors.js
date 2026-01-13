@@ -107,4 +107,4 @@ const selectors = {
   preload: '.preload'
 };
 
-module.exports = selectors;
+export default selectors;

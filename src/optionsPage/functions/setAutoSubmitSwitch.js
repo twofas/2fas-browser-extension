@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleAutoSubmitChange = require('./handleAutoSubmitChange');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import S from '@/selectors.js';
+import handleAutoSubmitChange from '@optionsPage/functions/handleAutoSubmitChange.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
 const setAutoSubmitSwitch = () => {
   return loadFromLocalStorage(['autoSubmitEnabled'])
@@ -44,4 +44,4 @@ const setAutoSubmitSwitch = () => {
     .catch(() => {});
 };
 
-module.exports = setAutoSubmitSwitch;
+export default setAutoSubmitSwitch;

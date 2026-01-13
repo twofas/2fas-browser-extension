@@ -24,15 +24,14 @@ const addFormElementsNumber = elements => {
     return false;
   }
 
-  elements.map(element => {
+  elements.forEach(element => {
     if (element?.dataset?.twofasElementNumber) {
-      return false;
+      return;
     }
 
     element.dataset.twofasElementNumber = i;
     i++;
-    return element;
   });
 };
 
-module.exports = addFormElementsNumber;
+export default addFormElementsNumber;

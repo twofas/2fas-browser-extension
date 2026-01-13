@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const setExtName = extName => {
   const extNameEl = document.querySelector(S.extName.input);
   extNameEl.value = extName;
 };
 
-module.exports = setExtName;
+export default setExtName;

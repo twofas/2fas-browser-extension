@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const buttonsTexts = require('../../partials/buttonsTexts');
-const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
-const formSubmitSelectors = require('../../partials/formSubmitSelectors');
-const formSubmitSecondSelectors = require('../../partials/formSubmitSecondSelectors');
+import buttonsTexts from '@partials/buttonsTexts.js';
+import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
+import formSubmitSelectors from '@partials/formSubmitSelectors.js';
+import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 
 const getFormSubmitElements = () => {
   let submits = Array.from(
@@ -65,4 +65,4 @@ const getFormSubmitElements = () => {
   });
 };
 
-module.exports = getFormSubmitElements;
+export default getFormSubmitElements;

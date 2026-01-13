@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const wait = require('./wait');
+import wait from './wait.js';
 
 const runTasksWithDelay = async (tasks, delayTime) => {
   for (const task of tasks) {
@@ -26,4 +26,4 @@ const runTasksWithDelay = async (tasks, delayTime) => {
   }
 };
 
-module.exports = runTasksWithDelay;
+export default runTasksWithDelay;

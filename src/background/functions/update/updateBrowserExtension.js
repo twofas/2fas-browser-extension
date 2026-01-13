@@ -17,11 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../../config');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
-const SDK = require('../../../sdk');
-const storeLog = require('../../../partials/storeLog');
-const getBrowserInfo = require('../getBrowserInfo');
+import config from '@/config.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import SDK from '@sdk/index.js';
+import storeLog from '@partials/storeLog.js';
+import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 
 const updateBrowserExtension = async browserInfo => {
   let data;
@@ -54,4 +54,4 @@ const updateBrowserExtension = async browserInfo => {
   data = null;
 };
 
-module.exports = updateBrowserExtension;
+export default updateBrowserExtension;

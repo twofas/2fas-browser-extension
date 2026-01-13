@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { notification, showNotificationInfo } = require('../content/functions');
+import { notification, showNotificationInfo } from '../content/functions/index.js';
 
 const extPageOnMessage = (request) => {
   if (!request || !request.action) {
@@ -39,4 +39,4 @@ const extPageOnMessage = (request) => {
   }
 };
 
-module.exports = extPageOnMessage;
+export default extPageOnMessage;

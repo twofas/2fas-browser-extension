@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const handleHamburgerClick = e => {
   e.preventDefault();
@@ -27,4 +27,4 @@ const handleHamburgerClick = e => {
   menuContent.classList.toggle('visible');
 };
 
-module.exports = handleHamburgerClick;
+export default handleHamburgerClick;

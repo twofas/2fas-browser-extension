@@ -17,9 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, removeFromLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const SDK = require('../../sdk');
+import { loadFromLocalStorage, removeFromLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import SDK from '@sdk/index.js';
 
 const onTabRemoved = async tabID => {
   let storage;
@@ -41,4 +41,4 @@ const onTabRemoved = async tabID => {
   }
 };
 
-module.exports = onTabRemoved;
+export default onTabRemoved;

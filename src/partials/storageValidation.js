@@ -17,8 +17,8 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const TwoFasNotification = require('../notification');
+import config from '../config.js';
+import TwoFasNotification from '../notification/index.js';
 
 const storageValidation = storage => {
   return new Promise((resolve, reject) => {
@@ -42,4 +42,4 @@ const storageValidation = storage => {
   });
 };
 
-module.exports = storageValidation;
+export default storageValidation;

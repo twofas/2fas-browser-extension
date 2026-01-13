@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hideConfirmModal = require('./hideConfirmModal');
+import hideConfirmModal from '@optionsPage/functions/hideConfirmModal.js';
 
 const confirmModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
@@ -27,4 +27,4 @@ const confirmModalBackdropClick = e => {
   }
 };
 
-module.exports = confirmModalBackdropClick;
+export default confirmModalBackdropClick;

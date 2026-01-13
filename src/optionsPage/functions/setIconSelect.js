@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const SlimSelect = require('slim-select');
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const setIcon = require('../../background/functions/setIcon');
+import SlimSelect from 'slim-select';
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import setIcon from '@/background/functions/setIcon.js';
 
 const setIconSelect = async () => {
   const { extIcon } = await loadFromLocalStorage(['extIcon']);
@@ -64,4 +64,4 @@ const setIconSelect = async () => {
   });
 };
 
-module.exports = setIconSelect;
+export default setIconSelect;

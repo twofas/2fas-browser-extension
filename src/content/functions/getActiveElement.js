@@ -17,10 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { v4: uuidv4 } = require('uuid');
-const clearFormElementsNumber = require('./clearFormElementsNumber');
-const addFormElementsNumber = require('./addFormElementsNumber');
-const getFormElements = require('./getFormElements');
+import { v4 as uuidv4 } from 'uuid';
+import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.js';
+import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
+import getFormElements from '@content/functions/getFormElements.js';
 
 const getActiveElement = () => {
   const activeElement = document.activeElement;
@@ -51,4 +51,4 @@ const getActiveElement = () => {
   };
 };
 
-module.exports = getActiveElement;
+export default getActiveElement;

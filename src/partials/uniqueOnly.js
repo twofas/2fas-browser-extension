@@ -21,4 +21,4 @@ const uniqueOnly = (value, index, self) => {
   return self.indexOf(value) === index;
 };
 
-module.exports = uniqueOnly;
+export default uniqueOnly;

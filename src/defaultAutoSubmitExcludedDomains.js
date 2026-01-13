@@ -19,4 +19,4 @@
 
 const defaultAutoSubmitExcludedDomains = [];
 
-module.exports = defaultAutoSubmitExcludedDomains;
+export default defaultAutoSubmitExcludedDomains;

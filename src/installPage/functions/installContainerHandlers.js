@@ -18,8 +18,8 @@
 //
 
 /* global CustomEvent */
-const S = require('../../selectors');
-const setQRCode = require('./setQRCode');
+import S from '@/selectors.js';
+import setQRCode from '@installPage/functions/setQRCode.js';
 
 const installContainerHandlers = (channel, imageURL, extensionID) => {
   const app = document.querySelector(S.installPage.container.app);
@@ -56,4 +56,4 @@ const installContainerHandlers = (channel, imageURL, extensionID) => {
   }
 };
 
-module.exports = installContainerHandlers;
+export default installContainerHandlers;

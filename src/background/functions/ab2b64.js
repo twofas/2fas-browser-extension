@@ -22,4 +22,4 @@ const ab2b64 = arrayBuffer => {
   return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
 };
 
-module.exports = ab2b64;
+export default ab2b64;

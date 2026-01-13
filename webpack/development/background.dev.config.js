@@ -19,6 +19,7 @@
 
 // UTILS
 const DotenvConfig = require('../utils/dotenvConfig');
+const aliases = require('../utils/aliases');
 
 // PACKAGES
 const webpack = require('webpack');
@@ -66,6 +67,7 @@ const backgroundDevConfig = {
   },
   resolve: {
     modules: ['node_modules'],
+    alias: aliases,
     fallback: {
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify')

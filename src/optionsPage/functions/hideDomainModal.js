@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
 const hideDomainModal = () => {
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
@@ -29,4 +29,4 @@ const hideDomainModal = () => {
   validationEl.innerText = '';
 };
 
-module.exports = hideDomainModal;
+export default hideDomainModal;

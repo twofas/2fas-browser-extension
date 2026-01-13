@@ -17,13 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const showConfirmModal = require('./showConfirmModal');
-const TwoFasNotification = require('../../notification');
-const removeDomainFromDOM = require('./removeDomainFromDOM');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import storeLog from '@partials/storeLog.js';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import TwoFasNotification from '@notification';
+import removeDomainFromDOM from '@optionsPage/functions/removeDomainFromDOM.js';
 
 const removeDomain = function (e) {
   e.preventDefault();
@@ -61,4 +61,4 @@ const removeDomain = function (e) {
   );
 }
 
-module.exports = removeDomain;
+export default removeDomain;

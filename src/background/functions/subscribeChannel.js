@@ -18,15 +18,15 @@
 //
 
 /* global WebSocket */
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const { handleConfigurationRequest, handleLoginRequest } = require('../events');
-const TwoFasNotification = require('../../notification');
-const closeRequest = require('./closeRequest');
-const closeWSChannel = require('./closeWSChannel');
-const wsTabChanged = require('./wsTabChanged');
-const wsTabClosed = require('./wsTabClosed');
-const storeLog = require('../../partials/storeLog');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import { handleConfigurationRequest, handleLoginRequest } from '@background/events/index.js';
+import TwoFasNotification from '@notification/index.js';
+import closeRequest from '@background/functions/closeRequest.js';
+import closeWSChannel from '@background/functions/closeWSChannel.js';
+import wsTabChanged from '@background/functions/wsTabChanged.js';
+import wsTabClosed from '@background/functions/wsTabClosed.js';
+import storeLog from '@partials/storeLog.js';
 
 const subscribeChannel = (storage, tabID, data = {
   action: true,
@@ -41,9 +41,15 @@ const subscribeChannel = (storage, tabID, data = {
   return new Promise((resolve, reject) => {
     let timeoutID;
     const channel = {};
-    
+
     const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
     const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
+
+    const cleanupListeners = () => {
+      browser.tabs.onRemoved.removeListener(tabClosedFunc);
+      browser.tabs.onUpdated.removeListener(tabChangedFunc);
+      clearTimeout(timeoutID);
+    };
 
     channel.connect = () => {
       channel.ws = {};
@@ -79,18 +85,14 @@ const subscribeChannel = (storage, tabID, data = {
       };
   
       channel.ws.onerror = async err => {
-        browser.tabs.onRemoved.removeListener(tabClosedFunc);
-        browser.tabs.onUpdated.removeListener(tabChangedFunc);
-        clearTimeout(timeoutID);
-        
+        cleanupListeners();
+
         await storeLog('error', 11, err, 'WebSocket channel error');
         return reject(err);
       };
-  
-      channel.ws.onclose = event => {
-        browser.tabs.onRemoved.removeListener(tabClosedFunc);
-        browser.tabs.onUpdated.removeListener(tabChangedFunc);
-        clearTimeout(timeoutID);
+
+      channel.ws.onclose = () => {
+        cleanupListeners();
       };
   
       channel.ws.onmessage = async message => {
@@ -101,38 +103,30 @@ const subscribeChannel = (storage, tabID, data = {
           case 'browser_extensions.pairing.success': {
             handleConfigurationRequest(tabID, data);
             closeWSChannel(channel);
-  
-            browser.tabs.onRemoved.removeListener(tabClosedFunc);
-            browser.tabs.onUpdated.removeListener(tabChangedFunc);
-  
+            cleanupListeners();
+
             return true;
           }
-  
+
           case 'browser_extensions.device.2fa_response': {
             handleLoginRequest(tabID, data);
             closeWSChannel(channel);
-  
-            browser.tabs.onRemoved.removeListener(tabClosedFunc);
-            browser.tabs.onUpdated.removeListener(tabChangedFunc);
-  
+            cleanupListeners();
+
             return true;
           }
-  
+
           case 'browser_extensions.pairing.failure': {
             await storeLog('error', 12, data, 'browser_extensions.pairing.failure');
             TwoFasNotification.show(config.Texts.Error.WebSocket, tabID);
-  
             closeWSChannel(channel);
-  
-            browser.tabs.onRemoved.removeListener(tabClosedFunc);
-            browser.tabs.onUpdated.removeListener(tabChangedFunc);
-  
+            cleanupListeners();
+
             return true;
           }
-  
+
           default: {
-            browser.tabs.onRemoved.removeListener(tabClosedFunc);
-            browser.tabs.onUpdated.removeListener(tabChangedFunc);
+            cleanupListeners();
 
             await storeLog('error', 13, data, 'subscribeChannel event default');
             throw new Error('Unknown message');
@@ -147,4 +141,4 @@ const subscribeChannel = (storage, tabID, data = {
   });
 };
 
-module.exports = subscribeChannel;
+export default subscribeChannel;

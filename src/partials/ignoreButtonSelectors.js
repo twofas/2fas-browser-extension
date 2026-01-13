@@ -37,4 +37,4 @@ const ignoreButtonSelectors = () => {
   ];
 };
 
-module.exports = ignoreButtonSelectors;
+export default ignoreButtonSelectors;
