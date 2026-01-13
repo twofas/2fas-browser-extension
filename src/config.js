@@ -23,7 +23,7 @@ import t from './_locales/en/notifications.json';
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 30, // in seconds
-  ExtensionVersion: '1.7.4',
+  ExtensionVersion: browser.runtime.getManifest().version,
 
   Texts: {
     Error: {
