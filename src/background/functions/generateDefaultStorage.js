@@ -77,7 +77,7 @@ const generateDefaultStorage = browserInfo => {
         return Promise.resolve();
       }
 
-      return browser.runtime.setUninstallURL(`https://2fas.com/byebye/${storage.extensionID}/`);
+      return browser.runtime.setUninstallURL(`https://2fas.com/auth/byebye/${storage.extensionID}/`);
     })
     .catch(err => storeLog('error', 28, err, 'generateDefaultStorage'));
 };

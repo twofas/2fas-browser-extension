@@ -20,11 +20,11 @@ Please note that the graphics used in this app are not part of the open source p
 
 We use GitHub for bug reports. Please visit the [2FAS Browser Extension issues page](https://github.com/twofas/2fas-browser-extension/issues) to search for and report any bugs you may have found. Before adding a new issue, please search for existing issues to avoid duplicates.
 
-For reporting security issues only, please send a detailed description of the vulnerability to security@2fas.com. Do not use this address for general inquiries or bug reports unrelated to security concerns.
+For reporting security issues only, please send a detailed description of the vulnerability to <security@2fas.com>. Do not use this address for general inquiries or bug reports unrelated to security concerns.
 
 ## Getting Started
 
-1. Download the Browser Extension from the [releases page](https://2fas.com/be).
+1. Download the Browser Extension from the [releases page](https://2fas.com/auth/browser-extension/).
 2. Install the Browser Extension on your web browser.
 3. Follow the on-screen instructions to set up 2FAS Extension for your 2FAS Auth app.
 
