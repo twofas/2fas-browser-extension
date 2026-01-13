@@ -17,25 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const path = require('path');
-
-const srcPath = path.resolve(__dirname, '../../src');
+import browser from 'webextension-polyfill';
 
 /**
- * Webpack path aliases for cleaner imports
+ * Saves data to session storage.
+ * @param {Object} data - Data to save.
+ * @param {Object} storageObj - Optional existing storage object to merge with.
+ * @return {Promise<Object>} The merged storage object.
  */
-const aliases = {
-  '@': srcPath,
-  '@background': path.join(srcPath, 'background'),
-  '@content': path.join(srcPath, 'content'),
-  '@partials': path.join(srcPath, 'partials'),
-  '@localStorage': path.join(srcPath, 'localStorage'),
-  '@sessionStorage': path.join(srcPath, 'sessionStorage'),
-  '@notification': path.join(srcPath, 'notification'),
-  '@sdk': path.join(srcPath, 'sdk'),
-  '@optionsPage': path.join(srcPath, 'optionsPage'),
-  '@installPage': path.join(srcPath, 'installPage'),
-  '@images': path.join(srcPath, 'images')
+const saveToSessionStorage = (data, storageObj = {}) => {
+  return browser.storage.session.set(data)
+    .then(() => Object.assign(storageObj, data))
+    .catch(err => {
+      console.error({ err });
+      throw new Error(err);
+    });
 };
 
-module.exports = aliases;
+export default saveToSessionStorage;

@@ -17,25 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const path = require('path');
-
-const srcPath = path.resolve(__dirname, '../../src');
-
-/**
- * Webpack path aliases for cleaner imports
- */
-const aliases = {
-  '@': srcPath,
-  '@background': path.join(srcPath, 'background'),
-  '@content': path.join(srcPath, 'content'),
-  '@partials': path.join(srcPath, 'partials'),
-  '@localStorage': path.join(srcPath, 'localStorage'),
-  '@sessionStorage': path.join(srcPath, 'sessionStorage'),
-  '@notification': path.join(srcPath, 'notification'),
-  '@sdk': path.join(srcPath, 'sdk'),
-  '@optionsPage': path.join(srcPath, 'optionsPage'),
-  '@installPage': path.join(srcPath, 'installPage'),
-  '@images': path.join(srcPath, 'images')
-};
-
-module.exports = aliases;
+export { default as loadFromSessionStorage } from './loadFromSessionStorage.js';
+export { default as saveToSessionStorage } from './saveToSessionStorage.js';
+export { default as clearSessionStorage } from './clearSessionStorage.js';
+export { default as removeFromSessionStorage } from './removeFromSessionStorage.js';

@@ -17,25 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const path = require('path');
-
-const srcPath = path.resolve(__dirname, '../../src');
+import browser from 'webextension-polyfill';
 
 /**
- * Webpack path aliases for cleaner imports
+ * Clears all session storage data.
+ * @return {Promise<void>}
  */
-const aliases = {
-  '@': srcPath,
-  '@background': path.join(srcPath, 'background'),
-  '@content': path.join(srcPath, 'content'),
-  '@partials': path.join(srcPath, 'partials'),
-  '@localStorage': path.join(srcPath, 'localStorage'),
-  '@sessionStorage': path.join(srcPath, 'sessionStorage'),
-  '@notification': path.join(srcPath, 'notification'),
-  '@sdk': path.join(srcPath, 'sdk'),
-  '@optionsPage': path.join(srcPath, 'optionsPage'),
-  '@installPage': path.join(srcPath, 'installPage'),
-  '@images': path.join(srcPath, 'images')
+const clearSessionStorage = () => {
+  return browser.storage.session.clear()
+    .catch(err => {
+      console.error({ err });
+      throw new Error(err);
+    });
 };
 
-module.exports = aliases;
+export default clearSessionStorage;
