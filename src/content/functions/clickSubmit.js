@@ -59,7 +59,7 @@ const clickSubmit = (inputElement, siteURL) => {
         }
       } catch (err) {}
 
-      const inputNumber = parseInt(inputElement?.dataset?.twofasElementNumber || -999);
+      const inputNumber = parseInt(inputElement?.getAttribute('data-twofas-element-number') || -999);
       const submits = getFormSubmitElements();
       const form = inputElement.closest('form');
 
@@ -95,7 +95,7 @@ const clickSubmit = (inputElement, siteURL) => {
       const submitsNumbers = [];
 
       submits.forEach(submit => {
-        submitsNumbers.push(parseInt(submit?.dataset?.twofasElementNumber || -999));
+        submitsNumbers.push(parseInt(submit?.getAttribute('data-twofas-element-number') || -999));
       });
 
       const submitElement = submits[closest(submitsNumbers, inputNumber)];

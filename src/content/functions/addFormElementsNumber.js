@@ -25,11 +25,11 @@ const addFormElementsNumber = elements => {
   }
 
   elements.forEach(element => {
-    if (element?.dataset?.twofasElementNumber) {
+    if (element?.getAttribute('data-twofas-element-number')) {
       return;
     }
 
-    element.dataset.twofasElementNumber = i;
+    element.setAttribute('data-twofas-element-number', i.toString());
     i++;
   });
 };

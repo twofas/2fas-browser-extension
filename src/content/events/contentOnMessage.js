@@ -17,11 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
+/**
+ * Handles messages received by the content script.
+ * @param {Object} request - The message request object.
+ * @param {Object} sender - Information about the message sender.
+ * @param {Function} sendResponse - Function to send a response.
+ * @param {Object} tabData - The tab data from getTabData.
+ * @return {boolean} Always returns true for async response handling.
+ */
 const contentOnMessage = (request, sender, sendResponse, tabData) => {
   if (!request || !request.action) {
     sendResponse({ status: 'error' });
@@ -38,35 +46,41 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
   switch (request.action) {
     case 'inputToken': {
       (async () => {
-        let storage;
+        let sessionTabData = null;
 
         try {
-          storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+          const response = await browser.runtime.sendMessage({ action: 'getSessionTabData' });
+
+          if (response?.status === 'ok' && response?.data) {
+            sessionTabData = response.data;
+          }
         } catch (err) {
-          await storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
+          await storeLog('error', 17, err, 'contentOnMessage getSessionTabData');
           sendResponse({ status: 'error', message: 'Failed to load data' });
+          return;
         }
-  
-        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
+
+        if (!sessionTabData || !sessionTabData[`tabData-${tabData?.id}`] || sessionTabData[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
+            return;
           }
-  
+
           sendResponse({
             status: 'notification',
             title: config.Texts.Error.OldRequest.Title,
             message: config.Texts.Error.OldRequest.Message
           });
-          return true;
+          return;
         }
-  
-        const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
+
+        const lastFocusedInput = sessionTabData[`tabData-${tabData?.id}`].lastFocusedInput;
         let tokenInput;
-  
+
         if (lastFocusedInput) {
           tokenInput = getTokenInput(lastFocusedInput);
         }
-        
+
         if (!lastFocusedInput || !tokenInput) {
           if (!isInFrame()) {
             tokenNotification(request.token);
@@ -76,6 +90,8 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
         } else {
           sendResponse(inputToken(request, tokenInput, tabData?.url));
         }
+
+        sessionTabData = null;
       })();
 
       break;
@@ -88,7 +104,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'pageLoadComplete': {
-      sendResponse({ status: 'ok' }); // Possibly for future use
+      sendResponse({ status: 'ok' });
       break;
     }
 

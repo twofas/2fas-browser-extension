@@ -21,12 +21,15 @@ import './styles/content_script.scss';
 import browser from 'webextension-polyfill';
 import { getTabData, portSetup } from '@content/functions';
 import contentOnMessage from '@content/events/contentOnMessage.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 import storeLog from '@partials/storeLog.js';
 
-let tabData;
-let storage;
+let tabData = null;
 
+/**
+ * Main content script initialization function.
+ * @async
+ * @return {Promise<boolean|void>}
+ */
 const contentScriptRun = async () => {
   portSetup();
 
@@ -43,23 +46,9 @@ const contentScriptRun = async () => {
   const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
   browser.runtime.onMessage.addListener(onMessageListener);
 
-  try {
-    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-  } catch (err) {}
-
-  const storageTabData = storage[`tabData-${tabData?.id}`] ? storage[`tabData-${tabData?.id}`] : {};
-
-  if (!storageTabData?.url || !storageTabData?.urlPath) {
-    storageTabData.url = tabData?.url;
-    storageTabData.urlPath = tabData?.urlPath;
-    storageTabData.timestamp = Date.now();
-
-    await saveToLocalStorage({ [`tabData-${tabData?.id}`]: storageTabData });
-    storage = null;
-  }
-
-  window.addEventListener('beforeunload', async () => {
+  window.addEventListener('beforeunload', () => {
     browser.runtime.onMessage.removeListener(onMessageListener);
+    tabData = null;
   }, { once: true });
 };
 
