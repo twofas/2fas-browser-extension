@@ -24,18 +24,29 @@ const portSetup = async () => {
     return new Promise(resolve => {
       const port = browser.runtime.connect({ name: '2FAS' });
 
+      port._connected = true;
+
       port._oM = (msg, p) => {
         setTimeout(() => {
-          try {
-            return p.postMessage({ msg: 'ping' });
-          } catch (e) {}
+          if (p._connected) {
+            try {
+              p.postMessage({ msg: 'ping' });
+            } catch (e) {}
+          }
         }, 10000);
       };
 
+      port._oD = p => {
+        p._connected = false;
+        resolve();
+      };
+
       port.onMessage.addListener(port._oM);
-      port._resolve = resolve;
-      port.onDisconnect.addListener(port._resolve);
-      port.postMessage({ msg: 'ping' });
+      port.onDisconnect.addListener(port._oD);
+
+      try {
+        port.postMessage({ msg: 'ping' });
+      } catch (e) {}
 
       return port;
     });
@@ -44,10 +55,11 @@ const portSetup = async () => {
   while (browser?.runtime?.id) {
     const port = await portConnect();
 
-    port.onDisconnect.removeListener(port._resolve);
+    port.onDisconnect.removeListener(port._oD);
     port.onMessage.removeListener(port._oM);
     port._oM = null;
-    port._resolve = null;
+    port._oD = null;
+    port._connected = false;
   }
 };
 

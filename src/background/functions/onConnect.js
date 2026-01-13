@@ -24,7 +24,10 @@ const onConnect = port => {
     return false;
   }
 
+  port._connected = true;
+
   const forceReconnect = p => {
+    p._connected = false;
     p.onDisconnect.removeListener(onPortDisconnect);
     p.onMessage.removeListener(onPortMessage);
 
@@ -37,6 +40,7 @@ const onConnect = port => {
   };
 
   const onPortDisconnect = p => {
+    p._connected = false;
     p.onMessage.removeListener(onPortMessage);
     p.onDisconnect.removeListener(onPortDisconnect);
 
@@ -53,9 +57,11 @@ const onConnect = port => {
     }
 
     return setTimeout(() => {
-      try {
-        return p.postMessage({ msg: 'pong' });
-      } catch (e) {}
+      if (p._connected) {
+        try {
+          p.postMessage({ msg: 'pong' });
+        } catch (e) {}
+      }
     }, 10000);
   };
 
