@@ -21,6 +21,15 @@ import { loadFromLocalStorage, saveToLocalStorage } from '../localStorage/index.
 import config from '../config.js';
 import SDK from '../sdk/index.js';
 
+const logDebounceMap = new Map();
+const DEBOUNCE_TIME_MS = 30000;
+const CLEANUP_THRESHOLD_MS = 300000;
+
+/**
+ * Masks URLs for privacy in logs.
+ * @param {string} url - The URL to mask.
+ * @return {string} The masked URL.
+ */
 const logURL = url => {
   return url
     .replaceAll('http', 'h**p')
@@ -29,10 +38,45 @@ const logURL = url => {
     .replaceAll('.', '*');
 };
 
+/**
+ * Checks if a log should be debounced based on logID and error message.
+ * @param {number} logID - The log identifier.
+ * @param {string} errorMessage - The error message.
+ * @return {boolean} True if the log should be skipped.
+ */
+const shouldDebounce = (logID, errorMessage) => {
+  const key = `${logID}-${errorMessage || ''}`;
+  const lastLogTime = logDebounceMap.get(key);
+  const now = Date.now();
+
+  if (lastLogTime && (now - lastLogTime) < DEBOUNCE_TIME_MS) {
+    return true;
+  }
+
+  logDebounceMap.set(key, now);
+
+  for (const [mapKey, time] of logDebounceMap.entries()) {
+    if (now - time > CLEANUP_THRESHOLD_MS) {
+      logDebounceMap.delete(mapKey);
+    }
+  }
+
+  return false;
+};
+
+/**
+ * Stores error logs to the 2FAS backend.
+ * @async
+ * @param {string} level - Log level (info, warning, error, debug).
+ * @param {number} logID - The log identifier.
+ * @param {Error|Event|Object} errObj - The error object.
+ * @param {string} url - The URL context for the error.
+ * @return {Promise<boolean|void>}
+ */
 const storeLog = async (level, logID = 0, errObj, url = '') => {
   let m = 'Unknown Error';
   let c = { logID };
-  let storage;
+  let storage = null;
 
   console.error(logID, url);
   console.dir(errObj);
@@ -77,18 +121,20 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     storage = await loadFromLocalStorage(['logging', 'extensionID', 'browserInfo']);
   } catch (err) {
     console.error(err);
+    return false;
   }
 
   if (!('logging' in storage)) {
     storage = await saveToLocalStorage({ logging: false }, storage);
   }
 
-  // Logs turned off
   if (!storage.logging) {
+    storage = null;
+    m = null;
+    c = null;
     return false;
   }
 
-  // Ignored logs
   if (
     (storage?.browserInfo?.browser_name === 'Firefox' && storage?.browserInfo?.browser_version === '105.0' && logID === 14) ||
     (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107' && logID === 14) ||
@@ -97,9 +143,21 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     (c?.errorInfo.status === 407) ||
     (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
     (c?.errorInfo?.message?.includes('Refused to run the JavaScript URL')) ||
-    (c?.errorInfo?.message?.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) || // @TODO: future
+    (c?.errorInfo?.message?.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) ||
     (c?.errorInfo?.statusText?.includes('Proxy Authentication Required'))
   ) {
+    storage = null;
+    m = null;
+    c = null;
+    return false;
+  }
+
+  const errorMessage = c?.errorInfo?.message || m;
+
+  if (shouldDebounce(logID, errorMessage)) {
+    storage = null;
+    m = null;
+    c = null;
     return false;
   }
 
@@ -116,12 +174,15 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     }
   }
 
-  return new SDK().storeLog(storage.extensionID, level, m, c)
-    .then(() => {
-      storage = null;
-      m = null;
-      c = null;
-    });
+  try {
+    await new SDK().storeLog(storage.extensionID, level, m, c);
+  } catch (err) {
+    console.error('Failed to send log:', err);
+  } finally {
+    storage = null;
+    m = null;
+    c = null;
+  }
 };
 
 export default storeLog;
