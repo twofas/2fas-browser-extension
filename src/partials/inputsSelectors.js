@@ -18,6 +18,8 @@
 //
 
 const inputsSelectors = () => {
+  // @TODO: Improve selectors to avoid false positives
+
   const inputSelectors = [
     ':not(read-only)',
     ':not(readonly)',
@@ -39,12 +41,66 @@ const inputsSelectors = () => {
     ':not([placeholder="Search"])'
   ].join('');
 
-  // ONLY DETAILED
   const passwordSelectors = [
-    'input[type="password"]#security-code', // OneLogin
-    'input#mfacode', // AWS
-    'input[type="password"]#challenge', // AWS
-    'input[type="password"]#otp' // IBM Cloud
+    'input[type="password"][id="security-code" i]',
+    'input[type="password"][id="challenge" i]',
+    'input[type="password"][id="otp" i]',
+    'input#mfacode'
+  ].join(',');
+
+  const autocompleteSelectors = [
+    'input[autocomplete="one-time-code"]',
+    'input[autocomplete="one-time-code" i]'
+  ].join(',');
+
+  const nameSelectors = [
+    'input[name="code" i]',
+    'input[name="otp" i]',
+    'input[name="token" i]',
+    'input[name="mfa" i]',
+    'input[name="mfa_code" i]',
+    'input[name="mfaCode" i]',
+    'input[name="totp" i]',
+    'input[name="verification_code" i]',
+    'input[name="verificationCode" i]',
+    'input[name="2fa" i]',
+    'input[name="twoFactorCode" i]',
+    'input[name="authCode" i]',
+    'input[name="securityCode" i]',
+    'input[name="otpCode" i]',
+    'input[name="passcode" i]',
+    'input[name="oneTimeCode" i]'
+  ].join(',');
+
+  const idSelectors = [
+    'input[id="code" i]',
+    'input[id="otp" i]',
+    'input[id="token" i]',
+    'input[id="mfa" i]',
+    'input[id="totp" i]',
+    'input[id="verification" i]',
+    'input[id="twoFactorCode" i]',
+    'input[id="authCode" i]',
+    'input[id="verificationCode" i]',
+    'input[id="passcode" i]',
+    'input[id="oneTimeCode" i]'
+  ].join(',');
+
+  const placeholderSelectors = [
+    'input[placeholder*="code" i]',
+    'input[placeholder*="otp" i]',
+    'input[placeholder*="token" i]',
+    'input[placeholder*="verification" i]',
+    'input[placeholder*="2fa" i]',
+    'input[placeholder*="digit" i]',
+    'input[placeholder*="authentication" i]'
+  ].join(',');
+
+  const ariaSelectors = [
+    'input[aria-label*="code" i]',
+    'input[aria-label*="verification" i]',
+    'input[aria-label*="authentication" i]',
+    'input[aria-label*="otp" i]'
   ].join(',');
 
   const textAreaSelectors = [
@@ -58,7 +114,9 @@ const inputsSelectors = () => {
     ':not([disabled])'
   ].join('');
 
-  return `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},${passwordSelectors},textarea${textAreaSelectors}`;
+  const baseSelectors = `input[type="text"]${inputSelectors},input[type="number"]${inputSelectors},input[type="tel"]${inputSelectors},input:not([type])${inputSelectors},textarea${textAreaSelectors}`;
+
+  return `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${baseSelectors}`;
 };
 
 module.exports = inputsSelectors;

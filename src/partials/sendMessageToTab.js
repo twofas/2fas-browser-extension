@@ -45,6 +45,8 @@ const sendMessageToTab = (tabID, message) => {
       if (err.toString().includes('Receiving end does not exist')) {
         return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
       }
+
+      return undefined;
     });
 };
 

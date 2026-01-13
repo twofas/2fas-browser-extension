@@ -28,6 +28,16 @@ const sendMessageToAllFrames = async (tabId, message) => {
     return false;
   }
 
+  if (!frames || frames.length <= 0) {
+    return false;
+  }
+
+  frames = frames.filter(frame => frame.url && frame.url !== 'about:blank');
+
+  if (!frames || frames.length <= 0) {
+    return false;
+  }
+
   return Promise.all(
     frames.map(frame => browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => false))
   );

@@ -20,11 +20,11 @@
 const browser = require('webextension-polyfill');
 
 const portSetup = async () => {
-  function portConnect (port) {
+  const portConnect = () => {
     return new Promise(resolve => {
-      port = browser.runtime.connect({ name: '2FAS' });
+      const port = browser.runtime.connect({ name: '2FAS' });
 
-      port._oM = function (msg, p) {
+      port._oM = (msg, p) => {
         setTimeout(() => {
           try {
             return p.postMessage({ msg: 'ping' });
@@ -36,17 +36,18 @@ const portSetup = async () => {
       port._resolve = resolve;
       port.onDisconnect.addListener(port._resolve);
       port.postMessage({ msg: 'ping' });
+
+      return port;
     });
   };
 
   while (true) {
-    let p;
-    p = await portConnect(p);
-    p.onDisconnect.removeListener(p._resolve);
-    p.onMessage.removeListener(p._oM);
-    p._oM = undefined;
-    p._resolve = undefined;
-    p = undefined;
+    const port = await portConnect();
+
+    port.onDisconnect.removeListener(port._resolve);
+    port.onMessage.removeListener(port._oM);
+    port._oM = null;
+    port._resolve = null;
   }
 };
 

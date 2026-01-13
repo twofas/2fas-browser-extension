@@ -63,7 +63,7 @@ const onMessage = (request, sender, sendResponse) => {
         generateDefaultStorage(browserInfo).then(() => {
           sendResponse({ status: 'ok' });
         });
-      } catch {
+      } catch (err) {
         storeLog('error', 37, err, 'storageReset').then(() => {
           sendResponse({ status: 'error' });
         });
