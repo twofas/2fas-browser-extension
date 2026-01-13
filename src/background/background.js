@@ -18,13 +18,13 @@
 //
 
 import browser from 'webextension-polyfill';
-import { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
+import { onConnect, onCommand, onInstalled, onMessage, onStartup } from '@background/events/index.js';
+import { createContextMenus, onContextMenuClick } from '@background/contextMenu/index.js';
+import { getBrowserInfo, browserAction, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
 import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 const browserInfo = getBrowserInfo();
-if (process.env.EXT_PLATFORM === 'Firefox') {
-  createContextMenus();
-}
+createContextMenus();
 
 browser.runtime.onInstalled.addListener(details => onInstalled(details, browserInfo));
 browser.runtime.onMessage.addListener(onMessage);

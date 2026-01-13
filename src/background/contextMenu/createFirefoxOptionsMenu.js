@@ -18,17 +18,22 @@
 //
 
 import browser from 'webextension-polyfill';
-import browserAction from '@background/functions/browserAction.js';
-import openBrowserPage from '@background/functions/openBrowserPage.js';
 
-const onContextMenuClick = (info, tab) => {
-  if (info?.menuItemId === 'twofas-firefox-options-menu') {
-    return openBrowserPage(browser.runtime.getURL('/optionsPage/optionsPage.html'));
-  }
-
-  if (info?.menuItemId === 'twofas-context-menu') {
-    return browserAction(tab);
+/**
+ * Creates Firefox-specific options menu in the action context.
+ * @return {void}
+ */
+const createFirefoxOptionsMenu = () => {
+  if (process.env.EXT_PLATFORM === 'Firefox') {
+    browser.contextMenus.create({
+      title: browser.i18n.getMessage('options'),
+      id: 'twofas-firefox-options-menu',
+      contexts: ['action'],
+      enabled: true,
+      type: 'normal',
+      visible: true
+    });
   }
 };
 
-export default onContextMenuClick;
+export default createFirefoxOptionsMenu;

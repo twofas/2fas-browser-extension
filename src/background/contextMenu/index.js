@@ -17,22 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import browser from 'webextension-polyfill';
-import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
-import createContextMenus from '@background/contextMenu/createContextMenus.js';
-
-const handleContextMenuChange = e => {
-  return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
-    .then(async storage => {
-      if (storage.contextMenu) {
-        await browser.contextMenus.removeAll();
-        createContextMenus();
-      } else {
-        try {
-          await browser.contextMenus.remove('twofas-context-menu');
-        } catch {}
-      }
-    });
-};
-
-export default handleContextMenuChange;
+export { default as createContextMenus } from './createContextMenus.js';
+export { default as createFirefoxOptionsMenu } from './createFirefoxOptionsMenu.js';
+export { default as onContextMenuClick } from './onContextMenuClick.js';
+export { default as initContextMenu } from './initContextMenu.js';
