@@ -19,8 +19,8 @@
 
 /* global atob */
 
-/** 
-* Converts a base64 string to an ArrayBuffer.
+/**
+ * Converts a base64 string to an ArrayBuffer.
 * @param {string} base64string - The base64 string to convert to an ArrayBuffer.
 * @return {ArrayBuffer} The resulting ArrayBuffer from the base64 string.
 */

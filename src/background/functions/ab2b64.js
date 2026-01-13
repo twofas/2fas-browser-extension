@@ -19,8 +19,8 @@
 
 /* global btoa */
 
-/** 
-* Converts an ArrayBuffer to a Base64 string.
+/**
+ * Converts an ArrayBuffer to a Base64 string.
 * @param {ArrayBuffer} ab - The ArrayBuffer to convert to Base64.
 * @return {string} The Base64 encoded string.
 *
