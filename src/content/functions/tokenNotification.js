@@ -25,16 +25,24 @@ import copySrc from '@images/copy-icon.svg';
 import closeSrc from '@images/notification-close.svg';
 import S from '@/selectors.js';
 
+let lastTokenNotificationToken = null;
+
 /**
  * Displays a notification with the 2FA token and a copy button.
  *
  * @param {string} token - The 2FA token to display
- * @returns {boolean} False if running in a frame, otherwise undefined
+ * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
  */
 const tokenNotification = token => {
   if (isInFrame()) {
     return false;
   }
+
+  if (token === lastTokenNotificationToken) {
+    return false;
+  }
+
+  lastTokenNotificationToken = token;
 
   let n = {
     container: document.querySelector(S.notification.container),

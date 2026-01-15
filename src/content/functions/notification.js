@@ -22,6 +22,8 @@ import { createElement, createSVGElement, createTextElement } from '@partials/DO
 import iconSrc from '@images/notification-logo.svg';
 import S from '@/selectors.js';
 
+let lastNotificationUuid = null;
+
 /**
  * Displays a front-end notification with a title and message.
  *
@@ -29,11 +31,20 @@ import S from '@/selectors.js';
  * @param {string} request.title - The notification title
  * @param {string} request.message - The notification message
  * @param {boolean} [request.timeout] - Whether to auto-dismiss the notification
- * @returns {boolean} False if running in a frame, otherwise undefined
+ * @param {string} [request.uuid] - Unique identifier for deduplication
+ * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
  */
 const notification = request => {
   if (isInFrame()) {
     return false;
+  }
+
+  if (request.uuid && request.uuid === lastNotificationUuid) {
+    return false;
+  }
+
+  if (request.uuid) {
+    lastNotificationUuid = request.uuid;
   }
 
   let n = {

@@ -18,6 +18,7 @@
 //
 
 import browser from 'webextension-polyfill';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Sends a front-end notification message to a specific browser tab.
@@ -32,7 +33,8 @@ const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
     action: 'notification',
     title: notificationObject.Title,
     message: notificationObject.Message,
-    timeout
+    timeout,
+    uuid: uuidv4()
   });
 };
 
