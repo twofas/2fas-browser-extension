@@ -1,67 +1,262 @@
 {
-  "errorGeneralTitle": "Error",
-  "errorGeneralMessage": "Please refresh and try again.",
-  "errorUndefinedErrorTitle": "Something went wrong",
-  "errorUndefinedErrorMessage": "Please refresh and try again.",
-  "errorTimeoutTitle": "Timeout",
-  "errorTimeoutMessage": "Closed connection due to a time limit. Please click regenerate button to try again.",
-  "errorPushExpiredTitle": "Push expired for DOMAIN",
-  "errorPushExpiredMessage": "Please try again.",
-  "errorWebSocketTitle": "WebSocket Error",
-  "errorWebSocketMessage": "Something went wrong with the WebSocket request. Please try again.",
-  "errorOnInstallErrorTitle": "Something went wrong",
-  "errorOnInstallErrorMessage": "Please restart your browser or reinstall the extension.",
-  "errorExtNameRequiredTitle": "Extension name required",
-  "errorExtNameRequiredMessage": "Please enter the extension name.",
-  "errorExtNameMinLengthTitle": "Extension name is too short",
-  "errorExtNameMinLengthMessage": "Please enter the extension name with at least 3 characters.",
-  "errorExtNameMaxLengthTitle": "Extension name is too long",
-  "errorExtNameMaxLengthMessage": "Please enter the extension name with no more than 32 characters.",
-  "errorConfigFirstTitle": "Configuration required",
-  "errorConfigFirstMessage": "Please configure 2FAS Extension first.",
-  "errorRemoveDeviceBadDataTitle": "Device data error",
-  "errorRemoveDeviceBadDataMessage": "Please refresh and try again.",
-  "errorRemoveDomainBadDataTitle": "Domain data error",
-  "errorRemoveDomainBadDataMessage": "Please refresh and try again.",
-  "errorStorageCorruptedTitle": "Extension storage is corrupted",
-  "errorStorageCorruptedMessage": "We will try to fix it for you. Please wait.",
-  "errorInactiveTabTitle": "Inactive tab",
-  "errorInactiveTabMessage": "Please refresh this tab to use the 2FAS Browser Extension.",
-  "errorLackOfTabTitle": "Your tab has been closed",
-  "errorLackOfTabMessage": "The request will be ignored",
-  "errorInputNotExistTitle": "Input element does not exist",
-  "errorInputNotExistMessage": "Please refresh and try again.",
-  "errorStorageIntegrityTitle": "Browser Extension data error",
-  "errorStorageIntegrityMessage": "Please reinstall the browser extension or contact 2FAS Community Support on Discord",
-  "errorOldRequestTitle": "Outdated request",
-  "errorOldRequestMessage": "It seems like you're responding to an outdated request that can no longer be executed",
-  "errorDeviceUnpairedTitle": "Device unpaired",
-  "errorDeviceUnpairedMessage": "The device was unpaired during the request. Please pair your device again.",
-  "warningTooSoonTitle": "Wait a moment",
-  "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
-  "successPushSentTitle": "Push sent",
-  "successPushSentMessage": "Please check your phone and accept your login request.",
-  "successPushSentClipboardTitle": "Push sent",
-  "successPushSentClipboardMessage": "Please check your phone and accept the login request. Then copy your token and paste it into the correct input on the website.",
-  "successExtNameUpdatedTitle": "Success",
-  "successExtNameUpdatedMessage": "Extension name updated",
-  "successDeviceDisconnectedTitle": "Success",
-  "successDeviceDisconnectedMessage": "Device disconnected",
-  "successSafariResetTitle": "Success",
-  "successSafariResetMessage": "Browser Extension configuration removed",
-  "successDomainExcludedTitle": "Success",
-  "successDomainExcludedMessage": "Domain added to exclusion list",
-  "successDomainExcludedRemovedTitle": "Success",
-  "successDomainExcludedRemovedMessage": "Domain removed from exclusion list",
-  "infoUnsupportedProtocolTitle": "Info",
-  "infoUnsupportedProtocolMessage": "Only HTTP and HTTPS protocols are supported by 2FAS Extension",
-  "infoBrowserActionWithoutTabTitle": "Info",
-  "infoBrowserActionWithoutTabMessage": "Using outside the browser is not supported by 2FAS Extension",
-  "infoCopiedToClipboardTitle": "Successfully copied to clipboard",
-  "infoCopiedToClipboardMessage": "You can now paste the token into the input field",
-  "infoTestTitle": "2FAS Notification",
-  "infoTestMessage": "Hi! This is just a test",
-  "warningCrossDomainTitle": "Cross-domain autofill",
-  "warningCrossDomainMessage": "This form is on a different domain (CURRENT_DOMAIN) than the main page (TOP_DOMAIN). Do you want to continue with autofill?",
-  "warningCrossDomainNoAccessMessage": "This form is on CURRENT_DOMAIN which appears to be in a cross-domain iframe. Do you want to continue with autofill?"
+  "errorGeneralTitle": {
+    "message": "Error",
+    "description": ""
+  },
+  "errorGeneralMessage": {
+    "message": "Please refresh and try again.",
+    "description": ""
+  },
+  "errorUndefinedErrorTitle": {
+    "message": "Something went wrong",
+    "description": ""
+  },
+  "errorUndefinedErrorMessage": {
+    "message": "Please refresh and try again.",
+    "description": ""
+  },
+  "errorTimeoutTitle": {
+    "message": "Timeout",
+    "description": ""
+  },
+  "errorTimeoutMessage": {
+    "message": "Closed connection due to a time limit. Please click regenerate button to try again.",
+    "description": ""
+  },
+  "errorPushExpiredTitle": {
+    "message": "Push expired for DOMAIN",
+    "description": ""
+  },
+  "errorPushExpiredMessage": {
+    "message": "Please try again.",
+    "description": ""
+  },
+  "errorWebSocketTitle": {
+    "message": "WebSocket Error",
+    "description": ""
+  },
+  "errorWebSocketMessage": {
+    "message": "Something went wrong with the WebSocket request. Please try again.",
+    "description": ""
+  },
+  "errorOnInstallErrorTitle": {
+    "message": "Something went wrong",
+    "description": ""
+  },
+  "errorOnInstallErrorMessage": {
+    "message": "Please restart your browser or reinstall the extension.",
+    "description": ""
+  },
+  "errorExtNameRequiredTitle": {
+    "message": "Extension name required",
+    "description": ""
+  },
+  "errorExtNameRequiredMessage": {
+    "message": "Please enter the extension name.",
+    "description": ""
+  },
+  "errorExtNameMinLengthTitle": {
+    "message": "Extension name is too short",
+    "description": ""
+  },
+  "errorExtNameMinLengthMessage": {
+    "message": "Please enter the extension name with at least 3 characters.",
+    "description": ""
+  },
+  "errorExtNameMaxLengthTitle": {
+    "message": "Extension name is too long",
+    "description": ""
+  },
+  "errorExtNameMaxLengthMessage": {
+    "message": "Please enter the extension name with no more than 32 characters.",
+    "description": ""
+  },
+  "errorConfigFirstTitle": {
+    "message": "Configuration required",
+    "description": ""
+  },
+  "errorConfigFirstMessage": {
+    "message": "Please configure 2FAS Extension first.",
+    "description": ""
+  },
+  "errorRemoveDeviceBadDataTitle": {
+    "message": "Device data error",
+    "description": ""
+  },
+  "errorRemoveDeviceBadDataMessage": {
+    "message": "Please refresh and try again.",
+    "description": ""
+  },
+  "errorRemoveDomainBadDataTitle": {
+    "message": "Domain data error",
+    "description": ""
+  },
+  "errorRemoveDomainBadDataMessage": {
+    "message": "Please refresh and try again.",
+    "description": ""
+  },
+  "errorStorageCorruptedTitle": {
+    "message": "Extension storage is corrupted",
+    "description": ""
+  },
+  "errorStorageCorruptedMessage": {
+    "message": "We will try to fix it for you. Please wait.",
+    "description": ""
+  },
+  "errorInactiveTabTitle": {
+    "message": "Inactive tab",
+    "description": ""
+  },
+  "errorInactiveTabMessage": {
+    "message": "Please refresh this tab to use the 2FAS Browser Extension.",
+    "description": ""
+  },
+  "errorLackOfTabTitle": {
+    "message": "Your tab has been closed",
+    "description": ""
+  },
+  "errorLackOfTabMessage": {
+    "message": "The request will be ignored",
+    "description": ""
+  },
+  "errorInputNotExistTitle": {
+    "message": "Input element does not exist",
+    "description": ""
+  },
+  "errorInputNotExistMessage": {
+    "message": "Please refresh and try again.",
+    "description": ""
+  },
+  "errorStorageIntegrityTitle": {
+    "message": "Browser Extension data error",
+    "description": ""
+  },
+  "errorStorageIntegrityMessage": {
+    "message": "Please reinstall the browser extension or contact 2FAS Community Support on Discord",
+    "description": ""
+  },
+  "errorOldRequestTitle": {
+    "message": "Outdated request",
+    "description": ""
+  },
+  "errorOldRequestMessage": {
+    "message": "It seems like you're responding to an outdated request that can no longer be executed",
+    "description": ""
+  },
+  "errorDeviceUnpairedTitle": {
+    "message": "Device unpaired",
+    "description": ""
+  },
+  "errorDeviceUnpairedMessage": {
+    "message": "The device was unpaired during the request. Please pair your device again.",
+    "description": ""
+  },
+  "warningTooSoonTitle": {
+    "message": "Wait a moment",
+    "description": ""
+  },
+  "warningTooSoonMessage": {
+    "message": "Please wait DIFF seconds before sending another request.",
+    "description": ""
+  },
+  "successPushSentTitle": {
+    "message": "Push sent",
+    "description": ""
+  },
+  "successPushSentMessage": {
+    "message": "Please check your phone and accept your login request.",
+    "description": ""
+  },
+  "successPushSentClipboardTitle": {
+    "message": "Push sent",
+    "description": ""
+  },
+  "successPushSentClipboardMessage": {
+    "message": "Please check your phone and accept the login request. Then copy your token and paste it into the correct input on the website.",
+    "description": ""
+  },
+  "successExtNameUpdatedTitle": {
+    "message": "Success",
+    "description": ""
+  },
+  "successExtNameUpdatedMessage": {
+    "message": "Extension name updated",
+    "description": ""
+  },
+  "successDeviceDisconnectedTitle": {
+    "message": "Success",
+    "description": ""
+  },
+  "successDeviceDisconnectedMessage": {
+    "message": "Device disconnected",
+    "description": ""
+  },
+  "successSafariResetTitle": {
+    "message": "Success",
+    "description": ""
+  },
+  "successSafariResetMessage": {
+    "message": "Browser Extension configuration removed",
+    "description": ""
+  },
+  "successDomainExcludedTitle": {
+    "message": "Success",
+    "description": ""
+  },
+  "successDomainExcludedMessage": {
+    "message": "Domain added to exclusion list",
+    "description": ""
+  },
+  "successDomainExcludedRemovedTitle": {
+    "message": "Success",
+    "description": ""
+  },
+  "successDomainExcludedRemovedMessage": {
+    "message": "Domain removed from exclusion list",
+    "description": ""
+  },
+  "infoUnsupportedProtocolTitle": {
+    "message": "Info",
+    "description": ""
+  },
+  "infoUnsupportedProtocolMessage": {
+    "message": "Only HTTP and HTTPS protocols are supported by 2FAS Extension",
+    "description": ""
+  },
+  "infoBrowserActionWithoutTabTitle": {
+    "message": "Info",
+    "description": ""
+  },
+  "infoBrowserActionWithoutTabMessage": {
+    "message": "Using outside the browser is not supported by 2FAS Extension",
+    "description": ""
+  },
+  "infoCopiedToClipboardTitle": {
+    "message": "Successfully copied to clipboard",
+    "description": ""
+  },
+  "infoCopiedToClipboardMessage": {
+    "message": "You can now paste the token into the input field",
+    "description": ""
+  },
+  "infoTestTitle": {
+    "message": "2FAS Notification",
+    "description": ""
+  },
+  "infoTestMessage": {
+    "message": "Hi! This is just a test",
+    "description": ""
+  },
+  "warningCrossDomainTitle": {
+    "message": "Cross-domain autofill",
+    "description": ""
+  },
+  "warningCrossDomainMessage": {
+    "message": "This form is on a different domain (CURRENT_DOMAIN) than the main page (TOP_DOMAIN). Do you want to continue with autofill?",
+    "description": ""
+  },
+  "warningCrossDomainNoAccessMessage": {
+    "message": "This form is on CURRENT_DOMAIN which appears to be in a cross-domain iframe. Do you want to continue with autofill?",
+    "description": ""
+  }
 }

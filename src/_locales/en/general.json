@@ -1,56 +1,218 @@
 {
-  "2fasSupport": "2FAS Support",
-  "2fasLogo": "2FAS Logo",
-  "2fasAuthApp": "2FAS Auth App",
-  "2fasAuthGP": "2FAS Auth on Google Play",
-  "2fasAuthAP": "2FAS Auth on App Store",
-  "unknown": "Unknown",
-  "unknownOS": "Unknown OS",
-  "browserOnOs": "on",
-  "close": "Close",
-  "set": "Set",
-  "edit": "Edit",
-  "info": "Info",
-  "next": "Next",
-  "previous": "Previous",
-  "save": "Save",
-  "version": "Version",
-  "yes": "Yes",
-  "add": "Add",
-  "cancel": "Cancel",
-  "shortcut": "Shortcut",
-  "icon": "Icon",
-  "options": "Options",
-  "neverShowAgain": "Never show again",
-  "isNotSupportedByExt": "is not supported by 2FAS Extension",
-  "shortcutSetDesc": "Set a shortcut to open the 2FAS Browser Extension on any page.",
-  "shortcutUseDesc": "Use this shortcut to open the 2FAS Browser Extension on any page.",
-  "pushNotifications": "Push notifications",
-  "learnMore": "Learn more",
-  "advanced": "Advanced",
-  "playVideo": "Play video",
-  "extNicknameHeader": "Extension's nickname",
-  "extNicknameDesc": "Update the nickname for the 2FAS Browser Extension that will be visible on your mobile device. You can also change it later in the extension settings.",
-  "extNicknameLabel": "This browser’s nickname:",
-  "extNicknamePlaceholder": "Enter extension name...",
-  "openTutorial": "Open tutorial",
-  "download": "Download",
-  "qrCode": "QR Code",
-  "modalDisconnectDeviceHeader": "Disconnect device",
-  "modalDisconnectDeviceText": "You are attempting to disconnect the device \"DEVICE_NAME\" from this browser extension. Are you sure?",
-  "modalSafariResetHeader": "Browser Extension reset",
-  "modalSafariResetText": "You are attempting to reset the 2FAS Browser Extension. Are you sure?",
-  "modalExcludeDomainHeader": "Remove domain from exclusion list",
-  "modalExcludeDomainText": "You are attempting to remove the domain \"DOMAIN\" from the exclusion list. Are you sure?",
-  "noPairedDevices": "No paired devices found",
-  "noExcludedDomains": "No excluded domains found",
-  "deviceName": "Device name",
-  "pairingDate": "Pairing date",
-  "platform": "Platform",
-  "disconnect": "Disconnect",
-  "domain": "Domain",
-  "gotIt": "Got it",
-  "install": "Install",
-  "2faAuthenticator2FAS": "2FA Authenticator (2FAS)",
-  "inActiveTabInfo": "Please refresh this tab to use the 2FAS Browser Extension"
+  "2fasSupport": {
+    "message": "2FAS Support",
+    "description": ""
+  },
+  "2fasLogo": {
+    "message": "2FAS Logo",
+    "description": ""
+  },
+  "2fasAuthApp": {
+    "message": "2FAS Auth App",
+    "description": ""
+  },
+  "2fasAuthGP": {
+    "message": "2FAS Auth on Google Play",
+    "description": ""
+  },
+  "2fasAuthAP": {
+    "message": "2FAS Auth on App Store",
+    "description": ""
+  },
+  "unknown": {
+    "message": "Unknown",
+    "description": ""
+  },
+  "unknownOS": {
+    "message": "Unknown OS",
+    "description": ""
+  },
+  "browserOnOs": {
+    "message": "on",
+    "description": ""
+  },
+  "close": {
+    "message": "Close",
+    "description": ""
+  },
+  "set": {
+    "message": "Set",
+    "description": ""
+  },
+  "edit": {
+    "message": "Edit",
+    "description": ""
+  },
+  "info": {
+    "message": "Info",
+    "description": ""
+  },
+  "next": {
+    "message": "Next",
+    "description": ""
+  },
+  "previous": {
+    "message": "Previous",
+    "description": ""
+  },
+  "save": {
+    "message": "Save",
+    "description": ""
+  },
+  "version": {
+    "message": "Version",
+    "description": ""
+  },
+  "yes": {
+    "message": "Yes",
+    "description": ""
+  },
+  "add": {
+    "message": "Add",
+    "description": ""
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": ""
+  },
+  "shortcut": {
+    "message": "Shortcut",
+    "description": ""
+  },
+  "icon": {
+    "message": "Icon",
+    "description": ""
+  },
+  "options": {
+    "message": "Options",
+    "description": ""
+  },
+  "neverShowAgain": {
+    "message": "Never show again",
+    "description": ""
+  },
+  "isNotSupportedByExt": {
+    "message": "is not supported by 2FAS Extension",
+    "description": ""
+  },
+  "shortcutSetDesc": {
+    "message": "Set a shortcut to open the 2FAS Browser Extension on any page.",
+    "description": ""
+  },
+  "shortcutUseDesc": {
+    "message": "Use this shortcut to open the 2FAS Browser Extension on any page.",
+    "description": ""
+  },
+  "pushNotifications": {
+    "message": "Push notifications",
+    "description": ""
+  },
+  "learnMore": {
+    "message": "Learn more",
+    "description": ""
+  },
+  "advanced": {
+    "message": "Advanced",
+    "description": ""
+  },
+  "playVideo": {
+    "message": "Play video",
+    "description": ""
+  },
+  "extNicknameHeader": {
+    "message": "Extension's nickname",
+    "description": ""
+  },
+  "extNicknameDesc": {
+    "message": "Update the nickname for the 2FAS Browser Extension that will be visible on your mobile device. You can also change it later in the extension settings.",
+    "description": ""
+  },
+  "extNicknameLabel": {
+    "message": "This browser’s nickname:",
+    "description": ""
+  },
+  "extNicknamePlaceholder": {
+    "message": "Enter extension name...",
+    "description": ""
+  },
+  "openTutorial": {
+    "message": "Open tutorial",
+    "description": ""
+  },
+  "download": {
+    "message": "Download",
+    "description": ""
+  },
+  "qrCode": {
+    "message": "QR Code",
+    "description": ""
+  },
+  "modalDisconnectDeviceHeader": {
+    "message": "Disconnect device",
+    "description": ""
+  },
+  "modalDisconnectDeviceText": {
+    "message": "You are attempting to disconnect the device \"DEVICE_NAME\" from this browser extension. Are you sure?",
+    "description": ""
+  },
+  "modalSafariResetHeader": {
+    "message": "Browser Extension reset",
+    "description": ""
+  },
+  "modalSafariResetText": {
+    "message": "You are attempting to reset the 2FAS Browser Extension. Are you sure?",
+    "description": ""
+  },
+  "modalExcludeDomainHeader": {
+    "message": "Remove domain from exclusion list",
+    "description": ""
+  },
+  "modalExcludeDomainText": {
+    "message": "You are attempting to remove the domain \"DOMAIN\" from the exclusion list. Are you sure?",
+    "description": ""
+  },
+  "noPairedDevices": {
+    "message": "No paired devices found",
+    "description": ""
+  },
+  "noExcludedDomains": {
+    "message": "No excluded domains found",
+    "description": ""
+  },
+  "deviceName": {
+    "message": "Device name",
+    "description": ""
+  },
+  "pairingDate": {
+    "message": "Pairing date",
+    "description": ""
+  },
+  "platform": {
+    "message": "Platform",
+    "description": ""
+  },
+  "disconnect": {
+    "message": "Disconnect",
+    "description": ""
+  },
+  "domain": {
+    "message": "Domain",
+    "description": ""
+  },
+  "gotIt": {
+    "message": "Got it",
+    "description": ""
+  },
+  "install": {
+    "message": "Install",
+    "description": ""
+  },
+  "2faAuthenticator2FAS": {
+    "message": "2FA Authenticator (2FAS)",
+    "description": ""
+  },
+  "inActiveTabInfo": {
+    "message": "Please refresh this tab to use the 2FAS Browser Extension",
+    "description": ""
+  }
 }

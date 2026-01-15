@@ -46,21 +46,6 @@ getDirectories('./src/_locales')
     });
   })
   .then(res => {
-    return res.map(l => {
-      const c = {};
-
-      Object.keys(l.content).forEach(key => {
-        c[key] = {};
-        c[key].message = l.content[key];
-      });
-
-      return {
-        locale: l.locale,
-        content: c
-      }
-    })
-  })
-  .then(res => {
     if (!fs.existsSync('./public/')) {
       fs.mkdirSync('./public');
     }
