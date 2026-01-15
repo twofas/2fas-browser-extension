@@ -145,11 +145,6 @@ const config = {
       }
     },
     Info: {
-      NativeNotifications: {
-        Title: browser.i18n.getMessage('infoNativeNotificationsTitle') || t.infoNativeNotificationsTitle,
-        Message: browser.i18n.getMessage('infoNativeNotificationsMessage') || t.infoNativeNotificationsMessage
-      },
-      EnabledNativeNotifications: browser.i18n.getMessage('infoEnabledNativeNotifications') || t.infoEnabledNativeNotifications,
       UnsupportedProtocol: {
         Title: browser.i18n.getMessage('infoUnsupportedProtocolTitle') || t.infoUnsupportedProtocolTitle,
         Message: browser.i18n.getMessage('infoUnsupportedProtocolMessage') || t.infoUnsupportedProtocolMessage

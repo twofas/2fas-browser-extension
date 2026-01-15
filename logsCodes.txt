@@ -30,7 +30,7 @@
 7 - handleConfigurationRequest
 8 - handleLoginRequest
 9 - onInstalled
-10 - sendNotificationInfo
+*10 - sendNotificationInfo [deprecated]
 11 - subscribeChannel - channel.onerror
 12 - subscribeChannel - browser_extensions.pairing.failure
 13 - subscribeChannel - subscribeChannel event default
@@ -48,7 +48,7 @@
 15 - createObserver
 16 - inputFocus
 17 - contentOnMessage
-18 - neverShowNotificationInfo
+*18 - neverShowNotificationInfo [deprecated]
 *19 - openOptionsPage [deprecated]
 *39 - removedNodes - loadFromLocalStorage [deprecated]
 *40 - removedNodes - saveToLocalStorage [deprecated]

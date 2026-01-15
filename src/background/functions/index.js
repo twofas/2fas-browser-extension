@@ -38,7 +38,6 @@ export { default as initBEAction } from './initBEAction.js';
 export { default as openBrowserPage } from './openBrowserPage.js';
 export { default as openInstallPage } from './openInstallPage.js';
 export { default as sendMessageToAllFrames } from './sendMessageToAllFrames.js';
-export { default as sendNotificationInfo } from './sendNotificationInfo.js';
 export { default as setIcon } from './setIcon.js';
 export { default as subscribeChannel } from './subscribeChannel.js';
 export { default as updateBrowserInfo } from './updateBrowserInfo.js';

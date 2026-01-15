@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { notification, showNotificationInfo } from '../content/functions/index.js';
+import { notification } from '../content/functions/index.js';
 
 /**
  * Message handler for extension pages (options/install page).
@@ -33,10 +33,6 @@ const extPageOnMessage = (request) => {
   switch (request.action) {
     case 'notification': {
       return notification(request);
-    }
-
-    case 'notificationInfo': {
-      return showNotificationInfo();
     }
 
     default: {

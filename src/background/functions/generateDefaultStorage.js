@@ -60,7 +60,6 @@ const generateDefaultStorage = browserInfo => {
         keys,
         contextMenu: true,
         logging: false,
-        notifications: false,
         incognito: false,
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
         pinInfo: false,

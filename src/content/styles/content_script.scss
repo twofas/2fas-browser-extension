@@ -97,70 +97,6 @@
       }
     }
 
-    &-buttons {
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      display: flex !important;
-      flex-direction: row !important;
-      height: 15px !important;
-      justify-content: space-between !important;
-      line-height: 1 !important;
-      margin-top: 10px !important;
-      overflow: hidden !important;
-      width: 100% !important;
-
-      button {
-        appearance: none !important;
-        background: transparent !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        color: v.$theme-color !important;
-        cursor: pointer !important;
-        display: inline-block !important;
-        font-family: 'Montserrat', sans-serif !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        height: 15px !important;
-        line-height: 1 !important;
-        margin-bottom: 0 !important;
-        margin-right: 8px !important;
-        margin-top: 0 !important;
-        min-height: 0 !important;
-        min-width: 0 !important;
-        overflow: auto !important;
-        padding: 0 !important;
-        position: static !important;
-        text-overflow: unset !important;
-        transition: color .2s ease-in-out !important;
-        white-space: nowrap !important;
-
-        &:last-of-type {
-          margin-right: 0 !important;
-        }
-
-        &:hover {
-          color: color.adjust(v.$theme-color, $lightness: -10%) !important;
-        }
-
-        &:active {
-          color: color.adjust(v.$theme-color, $lightness: -20%) !important;
-        }
-
-        &.twofas-never {
-          color: v.$color-header !important;
-          font-family: 'Montserrat', sans-serif !important;
-          font-weight: 400 !important;
-          text-decoration: underline !important;
-
-          &:hover,
-          &:active {
-            color: v.$color !important;
-          }
-        }
-      }
-    }
-
     &-token-box {
       align-items: center !important;
       display: flex !important;
@@ -303,23 +239,6 @@
       font-size: 12px !important;
       font-weight: 400 !important;
       line-height: 15px !important;
-
-      > a {
-        color: v.$theme-color !important;
-        font-family: 'Montserrat', sans-serif !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        line-height: 15px !important;
-        transition: color .2s ease-in-out !important;
-
-        &:hover {
-          color: color.adjust(v.$theme-color, $lightness: -10%) !important;
-        }
-
-        &:active {
-          color: color.adjust(v.$theme-color, $lightness: -20%) !important;
-        }
-      }
     }
   }
 }

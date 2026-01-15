@@ -19,7 +19,7 @@
 
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } from '@content/functions';
+import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -36,7 +36,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     return true;
   }
 
-  if (request?.action === 'contentScript' || request?.action === 'notification' || request?.action === 'notificationInfo') {
+  if (request?.action === 'contentScript' || request?.action === 'notification') {
     if (isInFrame()) {
       sendResponse({ status: 'omitted' });
       return true;
@@ -108,18 +108,10 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
       break;
     }
 
-    case 'notification':
-    case 'notificationInfo': {
+    case 'notification': {
       loadFonts();
-
-      if (request.action === 'notification') {
-        notification(request);
-        sendResponse({ status: 'ok' });
-      } else if (request.action === 'notificationInfo') {
-        showNotificationInfo();
-        sendResponse({ status: 'ok' });
-      }
-
+      notification(request);
+      sendResponse({ status: 'ok' });
       break;
     }
 

@@ -22,7 +22,6 @@ import browser from 'webextension-polyfill';
 import TwoFasNotification from '@notification/index.js';
 import initBEAction from '@background/functions/initBEAction.js';
 import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
-import sendNotificationInfo from '@background/functions/sendNotificationInfo.js';
 import checkIconTitleText from '@background/functions/checkIconTitleText.js';
 
 const DEBOUNCE_THRESHOLD_SECONDS = 1;
@@ -92,10 +91,6 @@ const browserActionConfigured = async (tab, data) => {
 
   if (!isProtocolSupported(url, tab.id)) {
     return false;
-  }
-
-  if (!storage.notifications) {
-    sendNotificationInfo(tab);
   }
 
   return initBEAction(url.origin, tab, storage);
