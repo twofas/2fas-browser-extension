@@ -22,6 +22,29 @@ import TwoFasNotification from '../notification/index.js';
 import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
 
 /**
+ * Checks if storage is completely empty (no meaningful data)
+ * @param {Object} storage - Storage object to check
+ * @returns {boolean} True if storage is empty or contains only attempt counter
+ */
+const isStorageEmpty = storage => {
+  if (!storage || typeof storage !== 'object') {
+    return true;
+  }
+
+  const storageKeys = Object.keys(storage);
+
+  if (storageKeys.length === 0) {
+    return true;
+  }
+
+  if (storageKeys.length === 1 && storageKeys[0] === 'attempt') {
+    return true;
+  }
+
+  return false;
+};
+
+/**
  * Validates that storage contains required keys and extension ID
  * @param {Object} storage - Storage object to validate
  * @returns {Promise<void>} Resolves if valid, rejects with TypeError if invalid
@@ -36,7 +59,10 @@ const storageValidation = async storage => {
       throw new TypeError('Too many attempts');
     }
 
-    TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
+    if (!isStorageEmpty(storage)) {
+      TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
+    }
+
     throw new TypeError('Storage corrupted');
   }
 
