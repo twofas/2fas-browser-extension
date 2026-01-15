@@ -17,11 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import buttonsTexts from '@partials/buttonsTexts.js';
-import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 import inputsSelectors from '@partials/inputsSelectors.js';
 import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
+import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
 
 /**
  * Finds and returns all form input elements and submit buttons in the current document.
@@ -30,60 +29,45 @@ import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
  */
 const getFormElements = () => {
   const inputsSelector = inputsSelectors();
-  let submits = formSubmitSelectors();
-  let submitTextCheck = false;
+  let submitsSelector = formSubmitSelectors();
+  let requiresTextCheck = false;
 
-  let submitsLength = document.querySelectorAll(submits).length;
-
-  if (submitsLength <= 0) {
-    submits = formSubmitSecondSelectors();
+  if (document.querySelectorAll(submitsSelector).length === 0) {
+    submitsSelector = formSubmitSecondSelectors();
   }
 
-  submitsLength = document.querySelectorAll(submits).length;
-  if (submitsLength <= 0) {
-    submits = 'button';
-    submitTextCheck = true;
+  if (document.querySelectorAll(submitsSelector).length === 0) {
+    submitsSelector = 'button';
+    requiresTextCheck = true;
   }
 
-  const query = inputsSelector.concat(',', submits);
+  const query = `${inputsSelector},${submitsSelector}`;
   let elements = Array.from(document.querySelectorAll(query));
 
-  if (submitTextCheck) {
+  if (requiresTextCheck) {
     elements = elements.filter(element => {
-      if (element.nodeName.toLowerCase() === 'input') {
+      const nodeName = element.nodeName.toLowerCase();
+
+      if (nodeName === 'input') {
         return true;
       }
 
-      if (element.nodeName.toLowerCase() === 'button') {
-        const elementText = element?.innerText;
-
-        if (
-          elementText &&
-          typeof elementText.trim === 'function' &&
-          typeof elementText.toLowerCase === 'function'
-        ) {
-          return buttonsTexts.includes(elementText.trim().toLowerCase())
-        } else {
-          return true;
-        }
+      if (nodeName === 'button') {
+        return isSubmitButtonText(element);
       }
 
       return false;
-    })
+    });
   }
 
   return elements.filter(element => {
-    const elementText = element?.innerText;
+    const nodeName = element.nodeName.toLowerCase();
 
-    if (
-      elementText &&
-      typeof elementText.trim === 'function' &&
-      typeof elementText.toLowerCase === 'function'
-    ) {
-      return !ignoreButtonTexts().includes(elementText.trim().toLowerCase());
-    } else {
+    if (nodeName !== 'button') {
       return true;
     }
+
+    return isValidButtonText(element);
   });
 };
 

@@ -21,29 +21,134 @@ import getFormSubmitElements from '@content/functions/getFormSubmitElements.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
 import delay from '@partials/delay.js';
-import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
+import { isValidButtonText } from '@partials/isValidButtonText.js';
 
 /**
  * Finds the index of the value closest to the goal in an array.
  *
  * @param {number[]} counts - Array of numbers to search
  * @param {number} goal - Target number to find the closest match for
- * @returns {number} Index of the closest value in the array
+ * @returns {number} Index of the closest value in the array, or -1 if array is empty
  */
-const closest = (counts, goal) => {
+const findClosestIndex = (counts, goal) => {
+  if (counts.length === 0) {
+    return -1;
+  }
+
   return counts.indexOf(
     counts.reduce((a, b) => {
       const aDiff = Math.abs(a - goal);
       const bDiff = Math.abs(b - goal);
-  
+
       if (aDiff === bDiff) {
-        // Choose largest vs smallest (> vs <)
         return a > b ? a : b;
-      } else {
-        return bDiff < aDiff ? b : a;
       }
+
+      return bDiff < aDiff ? b : a;
     })
   );
+};
+
+/**
+ * Extracts hostname from URL, removing www. prefix.
+ *
+ * @param {string} siteURL - The URL to parse
+ * @returns {string|null} The normalized hostname or null if URL is invalid
+ */
+const extractHostname = siteURL => {
+  try {
+    const url = new URL(siteURL);
+
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Safely clicks an element with error handling.
+ *
+ * @param {HTMLElement} element - The element to click
+ */
+const safeClick = element => {
+  try {
+    element?.click();
+  } catch {}
+};
+
+/**
+ * Checks if auto-submit should be skipped for the given domain.
+ *
+ * @param {string[]} excludedDomains - List of excluded domain hostnames
+ * @param {string} hostname - The current hostname to check
+ * @returns {boolean} True if auto-submit should be skipped
+ */
+const isExcludedDomain = (excludedDomains, hostname) => {
+  if (!hostname || !excludedDomains) {
+    return false;
+  }
+
+  return excludedDomains.includes(hostname);
+};
+
+/**
+ * Gets the element number attribute value from an element.
+ *
+ * @param {HTMLElement} element - The element to get the number from
+ * @returns {number} The element number or -999 if not found
+ */
+const getElementNumber = element => {
+  return parseInt(element?.getAttribute('data-twofas-element-number') || '-999', 10);
+};
+
+/**
+ * Tries to find and click a submit button within the input's form.
+ *
+ * @param {HTMLElement} inputElement - The input element
+ * @returns {boolean} True if a form submit button was found and clicked
+ */
+const tryFormSubmit = inputElement => {
+  const form = inputElement?.closest('form');
+
+  if (!form) {
+    return false;
+  }
+
+  const formSubmits = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
+
+  if (formSubmits.length !== 1) {
+    return false;
+  }
+
+  const submitButton = formSubmits[0];
+
+  if (isValidButtonText(submitButton)) {
+    safeClick(submitButton);
+
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Finds and clicks the closest submit button based on element positioning.
+ *
+ * @param {HTMLElement} inputElement - The input element
+ * @param {HTMLElement[]} submits - Array of submit elements
+ */
+const clickClosestSubmit = (inputElement, submits) => {
+  if (submits.length === 0) {
+    return;
+  }
+
+  const inputNumber = getElementNumber(inputElement);
+  const submitNumbers = submits.map(getElementNumber);
+  const closestIndex = findClosestIndex(submitNumbers, inputNumber);
+
+  if (closestIndex >= 0 && submits[closestIndex]) {
+    safeClick(submits[closestIndex]);
+  }
 };
 
 /**
@@ -51,7 +156,7 @@ const closest = (counts, goal) => {
  *
  * @param {HTMLElement} inputElement - The input element where the token was inserted
  * @param {string} siteURL - The current site URL for exclusion checking
- * @returns {Promise<boolean|void>} Promise that resolves when submit is clicked or skipped
+ * @returns {Promise<boolean>} Promise that resolves to true if submit was clicked, false otherwise
  */
 const clickSubmit = (inputElement, siteURL) => {
   return delay(() => {}, 500)
@@ -61,67 +166,31 @@ const clickSubmit = (inputElement, siteURL) => {
         return false;
       }
 
-      const domains = storage.autoSubmitExcludedDomains || [];
-      let url, hostname;
-      
-      try {
-        url = new URL(siteURL);
-        hostname = url.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
+      const excludedDomains = storage.autoSubmitExcludedDomains || [];
+      const hostname = extractHostname(siteURL);
 
-        if (domains && domains?.includes(hostname)) {
-          return false;
-        }
-      } catch (err) {}
+      if (isExcludedDomain(excludedDomains, hostname)) {
+        return false;
+      }
 
-      const inputNumber = parseInt(inputElement?.getAttribute('data-twofas-element-number') || -999);
       const submits = getFormSubmitElements();
-      const form = inputElement.closest('form');
 
       if (submits.length === 0) {
         return false;
       }
-      
-      if (form) {
-        const formSubmit = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
-  
-        if (formSubmit && formSubmit.length === 1) {
-          const formSubmitText = formSubmit[0]?.innerText;
 
-          if (
-            formSubmitText &&
-            typeof formSubmitText.trim === 'function' &&
-            typeof formSubmitText.toLowerCase === 'function' &&
-            !ignoreButtonTexts().includes(formSubmitText.trim().toLowerCase())
-          ) {
-            try {
-              formSubmit[0].click();
-            } catch (e) {}
-          } else {
-            try {
-              formSubmit[0].click();
-            } catch (e) {}
-          }
-
-          return true;
-        }
+      if (tryFormSubmit(inputElement)) {
+        return true;
       }
-      
-      const submitsNumbers = [];
 
-      submits.forEach(submit => {
-        submitsNumbers.push(parseInt(submit?.getAttribute('data-twofas-element-number') || -999));
-      });
+      clickClosestSubmit(inputElement, submits);
 
-      const submitElement = submits[closest(submitsNumbers, inputNumber)];
-
-      if (submitElement) {
-        try {
-          submitElement.click();
-        } catch (e) {}
-      }
+      return true;
     })
     .catch(async err => {
       await storeLog('error', 46, err, 'clickSubmit');
+
+      return false;
     });
 };
 

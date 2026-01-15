@@ -17,10 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import buttonsTexts from '@partials/buttonsTexts.js';
-import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
+import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
 
 /**
  * Finds and returns submit button elements in the current document.
@@ -28,46 +27,18 @@ import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
  * @returns {HTMLElement[]} Array of submit button elements
  */
 const getFormSubmitElements = () => {
-  let submits = Array.from(
-    document.querySelectorAll(formSubmitSelectors())
-  );
+  let submits = Array.from(document.querySelectorAll(formSubmitSelectors()));
 
-  if (submits.length <= 0) {
-    submits = Array.from(
-      document.querySelectorAll(formSubmitSecondSelectors())
-    );
+  if (submits.length === 0) {
+    submits = Array.from(document.querySelectorAll(formSubmitSecondSelectors()));
   }
 
-  if (submits.length <= 0) {
+  if (submits.length === 0) {
     const buttons = Array.from(document.querySelectorAll('input[type="button"],button'));
-    submits = buttons.filter(button => {
-      const buttonText = button?.innerText;
-
-      if (
-        buttonText &&
-        typeof buttonText.trim === 'function' &&
-        typeof buttonText.toLowerCase === 'function'
-      ) {
-        return buttonsTexts.includes(buttonText.trim().toLowerCase())
-      } else {
-        return true;
-      }
-    });
+    submits = buttons.filter(isSubmitButtonText);
   }
 
-  return submits.filter(button => {
-    const buttonText = button?.innerText;
-
-    if (
-      buttonText &&
-      typeof buttonText.trim === 'function' &&
-      typeof buttonText.toLowerCase === 'function'
-    ) {
-      return !ignoreButtonTexts().includes(button.innerText.trim().toLowerCase());
-    } else {
-      return true;
-    }
-  });
+  return submits.filter(isValidButtonText);
 };
 
 export default getFormSubmitElements;
