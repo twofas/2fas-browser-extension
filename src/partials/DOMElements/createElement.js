@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Creates a DOM element with an optional class name.
+ * @param {string} tagName - The HTML tag name to create
+ * @param {string} [className=''] - Optional CSS class name(s)
+ * @returns {HTMLElement} The created DOM element
+ */
 const createElement = (tagName, className = '') => {
   const el = document.createElement(tagName);
   el.className = className;

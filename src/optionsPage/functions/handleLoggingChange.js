@@ -19,6 +19,12 @@
 
 import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
+/**
+ * Handles change of the logging toggle and saves the setting to storage.
+ *
+ * @param {Event} e - The change event from the checkbox input
+ * @returns {Promise<Object>} A promise that resolves with the updated storage
+ */
 const handleLoggingChange = e => {
   return saveToLocalStorage({ logging: e.currentTarget.checked });
 };

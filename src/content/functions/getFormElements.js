@@ -23,6 +23,11 @@ import inputsSelectors from '@partials/inputsSelectors.js';
 import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 
+/**
+ * Finds and returns all form input elements and submit buttons in the current document.
+ *
+ * @returns {HTMLElement[]} Array of input and submit elements
+ */
 const getFormElements = () => {
   const inputsSelector = inputsSelectors();
   let submits = formSubmitSelectors();

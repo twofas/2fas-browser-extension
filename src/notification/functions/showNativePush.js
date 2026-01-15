@@ -19,6 +19,13 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Displays a native browser notification with optional sound alert.
+ *
+ * @param {Object} notificationObject - Object containing Title and Message properties
+ * @param {boolean} alert - Whether to play a sound with the notification
+ * @returns {Promise<string>} A promise that resolves to the notification ID
+ */
 const showNativePush = (notificationObject, alert) => {
   const notificationOptions = {
     title: notificationObject.Title,

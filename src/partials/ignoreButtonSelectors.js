@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Returns an array of CSS :not() selectors to exclude certain buttons.
+ * @returns {string[]} Array of CSS :not() selector strings
+ */
 const ignoreButtonSelectors = () => {
   return [
     ':not([data-role*="search"])',

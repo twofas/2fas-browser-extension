@@ -19,6 +19,10 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Handles target="_blank" links in Safari by opening them in new tabs.
+ * @returns {void}
+ */
 const handleTargetBlank = () => {
   if (process.env.EXT_PLATFORM !== 'Safari') {
     return;

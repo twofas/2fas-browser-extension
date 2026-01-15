@@ -17,6 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Creates an SVG element from an SVG string.
+ * @param {string} data - The SVG markup string
+ * @returns {Element} The first child element of the parsed SVG
+ */
 const createSVGElement = data => {
   const svg = document.createElement('svg');
   svg.innerHTML = data.trim();

@@ -20,6 +20,12 @@
 import S from '@/selectors.js';
 import extNameUpdate from '@partials/extNameUpdate.js';
 
+/**
+ * Attaches submit event listener to the extension name update form.
+ *
+ * @param {Object} storage - The storage object containing extension data
+ * @returns {void}
+ */
 const setExtNameUpdateForm = storage => {
   const extNameUpdateForm = document.querySelector(S.extName.updateForm);
   extNameUpdateForm.addEventListener('submit', e => extNameUpdate(storage, e));

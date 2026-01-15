@@ -19,6 +19,11 @@
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes push notification radio buttons with stored preference (disabled on Safari).
+ *
+ * @returns {Promise<void>|void} A promise that resolves when radios are initialized, or void for Safari
+ */
 const setPushRadio = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
     const pushRadios = document.querySelectorAll('input[name="pushConfig"]');

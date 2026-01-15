@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Handles click on the previous button in the pin info slider to go back to step 1.
+ *
+ * @returns {void}
+ */
 const handlePinInfoPrev = () => {
   const slider = document.querySelector(S.optionsPage.pin.slider);
 

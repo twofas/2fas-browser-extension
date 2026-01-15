@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * CSS selectors for DOM elements used throughout the extension.
+ * @type {Object}
+ */
 const selectors = {
   installPage: {
     configured: '.twofas-install-page-configured',

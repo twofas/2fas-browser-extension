@@ -19,6 +19,12 @@
 
 import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
+/**
+ * Handles change of the push notification type selection and saves the setting to storage.
+ *
+ * @param {Event} e - The change event from the select input
+ * @returns {Promise<Object>} A promise that resolves with the updated storage
+ */
 const handlePushChange = e => {
   return saveToLocalStorage({ nativePush: e.target.value === 'native' });
 };

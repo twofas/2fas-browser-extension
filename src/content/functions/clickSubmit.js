@@ -23,6 +23,13 @@ import storeLog from '@partials/storeLog.js';
 import delay from '@partials/delay.js';
 import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 
+/**
+ * Finds the index of the value closest to the goal in an array.
+ *
+ * @param {number[]} counts - Array of numbers to search
+ * @param {number} goal - Target number to find the closest match for
+ * @returns {number} Index of the closest value in the array
+ */
 const closest = (counts, goal) => {
   return counts.indexOf(
     counts.reduce((a, b) => {
@@ -39,6 +46,13 @@ const closest = (counts, goal) => {
   );
 };
 
+/**
+ * Automatically clicks the submit button closest to the input element after token insertion.
+ *
+ * @param {HTMLElement} inputElement - The input element where the token was inserted
+ * @param {string} siteURL - The current site URL for exclusion checking
+ * @returns {Promise<boolean|void>} Promise that resolves when submit is clicked or skipped
+ */
 const clickSubmit = (inputElement, siteURL) => {
   return delay(() => {}, 500)
     .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']))

@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Handles click on the next button in the pin info slider to advance to step 2.
+ *
+ * @returns {void}
+ */
 const handlePinInfoNext = () => {
   const slider = document.querySelector(S.optionsPage.pin.slider);
 

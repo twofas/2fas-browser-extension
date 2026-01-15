@@ -19,6 +19,11 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Removes a key from browser local storage.
+ * @param {string} key - The key to remove from storage
+ * @returns {Promise<void>} Promise resolving when the key is removed
+ */
 const removeFromLocalStorage = key => {
   return browser.storage.local.remove(key.toString())
     .then(result => result)

@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Hides the domain exclusion modal and resets its input and validation state.
+ *
+ * @returns {void}
+ */
 const hideDomainModal = () => {
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
   const inputEl = document.querySelector(S.optionsPage.domainModal.input);

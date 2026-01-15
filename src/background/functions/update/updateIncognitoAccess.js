@@ -22,6 +22,11 @@ import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js
 import storeLog from '@partials/storeLog.js';
 import checkTabCS from '@background/functions/checkTabCS.js';
 
+/**
+ * Updates the stored incognito access status and refreshes content scripts if changed.
+ *
+ * @returns {Promise<void>} A promise that resolves when the update is complete
+ */
 const updateIncognitoAccess = async () => {
   let storage = null;
   let incognitoAllowed = await browser.extension.isAllowedIncognitoAccess();

@@ -19,6 +19,12 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Handles click on the advanced settings header to toggle its visibility.
+ *
+ * @param {Event} e - The click event
+ * @returns {void}
+ */
 const handleAdvancedHeaderClick = e => {
   e.preventDefault();
   e.stopPropagation();

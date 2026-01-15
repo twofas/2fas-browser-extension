@@ -20,6 +20,11 @@
 import S from '@/selectors.js';
 import handleHamburgerClick from '@optionsPage/functions/handleHamburgerClick.js';
 
+/**
+ * Attaches click event listener to the hamburger menu button.
+ *
+ * @returns {void}
+ */
 const setHamburger = () => {
   const hamburger = document.querySelector(S.optionsPage.hamburger.element);
 

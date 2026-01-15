@@ -20,6 +20,11 @@
 import S from '@/selectors.js';
 import handleMenuLink from '@optionsPage/functions/handleMenuLink.js';
 
+/**
+ * Attaches click event listeners to all menu navigation links.
+ *
+ * @returns {void}
+ */
 const setMenuLinks = () => {
   const menuLinks = document.querySelectorAll(S.optionsPage.menuLink);
   menuLinks.forEach(el => el.addEventListener('click', handleMenuLink));

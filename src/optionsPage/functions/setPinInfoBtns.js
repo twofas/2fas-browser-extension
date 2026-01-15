@@ -22,6 +22,11 @@ import handlePinInfo from '@optionsPage/functions/handlePinInfo.js';
 import handlePinInfoNext from '@optionsPage/functions/handlePinInfoNext.js';
 import handlePinInfoPrev from '@optionsPage/functions/handlePinInfoPrev.js';
 
+/**
+ * Attaches click event listeners to pin info navigation buttons.
+ *
+ * @returns {void}
+ */
 const setPinInfoBtns = () => {
   const gotIt = document.querySelector(S.optionsPage.pin.gotIt);
   const next = document.querySelectorAll(S.optionsPage.pin.next);

@@ -19,6 +19,12 @@
 
 import { notification, showNotificationInfo } from '../content/functions/index.js';
 
+/**
+ * Message handler for extension pages (options/install page).
+ * @param {Object} request - The message request object
+ * @param {string} request.action - The action to perform
+ * @returns {Object} Response object with status
+ */
 const extPageOnMessage = (request) => {
   if (!request || !request.action) {
     return { status: 'error' };

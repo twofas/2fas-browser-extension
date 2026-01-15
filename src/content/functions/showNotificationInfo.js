@@ -27,6 +27,11 @@ import isInFrame from '@content/functions/isInFrame.js';
 import openOptionsPage from '@content/functions/openOptionsPage.js';
 import S from '@/selectors.js';
 
+/**
+ * Displays an informational notification about enabling native notifications.
+ *
+ * @returns {boolean} False if in a frame or notification already visible, otherwise undefined
+ */
 const showNotificationInfo = () => {
   if (isInFrame()) {
     return false;

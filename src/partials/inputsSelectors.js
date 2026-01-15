@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Generates CSS selectors for detecting OTP/2FA input fields.
+ * @returns {string} Comma-separated CSS selector string for OTP input fields
+ */
 const inputsSelectors = () => {
   const generateExact = (attr, values) => values.map(v => `input[${attr}="${v}" i]`);
   const generateContains = (attr, values) => values.map(v => `input[${attr}*="${v}" i]`);

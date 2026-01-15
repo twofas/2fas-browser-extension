@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Finds and returns the input element marked with the specified 2FAS input ID.
+ *
+ * @param {string} inputID - The unique identifier assigned to the input element
+ * @returns {HTMLElement|boolean} The matching input element or false if not found
+ */
 const getTokenInputs = inputID => {
   if (!inputID) {
     return false;

@@ -25,6 +25,12 @@ import Crypt from '@background/functions/Crypt.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 
+/**
+ * Generates default storage with encryption keys and registers extension with the 2FAS API.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>} A promise that resolves when storage is initialized and extension is registered
+ */
 const generateDefaultStorage = browserInfo => {
   const crypt = new Crypt();
   let attempt = 0;

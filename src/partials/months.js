@@ -19,6 +19,10 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Array of localized month names.
+ * @type {string[]}
+ */
 const months = [
   browser.i18n.getMessage('january'),
   browser.i18n.getMessage('february'),

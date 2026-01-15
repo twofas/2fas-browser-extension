@@ -20,6 +20,11 @@
 import S from '@/selectors.js';
 import handleImportDefaultExcludedDomains from '@optionsPage/functions/handleImportDefaultExcludedDomains.js';
 
+/**
+ * Attaches click event listener to the import default excluded domains button.
+ *
+ * @returns {void}
+ */
 const setImportDefaultExcludedDomains = () => {
   const importDefaultListBtn = document.querySelector(S.optionsPage.autoSubmit.importDefault);
   importDefaultListBtn.addEventListener('click', handleImportDefaultExcludedDomains);

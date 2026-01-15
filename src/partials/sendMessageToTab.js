@@ -21,6 +21,12 @@ import browser from 'webextension-polyfill';
 import config from '../config.js';
 import TwoFasNotification from '../notification/index.js';
 
+/**
+ * Sends a message to a specific browser tab and handles the response.
+ * @param {number} tabID - The ID of the target tab
+ * @param {Object} message - The message object to send
+ * @returns {Promise<boolean|undefined>} Promise resolving to false or undefined based on response
+ */
 const sendMessageToTab = (tabID, message) => {
   return browser.tabs.sendMessage(tabID, message)
     .then(res => {

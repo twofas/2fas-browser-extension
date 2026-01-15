@@ -19,6 +19,10 @@
 
 import ignoreButtonSelectors from './ignoreButtonSelectors.js';
 
+/**
+ * Generates CSS selectors for secondary/alternative form submit buttons.
+ * @returns {string} Comma-separated CSS selector string
+ */
 const formSubmitSecondSelectors = () => {
   let buttonSelectors = [
     'button[id*="submit"]',

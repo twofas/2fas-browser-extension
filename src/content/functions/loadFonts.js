@@ -20,7 +20,11 @@
 /* global FontFace */
 import browser from 'webextension-polyfill';
 
-// NEWEGG ETC. FIX
+/**
+ * Loads Montserrat font faces into the document if not already available.
+ *
+ * @returns {boolean} False if fonts are already loaded, otherwise undefined
+ */
 const loadFonts = () => {
   if (document.fonts.check('bold 16px Montserrat') && document.fonts.check('normal 16px Montserrat')) {
     return false;

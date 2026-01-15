@@ -27,11 +27,23 @@ import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
+/**
+ * Validates if the provided string is a valid URL format.
+ *
+ * @param {string} urlString - The URL string to validate
+ * @returns {boolean} True if the URL is valid, false otherwise
+ */
 const isValidUrl = urlString => {
   const urlRegex = /^(((http|https):\/\/|)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}(:[0-9]{1,5})?(\/.*)?)$/;
   return urlRegex.test(urlString);
 };
 
+/**
+ * Handles the domain modal form submission, validates input, and saves the excluded domain.
+ *
+ * @param {Event} e - The form submit event
+ * @returns {Promise<void>|boolean} A promise that resolves after saving, or false on validation error
+ */
 const domainModalFormSubmit = e => {
   e.preventDefault();
   e.stopPropagation();

@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Displays the storage integrity error message on the install page.
+ *
+ * @returns {void}
+ */
 const showIntegrityError = () => {
   const el = document.querySelector(S.optionsPage.integrityError);
   el.classList.add('show-integrity-error');

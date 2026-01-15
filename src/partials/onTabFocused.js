@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Executes a callback based on the current tab visibility state.
+ * @param {Function} onFocus - Callback to execute when tab is visible
+ * @param {Function} onBlur - Callback to execute when tab is hidden
+ * @returns {void}
+ */
 const onTabFocused = (onFocus, onBlur) => {
   if (document.visibilityState === 'visible') {
     if (typeof onFocus === 'function') {

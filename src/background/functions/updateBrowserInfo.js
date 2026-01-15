@@ -20,6 +20,12 @@
 import storeLog from '@partials/storeLog.js';
 import { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } from '@background/functions/update/index.js';
 
+/**
+ * Updates browser information by verifying storage, updating extension data, and checking incognito access.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>} A promise that resolves when all updates are complete
+ */
 const updateBrowserInfo = browserInfo => {
   return verifyStorageIntegrity(browserInfo)
     .then(() => updateBrowserExtension(browserInfo))

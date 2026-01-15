@@ -22,6 +22,11 @@ import createTextElement from '@partials/DOMElements/createTextElement.js';
 import generateEmptyShortcutBox from '@optionsPage/functions/generateEmptyShortcutBox.js';
 import S from '@/selectors.js';
 
+/**
+ * Generates and renders the keyboard shortcut display box based on configured commands.
+ *
+ * @returns {Promise<void>|void} A promise that resolves when the shortcut box is rendered, or void for Safari
+ */
 const generateShortcutBox = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
     return;

@@ -19,6 +19,10 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Clears all data from browser local storage.
+ * @returns {Promise<void>} Promise resolving when storage is cleared
+ */
 const clearLocalStorage = () => {
   return browser.storage.local.clear()
     .catch(err => {

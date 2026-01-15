@@ -19,6 +19,13 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Sends a message to all frames within a tab, excluding about:blank frames.
+ *
+ * @param {number} tabId - The ID of the tab to send messages to
+ * @param {Object} message - The message object to send
+ * @returns {Promise<Array|boolean>} A promise that resolves to an array of responses or false if no frames
+ */
 const sendMessageToAllFrames = async (tabId, message) => {
   let frames;
 

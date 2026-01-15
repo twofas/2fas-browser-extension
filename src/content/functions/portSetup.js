@@ -19,48 +19,63 @@
 
 import browser from 'webextension-polyfill';
 
-const portSetup = async () => {
-  const portConnect = () => {
-    return new Promise(resolve => {
-      const port = browser.runtime.connect({ name: '2FAS' });
+const PING_INTERVAL_MS = 10000;
 
-      port._connected = true;
+/**
+ * Establishes and maintains a persistent connection to the background script.
+ * Automatically reconnects when the port disconnects (e.g., service worker restart).
+ */
+const portSetup = () => {
+  let isConnected = false;
+  let pingTimeoutId = null;
 
-      port._oM = (msg, p) => {
-        setTimeout(() => {
-          if (p._connected) {
-            try {
-              p.postMessage({ msg: 'ping' });
-            } catch (e) {}
-          }
-        }, 10000);
-      };
+  const sendPing = port => {
+    if (!isConnected) {
+      return;
+    }
 
-      port._oD = p => {
-        p._connected = false;
-        resolve();
-      };
-
-      port.onMessage.addListener(port._oM);
-      port.onDisconnect.addListener(port._oD);
-
-      try {
-        port.postMessage({ msg: 'ping' });
-      } catch (e) {}
-
-      return port;
-    });
+    try {
+      port.postMessage({ msg: 'ping' });
+    } catch {
+      isConnected = false;
+    }
   };
 
-  while (browser?.runtime?.id) {
-    const port = await portConnect();
+  const handleMessage = port => {
+    pingTimeoutId = setTimeout(() => sendPing(port), PING_INTERVAL_MS);
+  };
 
-    port.onDisconnect.removeListener(port._oD);
-    port.onMessage.removeListener(port._oM);
-    port._oM = null;
-    port._oD = null;
-    port._connected = false;
-  }
+  const connect = () => {
+    if (!browser?.runtime?.id) {
+      return;
+    }
+
+    const port = browser.runtime.connect({ name: '2FAS' });
+    isConnected = true;
+
+    const onMessage = () => handleMessage(port);
+
+    const onDisconnect = () => {
+      isConnected = false;
+
+      if (pingTimeoutId !== null) {
+        clearTimeout(pingTimeoutId);
+        pingTimeoutId = null;
+      }
+
+      port.onMessage.removeListener(onMessage);
+      port.onDisconnect.removeListener(onDisconnect);
+
+      connect();
+    };
+
+    port.onMessage.addListener(onMessage);
+    port.onDisconnect.addListener(onDisconnect);
+
+    sendPing(port);
+  };
+
+  connect();
 };
 
 export default portSetup;

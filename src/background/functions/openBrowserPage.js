@@ -19,6 +19,12 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Opens a new browser tab with the specified URL.
+ *
+ * @param {string} url - The URL to open in a new tab
+ * @returns {Promise<Object>} A promise that resolves to the created tab object
+ */
 const openBrowserPage = url => {
   return browser.tabs.create({ url });
 };

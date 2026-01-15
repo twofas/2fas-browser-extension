@@ -20,6 +20,10 @@
 import browser from 'webextension-polyfill';
 import t from './_locales/en/notifications.json';
 
+/**
+ * Application configuration object containing timeouts, version, and localized text strings.
+ * @type {Object}
+ */
 const config = {
   WebSocketTimeout: 3, // in minutes
   ResendPushTimeout: 10, // in seconds

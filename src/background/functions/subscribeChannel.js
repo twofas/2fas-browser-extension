@@ -28,117 +28,137 @@ import wsTabChanged from '@background/functions/wsTabChanged.js';
 import wsTabClosed from '@background/functions/wsTabClosed.js';
 import storeLog from '@partials/storeLog.js';
 
-const subscribeChannel = (storage, tabID, data = {
-  action: true,
-  timeout: true,
-  login: true,
-  requestID: null,
-  notifications: {
-    timeout: config.Texts.Error.Timeout,
-    error: config.Texts.Error.General
-  }
-}) => {
-  return new Promise((resolve, reject) => {
-    let timeoutID;
-    const channel = {};
+const WS_TIMEOUT_MS = (1000 * 60 * config.WebSocketTimeout) - 5000;
 
-    const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
-    const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
+/**
+ * Creates a WebSocket channel for communication with 2FAS backend.
+ * @param {Object} storage - Storage object containing extensionID.
+ * @param {number|null} tabID - The tab ID associated with this channel.
+ * @param {Object} options - Configuration options for the channel.
+ * @returns {Object} Channel object with connect method.
+ */
+const subscribeChannel = (storage, tabID, options = {}) => {
+  const {
+    timeout = true,
+    login = true,
+    requestID = null,
+    notifications = {
+      timeout: config.Texts.Error.Timeout,
+      error: config.Texts.Error.General
+    }
+  } = options;
 
-    const cleanupListeners = () => {
-      browser.tabs.onRemoved.removeListener(tabClosedFunc);
-      browser.tabs.onUpdated.removeListener(tabChangedFunc);
+  let timeoutID = null;
+  const channel = { ws: null };
+
+  const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
+  const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
+
+  const cleanupListeners = () => {
+    browser.tabs.onRemoved.removeListener(tabClosedFunc);
+    browser.tabs.onUpdated.removeListener(tabChangedFunc);
+
+    if (timeoutID) {
       clearTimeout(timeoutID);
-    };
+      timeoutID = null;
+    }
+  };
 
-    channel.connect = () => {
-      channel.ws = {};
+  const buildWebSocketURL = () => {
+    const baseURL = `${process.env.WS_URL}/browser_extensions/${storage.extensionID}`;
 
-      if (data.login) {
-        channel.ws = new WebSocket(`${process.env.WS_URL}/browser_extensions/${storage.extensionID}/2fa_requests/${data.requestID}`);
-      } else {
-        channel.ws = new WebSocket(`${process.env.WS_URL}/browser_extensions/${storage.extensionID}`);
+    if (login) {
+      return `${baseURL}/2fa_requests/${requestID}`;
+    }
+
+    return baseURL;
+  };
+
+  const handleTimeout = () => {
+    closeWSChannel(channel);
+    console.warn('WebSocket Timeout');
+
+    if (timeout) {
+      TwoFasNotification.show(notifications.timeout, tabID);
+    } else {
+      TwoFasNotification.showWithoutTimeout(notifications.timeout, tabID);
+    }
+
+    if (login) {
+      closeRequest(tabID, requestID);
+    }
+  };
+
+  const handleMessage = async messageEvent => {
+    let messageData;
+
+    try {
+      messageData = JSON.parse(messageEvent.data);
+    } catch (parseError) {
+      cleanupListeners();
+      await storeLog('error', 13, parseError, 'subscribeChannel JSON parse error');
+      return;
+    }
+
+    clearTimeout(timeoutID);
+    timeoutID = null;
+
+    switch (messageData.event) {
+      case 'browser_extensions.pairing.success': {
+        handleConfigurationRequest(tabID, messageData);
+        closeWSChannel(channel);
+        cleanupListeners();
+        break;
       }
 
-      channel.ws.onopen = () => {
-        timeoutID = setTimeout(() => {
-          closeWSChannel(channel);
-          console.warn('WebSocket Timeout');
-  
-          if (data.timeout) {
-            TwoFasNotification.show(data.notifications.timeout, tabID);
-          } else {
-            TwoFasNotification.showWithoutTimeout(data.notifications.timeout, tabID);
-          }
-  
-          if (data.login) {
-            closeRequest(tabID, data.requestID);
-          }
-  
-          return reject(new Error('timeout'));
-        }, (1000 * 60 * config.WebSocketTimeout) - 5000);
-  
-        browser.tabs.onRemoved.addListener(tabClosedFunc);
-        browser.tabs.onUpdated.addListener(tabChangedFunc);
-  
-        return true;
-      };
-  
-      channel.ws.onerror = async err => {
+      case 'browser_extensions.device.2fa_response': {
+        handleLoginRequest(tabID, messageData);
+        closeWSChannel(channel);
         cleanupListeners();
+        break;
+      }
 
-        await storeLog('error', 11, err, 'WebSocket channel error');
-        return reject(err);
-      };
-
-      channel.ws.onclose = () => {
+      case 'browser_extensions.pairing.failure': {
+        await storeLog('error', 12, messageData, 'browser_extensions.pairing.failure');
+        TwoFasNotification.show(config.Texts.Error.WebSocket, tabID);
+        closeWSChannel(channel);
         cleanupListeners();
-      };
-  
-      channel.ws.onmessage = async message => {
-        const data = JSON.parse(message.data);
-        clearTimeout(timeoutID);
-  
-        switch (data.event) {
-          case 'browser_extensions.pairing.success': {
-            handleConfigurationRequest(tabID, data);
-            closeWSChannel(channel);
-            cleanupListeners();
+        break;
+      }
 
-            return true;
-          }
+      default: {
+        closeWSChannel(channel);
+        cleanupListeners();
+        await storeLog('error', 13, messageData, 'subscribeChannel event default');
+      }
+    }
+  };
 
-          case 'browser_extensions.device.2fa_response': {
-            handleLoginRequest(tabID, data);
-            closeWSChannel(channel);
-            cleanupListeners();
+  channel.connect = () => {
+    const wsURL = buildWebSocketURL();
+    channel.ws = new WebSocket(wsURL);
 
-            return true;
-          }
-
-          case 'browser_extensions.pairing.failure': {
-            await storeLog('error', 12, data, 'browser_extensions.pairing.failure');
-            TwoFasNotification.show(config.Texts.Error.WebSocket, tabID);
-            closeWSChannel(channel);
-            cleanupListeners();
-
-            return true;
-          }
-
-          default: {
-            cleanupListeners();
-
-            await storeLog('error', 13, data, 'subscribeChannel event default');
-            throw new Error('Unknown message');
-          }
-        }
-      };
-
-      return channel;
+    channel.ws.onopen = () => {
+      timeoutID = setTimeout(handleTimeout, WS_TIMEOUT_MS);
+      browser.tabs.onRemoved.addListener(tabClosedFunc);
+      browser.tabs.onUpdated.addListener(tabChangedFunc);
     };
 
-    return resolve(channel);
-  });
+    channel.ws.onerror = async err => {
+      cleanupListeners();
+      await storeLog('error', 11, err, 'WebSocket channel error');
+    };
+
+    channel.ws.onclose = () => {
+      cleanupListeners();
+    };
+
+    channel.ws.onmessage = handleMessage;
+
+    return channel;
+  };
+
+  return channel;
 };
 
 export default subscribeChannel;

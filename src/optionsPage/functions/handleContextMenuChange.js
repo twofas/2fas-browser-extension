@@ -21,6 +21,12 @@ import browser from 'webextension-polyfill';
 import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 import createContextMenus from '@background/contextMenu/createContextMenus.js';
 
+/**
+ * Handles change of the context menu toggle and updates browser context menus accordingly.
+ *
+ * @param {Event} e - The change event from the checkbox input
+ * @returns {Promise<void>} A promise that resolves when the context menu is updated
+ */
 const handleContextMenuChange = e => {
   return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
     .then(async storage => {

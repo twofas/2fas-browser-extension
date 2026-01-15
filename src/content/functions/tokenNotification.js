@@ -25,6 +25,12 @@ import copySrc from '@images/copy-icon.svg';
 import closeSrc from '@images/notification-close.svg';
 import S from '@/selectors.js';
 
+/**
+ * Displays a notification with the 2FA token and a copy button.
+ *
+ * @param {string} token - The 2FA token to display
+ * @returns {boolean} False if running in a frame, otherwise undefined
+ */
 const tokenNotification = token => {
   if (isInFrame()) {
     return false;

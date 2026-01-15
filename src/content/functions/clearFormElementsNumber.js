@@ -17,6 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Removes the data-twofas-element-number attribute from all elements in the document.
+ *
+ * @returns {void}
+ */
 const clearFormElementsNumber = () => {
   const elements = Array.from(document.querySelectorAll('*[data-twofas-element-number]'));
   elements.forEach(element => {

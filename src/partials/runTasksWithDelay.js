@@ -19,6 +19,12 @@
 
 import wait from './wait.js';
 
+/**
+ * Executes an array of tasks sequentially with a delay between each.
+ * @param {Function[]} tasks - Array of async functions to execute
+ * @param {number} delayTime - Delay in milliseconds between tasks
+ * @returns {Promise<void>}
+ */
 const runTasksWithDelay = async (tasks, delayTime) => {
   for (const task of tasks) {
     await task();

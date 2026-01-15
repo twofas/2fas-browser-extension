@@ -23,73 +23,105 @@ import getTabData from '@content/functions/getTabData.js';
 import clickSubmit from '@content/functions/clickSubmit.js';
 import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
 
-const inputToken = (request, inputElement, siteURL) => {
-  return new Promise(resolve => {
-    if (!request.token) {
-      return { status: 'error' };
-    }
+const KEYSTROKE_DELAY_MS = 150;
 
-    if (!inputElement) {
-      return { status: 'emptyInput' };
-    }
+/**
+ * Dispatches keyboard events to simulate typing a single digit.
+ * @param {HTMLElement} element - Target element for the events
+ * @param {string} digit - Single digit character to type
+ * @param {number} keyCode - Key code for the digit (48-57 for 0-9)
+ */
+const dispatchKeystrokeEvents = (element, digit, keyCode) => {
+  const keyboardEventOptions = {
+    bubbles: true,
+    cancelable: true,
+    charCode: 0,
+    code: `Digit${digit}`,
+    ctrlKey: false,
+    key: digit,
+    keyCode,
+    location: 0,
+    metaKey: false,
+    repeat: false,
+    shiftKey: false,
+    which: keyCode
+  };
 
-    const tokenLength = request.token.length;
-    const promises = [];
+  element.dispatchEvent(new KeyboardEvent('keydown', keyboardEventOptions));
+  element.dispatchEvent(new KeyboardEvent('keypress', { ...keyboardEventOptions, charCode: keyCode }));
 
-    inputElement.value = '';
-    inputElement.focus();
+  const inputType = element.type?.toLowerCase();
 
-    for (let i = 0; i < tokenLength; i++) {
-      promises.push(
-        () => new Promise(resolve => {
-          const digit = request.token[i];
-          const digitNum = Number(digit);
-          const keyCode = 48 + digitNum;
+  if (inputType === 'number') {
+    element.value += Number(digit);
+  } else {
+    element.value += digit;
+  }
 
-          if (document.activeElement !== inputElement) {
-            document.activeElement.value = '';
-          }
+  element.dispatchEvent(new InputEvent('input', {
+    bubbles: true,
+    cancelable: true,
+    data: digit,
+    inputType: 'insertText',
+    which: 0
+  }));
 
-          document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
-          document.activeElement.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, cancelable: true, charCode: keyCode, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
+  element.dispatchEvent(new KeyboardEvent('keyup', keyboardEventOptions));
+  element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+};
 
-          if (document.activeElement.type.toLowerCase() === 'number') {
-            document.activeElement.value += digitNum;
-          } else {
-            document.activeElement.value += digit;
-          }
+/**
+ * Inputs a 2FA token into the specified input element by simulating keystrokes.
+ * @param {Object} request - Request object containing the token
+ * @param {HTMLElement} inputElement - Target input element
+ * @param {string} siteURL - URL of the current site
+ * @returns {Promise<Object>} Result object with status and url
+ */
+const inputToken = async (request, inputElement, siteURL) => {
+  if (!request?.token) {
+    return { status: 'error' };
+  }
 
-          document.activeElement.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, data: digit, inputType: 'insertText', which: 0 }));
-          document.activeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, charCode: 0, code: `Digit${digit}`, ctrlKey: false, key: digit, keyCode, location: 0, metaKey: false, repeat: false, shiftKey: false, which: keyCode }));
-          document.activeElement.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+  if (!inputElement) {
+    return { status: 'emptyInput' };
+  }
 
-          return resolve();
-        })
-      );
-    }
+  const tasks = [];
 
-    return runTasksWithDelay(promises, 150)
-      .then(async () => {
-        let tab = {};
+  inputElement.value = '';
+  inputElement.focus();
 
-        try {
-          tab = await getTabData();
-        } catch {
-          return resolve({ status: 'completed', url: siteURL });
-        }
+  for (let i = 0; i < request.token.length; i++) {
+    tasks.push(() => {
+      const digit = request.token[i];
+      const keyCode = 48 + Number(digit);
+      const activeElement = document.activeElement;
 
-        if (tab?.status === 'complete') {
-          clickSubmit(inputElement, siteURL);
-        }
+      if (activeElement !== inputElement) {
+        activeElement.value = '';
+      }
 
-        clearAfterInputToken(inputElement, tab?.id);
+      dispatchKeystrokeEvents(activeElement, digit, keyCode);
+    });
+  }
 
-        return resolve({
-          status: 'completed',
-          url: siteURL
-        });
-      });
-  });
+  await runTasksWithDelay(tasks, KEYSTROKE_DELAY_MS);
+
+  let tab = {};
+
+  try {
+    tab = await getTabData();
+  } catch {
+    return { status: 'completed', url: siteURL };
+  }
+
+  if (tab?.status === 'complete') {
+    clickSubmit(inputElement, siteURL);
+  }
+
+  clearAfterInputToken(inputElement, tab?.id);
+
+  return { status: 'completed', url: siteURL };
 };
 
 export default inputToken;

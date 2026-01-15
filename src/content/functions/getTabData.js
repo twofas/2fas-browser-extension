@@ -20,33 +20,28 @@
 import browser from 'webextension-polyfill';
 import storeLog from '@partials/storeLog.js';
 
+/**
+ * Retrieves tab data from the background script.
+ * @returns {Promise<Object>} Tab data object containing id, url, urlPath, and status.
+ */
 const getTabData = async () => {
-  let tabData = {};
-  
-  try {
-    tabData = await browser.runtime.sendMessage({ action: 'getTabData' });
-  } catch (err) {
-    if (err && typeof err?.toString === 'function') {
-      if (err?.toString() === 'Error: Could not establish connection. Receiving end does not exist.') {
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        try {
-          tabData = await browser.runtime.sendMessage({ action: 'getTabData' });
-        } catch (err) {
-          await storeLog('error', 14, err, 'getTabData - second try');
-          throw new Error(err);
-        }
-      }
-
-      await storeLog('error', 14, err, 'getTabData - toString');
-      throw new Error(err);
-    }
-
-    await storeLog('error', 14, err, 'getTabData - no error variable');
-    throw new Error(err);
+  if (!browser?.runtime?.id) {
+    throw new Error('Extension context invalidated');
   }
 
-  return tabData;
+  try {
+    return await browser.runtime.sendMessage({ action: 'getTabData' });
+  } catch (err) {
+    const errorMessage = err?.message || err?.toString?.() || '';
+    const isContextInvalidated = errorMessage.includes('Could not establish connection') ||
+      errorMessage.includes('Extension context invalidated');
+
+    if (!isContextInvalidated) {
+      await storeLog('error', 14, err, 'getTabData');
+    }
+
+    throw err;
+  }
 };
 
 export default getTabData;

@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Returns an array of button text strings to ignore when detecting submit buttons.
+ * @returns {string[]} Array of multilingual button text strings to exclude
+ */
 const ignoreButtonTexts = () => {
   return [
     // English

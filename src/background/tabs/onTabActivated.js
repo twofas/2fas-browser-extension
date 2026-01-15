@@ -19,6 +19,13 @@
 
 import checkTabCS from '@background/functions/checkTabCS.js';
 
+/**
+ * Handles browser tab activation events by checking content script status.
+ *
+ * @param {Object} activeInfo - Object containing tab activation details
+ * @param {number} activeInfo.tabId - The ID of the activated tab
+ * @returns {Promise<void>} A promise that resolves when the content script check is complete
+ */
 const onTabActivated = ({ tabId }) => {
   return checkTabCS(tabId);
 };

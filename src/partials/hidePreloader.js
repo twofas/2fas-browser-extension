@@ -19,6 +19,12 @@
 
 import S from '../selectors.js';
 
+/**
+ * Hides the preloader element and shows appropriate content.
+ * @param {boolean} [installPage=false] - Whether this is the install page
+ * @param {string} [state=undefined] - The state of the install page ('configured' or undefined)
+ * @returns {void}
+ */
 const hidePreloader = (installPage = false, state = undefined) => {
   const preloadElement = document.querySelector(S.preload);
 

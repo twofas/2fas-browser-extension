@@ -19,6 +19,11 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Loads data from browser local storage.
+ * @param {string|string[]|Object} key - The key(s) to retrieve from storage
+ * @returns {Promise<Object>} Promise resolving to the stored data
+ */
 const loadFromLocalStorage = key => {
   return browser.storage.local.get(key)
     .catch(err => {

@@ -20,6 +20,11 @@
 import TwoFasNotification from '@notification';
 import config from '@/config.js';
 
+/**
+ * Sends a test notification to verify the notification system is working.
+ *
+ * @returns {Promise<void>} A promise that resolves after displaying the notification
+ */
 const sendTestNotification = () => {
   return TwoFasNotification.show(config.Texts.Info.Test);
 };

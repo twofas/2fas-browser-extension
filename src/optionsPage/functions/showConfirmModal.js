@@ -19,6 +19,14 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Shows the confirmation modal dialog with the specified header, text, and optional callback.
+ *
+ * @param {string} header - The modal header text
+ * @param {string} text - The modal body text
+ * @param {Function|null} func - Optional callback function executed when confirmed
+ * @returns {void}
+ */
 const showConfirmModal = (header, text, func = null) => {
   const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
   const headerEl = document.querySelector(S.optionsPage.confirmModal.header);

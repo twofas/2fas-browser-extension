@@ -19,6 +19,12 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Opens the extension options page in a new browser tab.
+ *
+ * @param {Event} [e] - Optional event object to prevent default behavior
+ * @returns {void}
+ */
 const openOptionsPage = e => {
   if (e) {
     if (typeof e.preventDefault === 'function') {

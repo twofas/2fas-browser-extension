@@ -19,6 +19,12 @@
 
 import hideConfirmModal from '@optionsPage/functions/hideConfirmModal.js';
 
+/**
+ * Handles click events on the confirm modal backdrop to close the modal.
+ *
+ * @param {Event} e - The click event on the modal backdrop
+ * @returns {void}
+ */
 const confirmModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
 

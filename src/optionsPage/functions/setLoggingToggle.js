@@ -19,6 +19,11 @@
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes the logging toggle switch with stored value.
+ *
+ * @returns {Promise<void>} A promise that resolves when the toggle is initialized
+ */
 const setLoggingToggle = () => {
   return loadFromLocalStorage(['logging'])
     .then(storage => {

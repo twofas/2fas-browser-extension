@@ -19,6 +19,12 @@
 
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
+/**
+ * Handles click events on the domain modal backdrop to close the modal.
+ *
+ * @param {Event} e - The click event on the modal backdrop
+ * @returns {void}
+ */
 const domainModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
 

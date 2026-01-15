@@ -17,6 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Checks if the current script is running inside an iframe.
+ *
+ * @returns {boolean} True if running in a frame, false otherwise
+ */
 const isInFrame = () => {
   return window.self !== window.top;
 };

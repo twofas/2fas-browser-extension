@@ -17,6 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Creates a DOM element with text content.
+ * @param {string} tagName - The HTML tag name to create
+ * @param {string} text - The text content for the element
+ * @param {string} [className=''] - Optional CSS class name(s)
+ * @returns {HTMLElement} The created DOM element with text
+ */
 const createTextElement = (tagName, text, className = '') => {
   const el = document.createElement(tagName);
   el.className = className;

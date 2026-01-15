@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Closes and hides the notification info element with a fade-out animation.
+ *
+ * @param {Object} n - The notification DOM elements object
+ * @returns {void}
+ */
 const closeNotificationInfo = n => {
   n.notification.classList.remove('visible');
 

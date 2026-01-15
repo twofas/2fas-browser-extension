@@ -22,6 +22,11 @@ import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.
 import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
 import getFormElements from '@content/functions/getFormElements.js';
 
+/**
+ * Gets the currently focused element and marks it with a unique identifier.
+ *
+ * @returns {Object} Status object with nodeName and input ID (null if not an input/textarea)
+ */
 const getActiveElement = () => {
   const activeElement = document.activeElement;
   let nodeName;

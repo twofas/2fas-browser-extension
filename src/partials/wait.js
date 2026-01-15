@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Pauses execution for a specified duration.
+ *
+ * @param {number} ms - The duration to wait in milliseconds
+ * @returns {Promise<void>} A promise that resolves after the specified delay
+ */
 const wait = async ms => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };

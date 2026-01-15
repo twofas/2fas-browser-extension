@@ -21,7 +21,17 @@ import { sendFrontEndPushAction, showFrontEndPush, showNativePush, showNativePus
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import S from '@/selectors.js';
 
+/**
+ * Notification class for displaying native and front-end push notifications.
+ */
 class twoFasNotification {
+  /**
+   * Shows a notification with automatic timeout.
+   * @param {Object} notificationObject - The notification content with Title and Message
+   * @param {number|null} [tabID=null] - The tab ID to show notification in
+   * @param {boolean} [alert=false] - Whether to show as alert
+   * @returns {Promise<void>} Promise resolving when notification is shown
+   */
   static show (notificationObject, tabID = null, alert = false) {
     return loadFromLocalStorage(['nativePush'])
       .then(storage => {
@@ -37,6 +47,12 @@ class twoFasNotification {
       });
   }
 
+  /**
+   * Shows a notification without automatic timeout.
+   * @param {Object} notificationObject - The notification content with Title and Message
+   * @param {number|null} [tabID=null] - The tab ID to show notification in
+   * @returns {Promise<void>} Promise resolving when notification is shown
+   */
   static showWithoutTimeout (notificationObject, tabID = null) {
     return loadFromLocalStorage(['nativePush'])
       .then(storage => {
@@ -52,6 +68,10 @@ class twoFasNotification {
       });
   }
 
+  /**
+   * Clears all visible notifications from the DOM.
+   * @returns {void}
+   */
   static clearAll () {
     const container = document.querySelector(S.notification.container);
     const notifications = container.querySelectorAll(S.notification.notification);

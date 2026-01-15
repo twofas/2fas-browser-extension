@@ -22,6 +22,11 @@ import onTabFocused from '@partials/onTabFocused.js';
 import openShortcutEdit from '@partials/openShortcutEdit.js';
 import generateShortcutBox from '@optionsPage/functions/generateShortcutBox.js';
 
+/**
+ * Sets up the keyboard shortcut box with edit button, tooltip, and tab focus handling.
+ *
+ * @returns {void}
+ */
 const setShortcutBox = () => {
   const editBtn = document.querySelector(S.optionsPage.shortcut.edit);
 

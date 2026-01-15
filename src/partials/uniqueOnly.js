@@ -17,6 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Array filter callback that returns only unique values.
+ * @param {*} value - Current array element
+ * @param {number} index - Current index
+ * @param {Array} self - The array being filtered
+ * @returns {boolean} True if this is the first occurrence of the value
+ */
 const uniqueOnly = (value, index, self) => {
   return self.indexOf(value) === index;
 };

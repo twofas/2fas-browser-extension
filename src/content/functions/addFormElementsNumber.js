@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Assigns sequential data-twofas-element-number attributes to form elements.
+ *
+ * @param {HTMLElement[]} elements - Array of form elements to number
+ * @returns {boolean|void} False if elements array is empty or invalid, otherwise undefined
+ */
 const addFormElementsNumber = elements => {
   let i = 0;
 

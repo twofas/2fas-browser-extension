@@ -23,6 +23,12 @@ import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@/notification';
 
+/**
+ * Saves user preference to never show the notification info again and closes it.
+ *
+ * @param {Object} n - The notification DOM elements object
+ * @returns {Promise<boolean|void>} Promise that resolves when storage is saved and notification is closed
+ */
 const neverShowNotificationInfo = n => {
   return saveToLocalStorage({ notifications: true })
     .then(() => closeNotificationInfo(n))

@@ -22,6 +22,15 @@ import { createElement, createSVGElement, createTextElement } from '@partials/DO
 import iconSrc from '@images/notification-logo.svg';
 import S from '@/selectors.js';
 
+/**
+ * Displays a front-end notification with a title and message.
+ *
+ * @param {Object} request - The notification request object
+ * @param {string} request.title - The notification title
+ * @param {string} request.message - The notification message
+ * @param {boolean} [request.timeout] - Whether to auto-dismiss the notification
+ * @returns {boolean} False if running in a frame, otherwise undefined
+ */
 const notification = request => {
   if (isInFrame()) {
     return false;

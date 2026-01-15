@@ -26,6 +26,12 @@ import removeDeviceFromDOM from '@optionsPage/functions/removeDeviceFromDOM.js';
 import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
 import TwoFasNotification from '@notification';
 
+/**
+ * Handles the device removal process with confirmation modal and API call.
+ *
+ * @param {Event} e - The click event that triggered the removal
+ * @returns {Promise<void>|void}
+ */
 const removeDevice = function (e) {
   e.preventDefault();
   e.stopPropagation();

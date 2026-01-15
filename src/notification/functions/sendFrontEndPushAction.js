@@ -19,6 +19,14 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Sends a front-end notification message to a specific browser tab.
+ *
+ * @param {Object} notificationObject - Object containing Title and Message properties
+ * @param {number} tabID - The ID of the target browser tab
+ * @param {number} timeout - Duration in milliseconds before the notification auto-dismisses
+ * @returns {Promise<void>} A promise that resolves when the message is sent
+ */
 const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
   return browser.tabs.sendMessage(tabID, {
     action: 'notification',

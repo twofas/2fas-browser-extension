@@ -19,6 +19,12 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Displays a native browser notification that requires user interaction to dismiss.
+ *
+ * @param {Object} notificationObject - Object containing Title and Message properties
+ * @returns {Promise<string>} A promise that resolves to the notification ID
+ */
 const showNativePushWithoutTimeout = notificationObject => {
   const notificationOptions = {
     title: notificationObject.Title,

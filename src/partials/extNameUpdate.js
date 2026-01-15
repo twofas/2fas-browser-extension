@@ -27,6 +27,12 @@ import S from '../selectors.js';
 
 let updateTimeout = false;
 
+/**
+ * Handles the extension name update form submission.
+ * @param {Object} storage - The storage object containing extension data
+ * @param {Event} e - The form submit event
+ * @returns {Promise<boolean>|boolean} False on validation error, Promise on API call
+ */
 const extNameUpdate = (storage, e) => {
   e.preventDefault();
   e.stopPropagation();

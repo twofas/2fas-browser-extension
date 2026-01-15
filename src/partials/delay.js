@@ -17,13 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const delay = (f, t) => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      f();
-      return resolve();
-    }, t);
-  });
+/**
+ * Executes a callback function after a specified delay.
+ *
+ * @param {Function} callback - The function to execute after the delay
+ * @param {number} ms - The delay in milliseconds
+ * @returns {Promise<void>} A promise that resolves after the callback completes
+ */
+const delay = async (callback, ms) => {
+  await new Promise(resolve => setTimeout(resolve, ms));
+  await callback();
 };
 
 export default delay;

@@ -25,6 +25,11 @@ import domainModalBackdropClick from '@optionsPage/functions/domainModalBackdrop
 import domainModalFormSubmit from '@optionsPage/functions/domainModalFormSubmit.js';
 import showDomainModal from '@optionsPage/functions/showDomainModal.js';
 
+/**
+ * Sets up all event listeners for confirm and domain modals including keyboard shortcuts.
+ *
+ * @returns {void}
+ */
 const setModalsListeners = () => {
   const confirmModalCancel = document.querySelectorAll(S.optionsPage.confirmModal.cancel);
   Array.from(confirmModalCancel).forEach(el => el.addEventListener('click', hideConfirmModal));

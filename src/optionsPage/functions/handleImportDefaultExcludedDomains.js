@@ -25,6 +25,12 @@ import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
 
+/**
+ * Handles import of default excluded domains for auto-submit feature.
+ *
+ * @param {Event} e - The click event
+ * @returns {Promise<void>} A promise that resolves when domains are imported and UI is updated
+ */
 const handleImportDefaultExcludedDomains = e => {
   e.preventDefault();
   e.stopPropagation();

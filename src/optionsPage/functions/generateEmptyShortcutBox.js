@@ -21,6 +21,12 @@ import browser from 'webextension-polyfill';
 import createTextElement from '@partials/DOMElements/createTextElement.js';
 import S from '@/selectors.js';
 
+/**
+ * Generates the shortcut display box with an unknown state when no shortcut is configured.
+ *
+ * @param {HTMLElement} box - The container element for the shortcut display
+ * @returns {void}
+ */
 const generateEmptyShortcutBox = box => {
   const btnBox = createTextElement('div', browser.i18n.getMessage('unknown').toUpperCase());
 

@@ -20,6 +20,11 @@
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import S from '@/selectors.js';
 
+/**
+ * Shows the pin info banner if user has not dismissed it previously.
+ *
+ * @returns {Promise<void>} A promise that resolves when the pin info visibility is set
+ */
 const setPinInfo = () => {
   return loadFromLocalStorage('pinInfo')
     .then(data => {

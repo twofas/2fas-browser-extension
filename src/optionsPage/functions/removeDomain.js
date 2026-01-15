@@ -25,6 +25,12 @@ import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
 import TwoFasNotification from '@notification';
 import removeDomainFromDOM from '@optionsPage/functions/removeDomainFromDOM.js';
 
+/**
+ * Handles the domain removal process from excluded list with confirmation modal.
+ *
+ * @param {Event} e - The click event that triggered the removal
+ * @returns {Promise<void>|void}
+ */
 const removeDomain = function (e) {
   e.preventDefault();
   e.stopPropagation();

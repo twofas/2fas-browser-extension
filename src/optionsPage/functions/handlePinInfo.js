@@ -20,6 +20,11 @@
 import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 import S from '@/selectors.js';
 
+/**
+ * Handles dismissal of the pin info overlay and saves the preference to storage.
+ *
+ * @returns {Promise<Object>} A promise that resolves with the updated storage
+ */
 const handlePinInfo = () => {
   const view = document.querySelector(S.optionsPage.pin.info);
   view.classList.add('hidden');

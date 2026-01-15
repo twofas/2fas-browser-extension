@@ -25,6 +25,12 @@ import S from '@/selectors.js';
 import months from '@partials/months.js';
 import disconnectSVG from '@images/page-icons/disconnect.svg';
 
+/**
+ * Generates and renders the list of paired devices in the options page table.
+ *
+ * @param {Array} list - Array of paired device objects to display
+ * @returns {void}
+ */
 const generateDevicesList = list => {
   const tbody = document.querySelector(S.optionsPage.devicesList);
 

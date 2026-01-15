@@ -20,34 +20,42 @@
 import browser from 'webextension-polyfill';
 import setIcon from '@background/functions/setIcon.js';
 import dummyGetLocalStorage from '@background/functions/dummyGetLocalStorage.js';
+import wait from '@partials/wait.js';
 
+/**
+ * Checks if content script is active in a tab and updates the extension icon accordingly.
+ * @param {number} tabId - The ID of the tab to check.
+ * @returns {Promise<void>}
+ */
 const checkTabCS = async tabId => {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  await dummyGetLocalStorage();
-  let tabInfo;
-
   if (!tabId) {
     return;
   }
 
+  await wait(100);
+  await dummyGetLocalStorage();
+
+  let tabInfo;
+
   try {
     tabInfo = await browser.tabs.get(tabId);
-  } catch (e) {
+  } catch {
     return;
   }
 
-  const tabUrl = tabInfo?.url ? tabInfo.url : (tabInfo?.pendingUrl ? tabInfo.pendingUrl : '');
+  const tabUrl = tabInfo?.url ?? tabInfo?.pendingUrl ?? '';
   const extUrl = browser.runtime.getURL('');
-  let urlObj;
 
   if (tabUrl.includes(extUrl)) {
     await setIcon(tabId, false, false);
     return;
   }
 
+  let urlObj;
+
   try {
     urlObj = new URL(tabUrl);
-  } catch (e) {
+  } catch {
     await setIcon(tabId, false, false);
     return;
   }
@@ -60,7 +68,7 @@ const checkTabCS = async tabId => {
   try {
     await browser.tabs.sendMessage(tabId, { action: 'contentScript' });
     await setIcon(tabId);
-  } catch (err) {
+  } catch {
     await setIcon(tabId, false, true);
   }
 };

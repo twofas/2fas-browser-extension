@@ -19,6 +19,12 @@
 
 import qrcode from 'qrcode';
 
+/**
+ * Generates a QR code image as a data URL from a configuration link.
+ *
+ * @param {string} configLink - The configuration URL to encode in the QR code
+ * @returns {Promise<string>} A promise that resolves to the QR code data URL
+ */
 const generateQRCode = configLink => {
   return qrcode.toDataURL(configLink, {
     errorCorrectionLevel: 'H',

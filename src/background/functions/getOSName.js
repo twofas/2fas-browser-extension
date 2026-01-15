@@ -20,6 +20,11 @@
 /* global navigator */
 import browser from 'webextension-polyfill';
 
+/**
+ * Detects and returns the operating system name from the user agent.
+ *
+ * @returns {string} The detected operating system name
+ */
 const getOSName = () => {
   let osName = browser.i18n.getMessage('unknownOS');
 

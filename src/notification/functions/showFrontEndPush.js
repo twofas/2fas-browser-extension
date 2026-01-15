@@ -19,6 +19,13 @@
 
 import notification from '@/content/functions/notification.js';
 
+/**
+ * Displays a front-end notification in the current page context.
+ *
+ * @param {Object} notificationObject - Object containing Title and Message properties
+ * @param {number} timeout - Duration in milliseconds before the notification auto-dismisses
+ * @returns {Promise<void>} A promise that resolves when the notification is shown
+ */
 const showFrontEndPush = (notificationObject, timeout) => {
   const notifObj = {
     title: notificationObject.Title,

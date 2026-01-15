@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Switches the install page view from pairing to configuration complete state.
+ *
+ * @returns {void}
+ */
 const configurationComplete = () => {
   document.querySelector(S.installPage.newDevice).classList.add('hidden');
   document.querySelector(S.installPage.configured).classList.remove('hidden');

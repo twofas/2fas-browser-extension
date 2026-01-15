@@ -19,6 +19,12 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Shows the domain exclusion modal dialog and focuses the input field.
+ *
+ * @param {Event} e - The click event that triggered the modal
+ * @returns {void}
+ */
 const showDomainModal = e => {
   e.preventDefault();
   e.stopPropagation();

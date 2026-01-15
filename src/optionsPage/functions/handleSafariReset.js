@@ -25,6 +25,11 @@ import clearLocalStorage from '@localStorage/clearLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
 import delay from '@partials/delay.js';
 
+/**
+ * Handles the Safari storage reset action by showing a confirmation modal and clearing storage.
+ *
+ * @returns {void}
+ */
 const handleSafariReset = () => {
   showConfirmModal(
     browser.i18n.getMessage('modalSafariResetHeader'),

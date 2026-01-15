@@ -22,6 +22,11 @@ import browser from 'webextension-polyfill';
 import storeLog from './storeLog.js';
 import TwoFasNotification from '../notification/index.js';
 
+/**
+ * Opens the browser's keyboard shortcut edit page.
+ * @param {Event} e - The click event
+ * @returns {Promise<void>|void}
+ */
 const openShortcutEdit = function (e) {
   e.preventDefault();
   e.stopPropagation();

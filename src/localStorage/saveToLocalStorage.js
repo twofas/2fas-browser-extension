@@ -19,6 +19,12 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Saves data to browser local storage and merges it with an optional storage object.
+ * @param {Object} data - The data to save to storage
+ * @param {Object} [storageObj={}] - Optional object to merge the saved data into
+ * @returns {Promise<Object>} Promise resolving to the merged storage object
+ */
 const saveToLocalStorage = (data, storageObj = {}) => {
   return browser.storage.local.set(data)
     .then(() => Object.assign(storageObj, data))

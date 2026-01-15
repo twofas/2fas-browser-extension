@@ -19,6 +19,11 @@
 
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 
+/**
+ * Performs a dummy storage read to wake up the extension service worker.
+ *
+ * @returns {Promise<void>} A promise that resolves after reading storage
+ */
 const dummyGetLocalStorage = () => {
   return loadFromLocalStorage('extensionID')
     .then(storage => {

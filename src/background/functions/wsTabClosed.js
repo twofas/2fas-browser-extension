@@ -19,6 +19,14 @@
 
 import closeWSChannel from '@background/functions/closeWSChannel.js';
 
+/**
+ * Handles tab close event and closes WebSocket channel if the associated tab was closed.
+ *
+ * @param {number} tabIDChanged - The ID of the tab that was closed
+ * @param {number} tabIDws - The ID of the tab associated with the WebSocket
+ * @param {Object} channel - The WebSocket channel object
+ * @param {number} timeoutID - The timeout ID to clear
+ */
 const wsTabClosed = (tabIDChanged, tabIDws, channel, timeoutID) => {
   if (tabIDChanged === tabIDws) {
     clearTimeout(timeoutID);

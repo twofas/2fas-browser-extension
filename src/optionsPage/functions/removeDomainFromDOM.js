@@ -20,6 +20,12 @@
 import generateEmptyDomainRow from '@optionsPage/functions/generateEmptyDomainRow.js';
 import S from '@/selectors.js';
 
+/**
+ * Removes a domain row from the DOM and shows empty state if no domains remain.
+ *
+ * @param {string} domain - The domain name to remove from the list
+ * @returns {boolean} Always returns true after removal
+ */
 const removeDomainFromDOM = domain => {
   const tr = document.querySelector(`tr[data-domain="${domain}"]`);
 

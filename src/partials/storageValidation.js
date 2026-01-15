@@ -19,27 +19,30 @@
 
 import config from '../config.js';
 import TwoFasNotification from '../notification/index.js';
+import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
 
-const storageValidation = storage => {
-  return new Promise((resolve, reject) => {
-    if (
-      !storage.keys ||
-      !storage?.keys?.publicKey ||
-      !storage?.keys?.privateKey ||
-      !storage?.extensionID
-    ) {
-      if (storage?.attempt && storage?.attempt > 5) {
-        TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
-        return reject(new TypeError('Too many attempts'));
-      }
+/**
+ * Validates that storage contains required keys and extension ID
+ * @param {Object} storage - Storage object to validate
+ * @returns {Promise<void>} Resolves if valid, rejects with TypeError if invalid
+ */
+const storageValidation = async storage => {
+  const hasValidKeys = storage?.keys?.publicKey && storage?.keys?.privateKey;
+  const hasExtensionID = Boolean(storage?.extensionID);
 
-      TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
-      return reject(new TypeError('Storage corrupted'));
+  if (!hasValidKeys || !hasExtensionID) {
+    if (storage?.attempt > 5) {
+      TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+      throw new TypeError('Too many attempts');
     }
 
-    // @TODO: Future reset attempts?
-    return resolve();
-  });
+    TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
+    throw new TypeError('Storage corrupted');
+  }
+
+  if (storage?.attempt > 0) {
+    await saveToLocalStorage({ attempt: 0 });
+  }
 };
 
 export default storageValidation;

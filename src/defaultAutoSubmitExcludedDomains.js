@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Default list of domains excluded from auto-submit functionality.
+ * @type {string[]}
+ */
 const defaultAutoSubmitExcludedDomains = [];
 
 export default defaultAutoSubmitExcludedDomains;

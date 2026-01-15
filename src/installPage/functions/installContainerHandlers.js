@@ -21,6 +21,14 @@
 import S from '@/selectors.js';
 import setQRCode from '@installPage/functions/setQRCode.js';
 
+/**
+ * Sets up click handlers for toggling between app download and QR code views.
+ *
+ * @param {Object} channel - WebSocket channel object with ws property and connect method
+ * @param {string} imageURL - Data URL of the QR code image
+ * @param {string} extensionID - Unique identifier of the extension instance
+ * @returns {void}
+ */
 const installContainerHandlers = (channel, imageURL, extensionID) => {
   const app = document.querySelector(S.installPage.container.app);
   const qr = document.querySelector(S.installPage.container.qr);

@@ -23,6 +23,12 @@ import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 
+/**
+ * Updates the browser extension registration with the 2FAS API when version or browser info changes.
+ *
+ * @param {Object} browserInfo - Object containing browser name, version, and OS information
+ * @returns {Promise<void>} A promise that resolves when the update is complete
+ */
 const updateBrowserExtension = async browserInfo => {
   let data;
 

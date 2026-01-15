@@ -24,6 +24,12 @@ import S from '@/selectors.js';
 import trashSVG from '@images/page-icons/trash.svg';
 import removeDomain from '@optionsPage/functions/removeDomain.js';
 
+/**
+ * Generates and renders the list of excluded domains in the auto-submit settings table.
+ *
+ * @param {Array} list - Array of domain strings to display
+ * @returns {void}
+ */
 const generateDomainsList = list => {
   if (!list) {
     list = [];

@@ -19,6 +19,16 @@
 
 import closeWSChannel from '@background/functions/closeWSChannel.js';
 
+/**
+ * Handles tab URL change event and closes WebSocket channel if the associated tab navigated.
+ *
+ * @param {number} tabIDChanged - The ID of the tab that changed
+ * @param {Object} changeInfo - The change information object from the browser
+ * @param {number} tabIDws - The ID of the tab associated with the WebSocket
+ * @param {Object} channel - The WebSocket channel object
+ * @param {number} timeoutID - The timeout ID to clear
+ * @returns {boolean|void} Returns false if change is not relevant
+ */
 const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID) => {
   if (!changeInfo.url || !changeInfo.status === 'complete' || !changeInfo.status === 'loading') {
     return false;

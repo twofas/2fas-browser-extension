@@ -19,6 +19,10 @@
 
 import ignoreButtonSelectors from './ignoreButtonSelectors.js';
 
+/**
+ * Generates CSS selectors for primary form submit buttons.
+ * @returns {string} Comma-separated CSS selector string
+ */
 const formSubmitSelectors = () => {
   let buttonSelectors = [
     'button[type="submit"]',

@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Array of multilingual button text strings for identifying submit/verify buttons.
+ * @type {string[]}
+ */
 const buttonsTexts = [
   // English
   'verify',

@@ -20,6 +20,12 @@
 import generateEmptyDeviceRow from '@optionsPage/functions/generateEmptyDeviceRow.js';
 import S from '@/selectors.js';
 
+/**
+ * Removes a device row from the DOM and shows empty state if no devices remain.
+ *
+ * @param {string} deviceID - The unique identifier of the device to remove
+ * @returns {boolean} Always returns true after removal
+ */
 const removeDeviceFromDOM = deviceID => {
   const tr = document.querySelector(`tr[data-device-id="${deviceID}"]`);
 

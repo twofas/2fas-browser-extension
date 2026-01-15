@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Generates and sets the platform-specific shortcut settings link on the edit button.
+ *
+ * @returns {void}
+ */
 const generateShortcutLink = () => {
   const editBtn = document.querySelector(S.optionsPage.shortcut.edit);
   let link;

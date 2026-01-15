@@ -19,6 +19,12 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Handles click on the hamburger menu icon to toggle mobile menu visibility.
+ *
+ * @param {Event} e - The click event
+ * @returns {void}
+ */
 const handleHamburgerClick = e => {
   e.preventDefault();
   e.stopPropagation();

@@ -21,6 +21,11 @@ import S from '@/selectors.js';
 import handleAutoSubmitChange from '@optionsPage/functions/handleAutoSubmitChange.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes the auto-submit toggle switch with stored value and attaches change handler.
+ *
+ * @returns {Promise<void>} A promise that resolves when the toggle is initialized
+ */
 const setAutoSubmitSwitch = () => {
   return loadFromLocalStorage(['autoSubmitEnabled'])
     .then(storage => {

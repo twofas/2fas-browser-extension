@@ -22,6 +22,11 @@ import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 import setIcon from '@/background/functions/setIcon.js';
 
+/**
+ * Initializes the icon select dropdown with available icon options and handles icon changes.
+ *
+ * @returns {Promise<void>} A promise that resolves when the dropdown is initialized
+ */
 const setIconSelect = async () => {
   const { extIcon } = await loadFromLocalStorage(['extIcon']);
 

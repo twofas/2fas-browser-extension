@@ -19,6 +19,13 @@
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Clears the 2FAS data attribute from the input element and removes stored input reference.
+ *
+ * @param {HTMLElement} inputElement - The input element to clear
+ * @param {number} tabID - The browser tab ID
+ * @returns {Promise<boolean|void>} Promise that resolves when cleanup is complete
+ */
 const clearAfterInputToken = (inputElement, tabID) => {
   // CLEAR INPUT
   if (inputElement) {

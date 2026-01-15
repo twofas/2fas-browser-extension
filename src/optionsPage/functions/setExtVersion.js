@@ -20,6 +20,11 @@
 import browser from 'webextension-polyfill';
 import S from '@/selectors.js';
 
+/**
+ * Displays the current extension version in all version elements on the page.
+ *
+ * @returns {void}
+ */
 const setExtVersion = () => {
   const version = browser.runtime.getManifest().version;
 

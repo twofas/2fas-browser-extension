@@ -19,6 +19,11 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Opens the extension install page in a new tab for device pairing.
+ *
+ * @returns {Promise<Object>} A promise that resolves to the created tab object
+ */
 const openInstallPage = () => {
   return browser.tabs.create({ url: 'installPage/installPage.html' });
 };

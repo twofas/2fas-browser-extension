@@ -25,6 +25,11 @@ import handlePushChange from '@optionsPage/functions/handlePushChange.js';
 import handleSafariReset from '@optionsPage/functions/handleSafariReset.js';
 import sendTestNotification from '@optionsPage/functions/sendTestNotification.js';
 
+/**
+ * Sets up event listeners for all advanced settings controls on the options page.
+ *
+ * @returns {void}
+ */
 const setAdvanced = () => {
   const advancedHeader = document.querySelector(S.optionsPage.advanced.header);
   advancedHeader.addEventListener('click', handleAdvancedHeaderClick);

@@ -19,6 +19,12 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Handles click on menu navigation links to switch between options page sections.
+ *
+ * @param {Event} e - The click event
+ * @returns {void}
+ */
 const handleMenuLink = function (e) {
   e.preventDefault();
   e.stopPropagation();

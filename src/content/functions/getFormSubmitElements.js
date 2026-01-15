@@ -22,6 +22,11 @@ import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 
+/**
+ * Finds and returns submit button elements in the current document.
+ *
+ * @returns {HTMLElement[]} Array of submit button elements
+ */
 const getFormSubmitElements = () => {
   let submits = Array.from(
     document.querySelectorAll(formSubmitSelectors())

@@ -19,6 +19,11 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Hides the confirmation modal dialog and clears its content after transition.
+ *
+ * @returns {void}
+ */
 const hideConfirmModal = () => {
   const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
   const headerEl = document.querySelector(S.optionsPage.confirmModal.header);

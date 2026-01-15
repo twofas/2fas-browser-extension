@@ -23,6 +23,12 @@ import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import TwoFasNotification from '@notification/index.js';
 import sendMessageToTab from '@partials/sendMessageToTab.js';
 
+/**
+ * Sends a notification info message to the content script if native push is enabled.
+ *
+ * @param {Object} tab - The browser tab object
+ * @returns {Promise<void>} A promise that resolves when the notification info is sent
+ */
 const sendNotificationInfo = tab => {
   return loadFromLocalStorage(['nativePush'])
     .then(storage => {

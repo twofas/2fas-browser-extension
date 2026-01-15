@@ -20,6 +20,12 @@
 import browser from 'webextension-polyfill';
 import { createElement, createTextElement } from '@partials/DOMElements';
 
+/**
+ * Generates and appends an empty state row when no domains are excluded.
+ *
+ * @param {HTMLTableSectionElement} tbody - The table body element to append the row to
+ * @returns {void}
+ */
 const generateEmptyDomainRow = tbody => {
   let t = {
     tr: null,
