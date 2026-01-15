@@ -25,28 +25,36 @@ import browserActionConfigured from '@background/functions/browserActionConfigur
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@notification/index.js';
 
-const browserAction = tab => {
-  if (!tab || !tab?.url) {
+/**
+ * Handles browser action click to initiate 2FA token request.
+ *
+ * @param {Object} tab - The browser tab object
+ * @returns {Promise<void>} A promise that resolves when the action is handled
+ */
+const browserAction = async tab => {
+  if (!tab || !tab.url) {
     console.warn(config.Texts.Info.BrowserActionWithoutTab.Message);
     return TwoFasNotification.show(config.Texts.Info.BrowserActionWithoutTab, tab?.id);
   }
 
-  return loadFromLocalStorage(null)
-    .then(storage => {
-      if (!storage.configured) {
-        const extInstallPageURL = browser.runtime.getURL('/installPage/installPage.html');
+  try {
+    const storage = await loadFromLocalStorage(null);
 
-        if (tab.url === extInstallPageURL) {
-          console.warn(config.Texts.Error.ConfigFirst.Message);
-          return TwoFasNotification.show(config.Texts.Error.ConfigFirst, tab?.id);
-        }
+    if (!storage.configured) {
+      const extInstallPageURL = browser.runtime.getURL('/installPage/installPage.html');
 
-        return openInstallPage();
-      } else {
-        return browserActionConfigured(tab, storage);
+      if (tab.url === extInstallPageURL) {
+        console.warn(config.Texts.Error.ConfigFirst.Message);
+        return TwoFasNotification.show(config.Texts.Error.ConfigFirst, tab.id);
       }
-    })
-    .catch(err => storeLog('error', 4, err, tab?.url || 'browserAction'));
+
+      return openInstallPage();
+    }
+
+    return browserActionConfigured(tab, storage);
+  } catch (err) {
+    return storeLog('error', 4, err, tab.url);
+  }
 };
 
 export default browserAction;

@@ -19,33 +19,40 @@
 
 import browser from 'webextension-polyfill';
 
+/**
+ * Mapping of element types to their i18n attribute targets.
+ */
+const ELEMENT_ATTRIBUTE_MAP = {
+  img: 'alt',
+  input: 'placeholder',
+  textarea: 'placeholder'
+};
+
+/**
+ * Applies internationalized text to DOM elements with data-i18n attribute.
+ * @returns {void}
+ */
 const i18n = () => {
-  let elements = document.querySelectorAll('[data-i18n]');
+  const elements = document.querySelectorAll('[data-i18n]');
 
   elements.forEach(element => {
-    let type = element.localName.toLowerCase();
-    let i18nID = element.getAttribute('data-i18n');
-    let m = browser.i18n.getMessage(i18nID);
+    const i18nID = element.getAttribute('data-i18n');
+    const message = browser.i18n.getMessage(i18nID);
 
-    if (!m) {
+    if (!message) {
       console.log(`i18n: ${i18nID} not found`);
-      return false;
+      return;
     }
 
-    if (type === 'img') {
-      element.setAttribute('alt', m);
-    } else if (type === 'input') {
-      element.setAttribute('placeholder', m);
+    const tagName = element.localName;
+    const targetAttribute = ELEMENT_ATTRIBUTE_MAP[tagName];
+
+    if (targetAttribute) {
+      element.setAttribute(targetAttribute, message);
     } else {
-      element.innerText = m;
+      element.textContent = message;
     }
-
-    type = null;
-    i18nID = null;
-    m = null;
   });
-
-  elements = null;
 };
 
 export default i18n;

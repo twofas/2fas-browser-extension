@@ -22,10 +22,11 @@ import qrTimeout from '@installPage/functions/qrTimeout.js';
 
 /**
  * Sets QR code image and manual extension ID, then initializes the QR timeout handler.
+ *
  * @param {string} imageURL - The QR code image data URL
  * @param {Object} channel - WebSocket channel object with connect method
  * @param {string} extensionID - The extension ID to display for manual pairing
- * @returns {number} Timeout ID from qrTimeout
+ * @returns {Function} Cleanup function to clear timeout and remove event listeners
  */
 const setQRCode = (imageURL, channel, extensionID) => {
   const QRImgs = document.querySelectorAll(S.installPage.qr.imgs);

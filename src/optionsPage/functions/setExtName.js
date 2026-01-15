@@ -19,9 +19,26 @@
 
 import S from '@/selectors.js';
 
+/**
+ * Sets the extension name value in the input field.
+ *
+ * @param {string} extName - The extension name to display
+ * @returns {boolean} True if successfully set, false otherwise
+ */
 const setExtName = extName => {
   const extNameEl = document.querySelector(S.extName.input);
-  extNameEl.value = extName;
+
+  if (!extNameEl) {
+    return false;
+  }
+
+  if (typeof extName !== 'string') {
+    extNameEl.value = '';
+    return false;
+  }
+
+  extNameEl.value = extName.trim();
+  return true;
 };
 
 export default setExtName;

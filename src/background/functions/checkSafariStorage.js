@@ -22,24 +22,31 @@ import generateDefaultStorage from '@background/functions/generateDefaultStorage
 import openInstallPage from '@background/functions/openInstallPage.js';
 import storeLog from '@partials/storeLog.js';
 
-const checkSafariStorage = browserInfo => {
-  return loadFromLocalStorage(null)
-    .then(storage => {
-      if (
-        !storage.browserInfo ||
-        !storage.keys ||
-        !storage?.keys?.publicKey ||
-        !storage?.keys?.privateKey ||
-        !storage?.extensionID
-      ) {
-        return generateDefaultStorage(browserInfo)
-          .then(() => openInstallPage())
-          .catch(err => storeLog('error', 9, err, 'onInstalled'));
-      }
+/**
+ * Checks if Safari storage has all required data and regenerates it if missing.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>}
+ */
+const checkSafariStorage = async browserInfo => {
+  try {
+    const storage = await loadFromLocalStorage(null);
 
-      return false;
-    })
-    .catch(err => storeLog('error', 35, err, 'checkSafariStorage'));
+    const hasValidStorage =
+      storage?.browserInfo &&
+      storage?.keys?.publicKey &&
+      storage?.keys?.privateKey &&
+      storage?.extensionID;
+
+    if (hasValidStorage) {
+      return;
+    }
+
+    await generateDefaultStorage(browserInfo);
+    await openInstallPage();
+  } catch (err) {
+    storeLog('error', 35, err, 'checkSafariStorage');
+  }
 };
 
 export default checkSafariStorage;

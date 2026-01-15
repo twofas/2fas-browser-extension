@@ -17,8 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global WebSocket */
+
+/**
+ * Closes a WebSocket channel if the connection is open or still connecting.
+ *
+ * @param {Object} channel - The channel object containing the WebSocket instance
+ */
 const closeWSChannel = channel => {
-  if (channel.ws.readyState === 1) {
+  if (!channel?.ws) {
+    return;
+  }
+
+  const { readyState } = channel.ws;
+
+  if (readyState === WebSocket.CONNECTING || readyState === WebSocket.OPEN) {
     channel.ws.close();
   }
 };
