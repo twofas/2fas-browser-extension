@@ -115,7 +115,17 @@ const config = {
         return {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
           Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
+        };
+      },
+      CrossDomain: (currentDomain, topDomain) => {
+        if (topDomain) {
+          return (browser.i18n.getMessage('warningCrossDomainMessage') || t.warningCrossDomainMessage)
+            .replace('CURRENT_DOMAIN', currentDomain)
+            .replace('TOP_DOMAIN', topDomain);
         }
+
+        return (browser.i18n.getMessage('warningCrossDomainNoAccessMessage') || t.warningCrossDomainNoAccessMessage)
+          .replace('CURRENT_DOMAIN', currentDomain);
       }
     },
     Success: {

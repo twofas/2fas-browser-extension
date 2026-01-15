@@ -18,6 +18,7 @@
 //
 
 export { default as addFormElementsNumber } from './addFormElementsNumber.js';
+export { default as checkCrossDomain } from './checkCrossDomain.js';
 export { default as clearAfterInputToken } from './clearAfterInputToken.js';
 export { default as clearFormElementsNumber } from './clearFormElementsNumber.js';
 export { default as clickSubmit } from './clickSubmit.js';

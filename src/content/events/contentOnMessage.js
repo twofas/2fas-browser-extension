@@ -19,7 +19,7 @@
 
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification } from '@content/functions';
+import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -81,15 +81,37 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
           tokenInput = getTokenInput(lastFocusedInput);
         }
 
-        if (!lastFocusedInput || !tokenInput) {
-          if (!isInFrame()) {
+        if (!tokenInput) {
+          if (isInFrame()) {
+            sendResponse({ status: 'omitted' });
+            return;
+          }
+
+          if (!lastFocusedInput) {
             tokenNotification(request.token);
           }
 
           sendResponse({ status: 'ok' });
-        } else {
-          sendResponse(inputToken(request, tokenInput, tabData?.url));
+          return;
         }
+
+        const crossDomainCheck = checkCrossDomain();
+
+        if (crossDomainCheck.isCrossDomain) {
+          const confirmMessage = config.Texts.Warning.CrossDomain(
+            crossDomainCheck.currentHostname,
+            crossDomainCheck.topHostname
+          );
+
+          const userConfirmed = window.confirm(confirmMessage);
+
+          if (!userConfirmed) {
+            sendResponse({ status: 'cancelled' });
+            return;
+          }
+        }
+
+        sendResponse(inputToken(request, tokenInput, tabData?.url));
 
         sessionTabData = null;
       })();
@@ -116,6 +138,18 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'contentScript': {
+      sendResponse({ status: 'ok' });
+      break;
+    }
+
+    case 'showTokenNotification': {
+      if (isInFrame()) {
+        sendResponse({ status: 'omitted' });
+        break;
+      }
+
+      loadFonts();
+      tokenNotification(request.token);
       sendResponse({ status: 'ok' });
       break;
     }

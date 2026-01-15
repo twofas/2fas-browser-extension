@@ -41,12 +41,16 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
     );
   }
 
+  const tabData = sessionData[`tabData-${tabId}`] || {};
+
   if (properElements.length > 0) {
-    const tabData = sessionData[`tabData-${tabId}`] || {};
     tabData.lastFocusedInput = properElements[0].id;
     await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
     return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
   }
+
+  delete tabData.lastFocusedInput;
+  await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
 
   return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);
 };

@@ -17,19 +17,36 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import browser from 'webextension-polyfill';
-
 /**
- * Clears the 2FAS data attribute from the input element and removes stored input reference.
- * @param {HTMLElement} inputElement - The input element to clear.
- * @returns {Promise<void>} Promise that resolves when cleanup is complete.
+ * Checks if the current frame is a cross-domain iframe.
+ * @returns {Object} Object with isCrossDomain flag and domain info.
  */
-const clearAfterInputToken = inputElement => {
-  if (inputElement && typeof inputElement?.removeAttribute === 'function') {
-    inputElement.removeAttribute('data-twofas-input');
+const checkCrossDomain = () => {
+  const result = {
+    isCrossDomain: false,
+    currentHostname: '',
+    topHostname: ''
+  };
+
+  try {
+    result.currentHostname = new URL(window.location.href).hostname;
+  } catch {
+    return result;
   }
 
-  return browser.runtime.sendMessage({ action: 'clearLastFocusedInput' }).catch(() => {});
+  if (window.self === window.top) {
+    return result;
+  }
+
+  result.isCrossDomain = true;
+
+  try {
+    result.topHostname = new URL(window.top.location.href).hostname;
+  } catch {
+    // Cannot access top.location due to cross-domain security
+  }
+
+  return result;
 };
 
-export default clearAfterInputToken;
+export default checkCrossDomain;

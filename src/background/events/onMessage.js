@@ -22,7 +22,7 @@ import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@notification/index.js';
-import { loadFromSessionStorage } from '@sessionStorage/index.js';
+import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 
 /**
  * Handles messages from content scripts and other extension pages.
@@ -106,6 +106,35 @@ const onMessage = (request, sender, sendResponse) => {
         }
 
         TwoFasNotification.show(request.data, request.tabID)
+          .then(() => {
+            sendResponse({ status: 'ok' });
+          })
+          .catch(() => {
+            sendResponse({ status: 'error' });
+          });
+
+        break;
+      }
+
+      case 'clearLastFocusedInput': {
+        if (!sender?.tab?.id) {
+          sendResponse({ status: 'error', message: 'No tabID' });
+          return true;
+        }
+
+        const tabId = sender.tab.id;
+
+        loadFromSessionStorage([`tabData-${tabId}`])
+          .then(sessionData => {
+            const tabData = sessionData[`tabData-${tabId}`] || {};
+
+            if (tabData.lastFocusedInput) {
+              delete tabData.lastFocusedInput;
+              return saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
+            }
+
+            return true;
+          })
           .then(() => {
             sendResponse({ status: 'ok' });
           })

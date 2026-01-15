@@ -120,7 +120,7 @@ const inputToken = async (request, inputElement, siteURL) => {
     clickSubmit(inputElement, siteURL);
   }
 
-  clearAfterInputToken(inputElement, tab?.id);
+  clearAfterInputToken(inputElement);
 
   return { status: 'completed', url: siteURL };
 };

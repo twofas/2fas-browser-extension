@@ -25,7 +25,7 @@ import Crypt from '@background/functions/Crypt.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
-import sendMessageToTab from '@partials/sendMessageToTab.js';
+import sendMessageToAllFrames from '@background/functions/sendMessageToAllFrames.js';
 
 /**
  * Checks if an error indicates a missing or invalid tab.
@@ -103,7 +103,14 @@ const handleLoginRequest = async (tabID, data) => {
     const token = await decryptToken(data.token, storage.keys.privateKey);
     const loginData = { ...data, token };
 
-    await sendMessageToTab(tabID, { action: 'inputToken', ...loginData });
+    const responses = await sendMessageToAllFrames(tabID, { action: 'inputToken', ...loginData });
+
+    const anyCompleted = Array.isArray(responses) && responses.some(res => res?.status === 'completed');
+
+    if (!anyCompleted) {
+      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token }).catch(() => {});
+    }
+
     await closeRequest(tabID, data.token_request_id);
   } catch (err) {
     if (isTabError(err)) {

@@ -60,5 +60,8 @@
   "infoCopiedToClipboardTitle": "Successfully copied to clipboard",
   "infoCopiedToClipboardMessage": "You can now paste the token into the input field",
   "infoTestTitle": "2FAS Notification",
-  "infoTestMessage": "Hi! This is just a test"
+  "infoTestMessage": "Hi! This is just a test",
+  "warningCrossDomainTitle": "Cross-domain autofill",
+  "warningCrossDomainMessage": "This form is on a different domain (CURRENT_DOMAIN) than the main page (TOP_DOMAIN). Do you want to continue with autofill?",
+  "warningCrossDomainNoAccessMessage": "This form is on CURRENT_DOMAIN which appears to be in a cross-domain iframe. Do you want to continue with autofill?"
 }
