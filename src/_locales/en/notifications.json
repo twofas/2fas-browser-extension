@@ -35,6 +35,8 @@
   "errorStorageIntegrityMessage": "Please reinstall the browser extension or contact 2FAS Community Support on Discord",
   "errorOldRequestTitle": "Outdated request",
   "errorOldRequestMessage": "It seems like you're responding to an outdated request that can no longer be executed",
+  "errorDeviceUnpairedTitle": "Device unpaired",
+  "errorDeviceUnpairedMessage": "The device was unpaired during the request. Please pair your device again.",
   "warningTooSoonTitle": "Wait a moment",
   "warningTooSoonMessage": "Please wait DIFF seconds before sending another request.",
   "successPushSentTitle": "Push sent",

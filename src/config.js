@@ -104,6 +104,10 @@ const config = {
       OldRequest: {
         Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
         Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
+      },
+      DeviceUnpaired: {
+        Title: browser.i18n.getMessage('errorDeviceUnpairedTitle') || t.errorDeviceUnpairedTitle,
+        Message: browser.i18n.getMessage('errorDeviceUnpairedMessage') || t.errorDeviceUnpairedMessage
       }
     },
     Warning: {
