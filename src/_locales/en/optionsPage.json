@@ -12,11 +12,11 @@
   "optionsAutoSubmitSwitchHeader": "[EXPERIMENTAL] Auto submit:",
   "optionsAutoSubmitSwitchLabel": "Enable auto submit for 2FA forms",
   "optionsExcludedDomainsHeader": "[EXPERIMENTAL] Auto submit excluded domains:",
-  "optionsRemoveFromExcluded": "Remove from excluded",
+  "optionsRemoveFromExcluded": "Remove from exclusion list",
   "optionsExcludeAnotherDomain": "Exclude domain",
   "optionsExcludeImportDefault": "Import default list",
   "optionsDomainModalHeader": "Exclude new domain",
-  "optionsDomainModalText": "With the form below, you can add your domain to exclusion list, ensuring it won't be subjected to the auto submit mechanism.",
+  "optionsDomainModalText": "You can add your domain to the exclusion list using the form below, ensuring it won't be subjected to the auto-submit mechanism.",
   "optionsDomainInputPlaceholder": "Type in domain to exclude...",
   "optionsLogsLabel": "Approve 2FAS Browser Extension logs",
   "optionsLogsDesc": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
@@ -40,7 +40,7 @@
   "optionsSafariReset": "Reset Browser Extension",
   "optionsDomainRequired": "Domain is required",
   "optionsDomainTooLong": "Domain is too long",
-  "optionsDomainIncorrect": "Domain is not correct",
-  "optionsDomainExists": "Domain exists on excluded list",
+  "optionsDomainIncorrect": "Domain is incorrect",
+  "optionsDomainExists": "Domain exists on the exclusion list",
   "optionsIconDesc": "Choose an icon for the 2FAS Browser Extension to personalize its appearance in your browser."
 }
