@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global CustomEvent */
+/* global CustomEvent, WebSocket */
 import S from '@/selectors.js';
 import setQRCode from '@installPage/functions/setQRCode.js';
 
