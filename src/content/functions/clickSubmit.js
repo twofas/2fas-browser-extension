@@ -22,6 +22,7 @@ import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
 import delay from '@partials/delay.js';
 import { isValidButtonText } from '@partials/isValidButtonText.js';
+import { closestDeep } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Finds the index of the value closest to the goal in an array.
@@ -103,12 +104,13 @@ const getElementNumber = element => {
 
 /**
  * Tries to find and click a submit button within the input's form.
+ * Traverses shadowRoots to find the form element.
  *
  * @param {HTMLElement} inputElement - The input element
  * @returns {boolean} True if a form submit button was found and clicked
  */
 const tryFormSubmit = inputElement => {
-  const form = inputElement?.closest('form');
+  const form = closestDeep(inputElement, 'form');
 
   if (!form) {
     return false;

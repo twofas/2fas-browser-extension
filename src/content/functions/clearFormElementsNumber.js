@@ -17,13 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
+
 /**
  * Removes the data-twofas-element-number attribute from all elements in the document.
+ * Searches both the main document and any shadowRoots.
  *
  * @returns {void}
  */
 const clearFormElementsNumber = () => {
-  const elements = Array.from(document.querySelectorAll('*[data-twofas-element-number]'));
+  const elements = querySelectorAllDeep('*[data-twofas-element-number]');
+
   elements.forEach(element => {
     if (typeof element?.removeAttribute === 'function') {
       element.removeAttribute('data-twofas-element-number');

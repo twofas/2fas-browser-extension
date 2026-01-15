@@ -21,9 +21,11 @@ import inputsSelectors from '@partials/inputsSelectors.js';
 import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
+import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
 
 /**
- * Finds and returns all form input elements and submit buttons in the current document.
+ * Finds and returns all form input elements and submit buttons in the document.
+ * Searches both the main document and any shadowRoots.
  *
  * @returns {HTMLElement[]} Array of input and submit elements
  */
@@ -32,17 +34,17 @@ const getFormElements = () => {
   let submitsSelector = formSubmitSelectors();
   let requiresTextCheck = false;
 
-  if (document.querySelectorAll(submitsSelector).length === 0) {
+  if (querySelectorAllDeep(submitsSelector).length === 0) {
     submitsSelector = formSubmitSecondSelectors();
   }
 
-  if (document.querySelectorAll(submitsSelector).length === 0) {
+  if (querySelectorAllDeep(submitsSelector).length === 0) {
     submitsSelector = 'button';
     requiresTextCheck = true;
   }
 
   const query = `${inputsSelector},${submitsSelector}`;
-  let elements = Array.from(document.querySelectorAll(query));
+  let elements = querySelectorAllDeep(query);
 
   if (requiresTextCheck) {
     elements = elements.filter(element => {

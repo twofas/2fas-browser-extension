@@ -22,6 +22,7 @@ import runTasksWithDelay from '@partials/runTasksWithDelay.js';
 import getTabData from '@content/functions/getTabData.js';
 import clickSubmit from '@content/functions/clickSubmit.js';
 import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
+import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
 const KEYSTROKE_DELAY_MS = 150;
 
@@ -95,7 +96,7 @@ const inputToken = async (request, inputElement, siteURL) => {
     tasks.push(() => {
       const digit = request.token[i];
       const keyCode = 48 + Number(digit);
-      const activeElement = document.activeElement;
+      const activeElement = getDeepActiveElement();
 
       if (activeElement !== inputElement) {
         activeElement.value = '';

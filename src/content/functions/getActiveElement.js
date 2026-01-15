@@ -21,14 +21,16 @@ import { v4 as uuidv4 } from 'uuid';
 import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.js';
 import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
 import getFormElements from '@content/functions/getFormElements.js';
+import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Gets the currently focused element and marks it with a unique identifier.
+ * Traverses shadowRoots to find deeply nested focused elements.
  *
  * @returns {Object} Status object with nodeName and input ID (null if not an input/textarea)
  */
 const getActiveElement = () => {
-  const activeElement = document.activeElement;
+  const activeElement = getDeepActiveElement();
   let nodeName;
 
   if (activeElement) {
