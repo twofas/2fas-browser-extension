@@ -22,6 +22,7 @@ import browser from 'webextension-polyfill';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import openInstallPage from '@background/functions/openInstallPage.js';
 import browserActionConfigured from '@background/functions/browserActionConfigured.js';
+import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@notification/index.js';
 
@@ -38,7 +39,7 @@ const browserAction = async tab => {
   }
 
   try {
-    const storage = await loadFromLocalStorage(null);
+    let storage = await loadFromLocalStorage(null);
 
     if (!storage.configured) {
       const extInstallPageURL = browser.runtime.getURL('/installPage/installPage.html');
@@ -48,6 +49,13 @@ const browserAction = async tab => {
         return TwoFasNotification.show(config.Texts.Error.ConfigFirst, tab.id);
       }
 
+      return openInstallPage();
+    }
+
+    const syncResult = await syncDevicesWithAPI(storage);
+    storage = syncResult.storage;
+
+    if (!syncResult.hasDevices) {
       return openInstallPage();
     }
 
