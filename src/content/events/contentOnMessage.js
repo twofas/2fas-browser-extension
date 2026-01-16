@@ -36,7 +36,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     return true;
   }
 
-  if (request?.action === 'contentScript' || request?.action === 'notification') {
+  if (request?.action === 'contentScript') {
     if (isInFrame()) {
       sendResponse({ status: 'omitted' });
       return true;
@@ -131,6 +131,11 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'notification': {
+      if (isInFrame()) {
+        sendResponse({ status: 'omitted' });
+        break;
+      }
+
       loadFonts();
       notification(request);
       sendResponse({ status: 'ok' });
