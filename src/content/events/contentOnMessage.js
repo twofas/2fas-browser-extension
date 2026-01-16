@@ -111,7 +111,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
           }
         }
 
-        sendResponse(inputToken(request, tokenInput, tabData?.url));
+        sendResponse(await inputToken(request, tokenInput, tabData?.url));
 
         sessionTabData = null;
       })();
