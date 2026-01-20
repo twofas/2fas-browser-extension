@@ -19,11 +19,16 @@
 
 /**
  * Checks if the current script is running inside an iframe.
+ * Handles cross-origin frames in Safari where accessing window.top may throw.
  *
  * @returns {boolean} True if running in a frame, false otherwise
  */
 const isInFrame = () => {
-  return window.self !== window.top;
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
 };
 
 export default isInFrame;

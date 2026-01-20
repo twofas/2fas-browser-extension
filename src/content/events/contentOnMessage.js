@@ -28,16 +28,21 @@ import storeLog from '@partials/storeLog.js';
  * @param {Object} sender - Information about the message sender.
  * @param {Function} sendResponse - Function to send a response.
  * @param {Object} tabData - The tab data from getTabData.
+ * @param {boolean} isTopFrame - Whether this content script is running in the top frame.
  * @return {boolean} Always returns true for async response handling.
  */
-const contentOnMessage = (request, sender, sendResponse, tabData) => {
+const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) => {
   if (!request || !request.action) {
     sendResponse({ status: 'error' });
     return true;
   }
 
-  if (request?.action === 'contentScript') {
-    if (isInFrame()) {
+  if (
+    request?.action === 'contentScript' ||
+    request?.action === 'notification' ||
+    request?.action === 'showTokenNotification'
+  ) {
+    if (!isTopFrame) {
       sendResponse({ status: 'omitted' });
       return true;
     }
@@ -131,11 +136,6 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'notification': {
-      if (isInFrame()) {
-        sendResponse({ status: 'omitted' });
-        break;
-      }
-
       loadFonts();
       notification(request);
       sendResponse({ status: 'ok' });
@@ -148,11 +148,6 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'showTokenNotification': {
-      if (isInFrame()) {
-        sendResponse({ status: 'omitted' });
-        break;
-      }
-
       loadFonts();
       tokenNotification(request.token);
       sendResponse({ status: 'ok' });

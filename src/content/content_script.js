@@ -19,11 +19,15 @@
 
 import './styles/content_script.scss';
 import browser from 'webextension-polyfill';
-import { getTabData, portSetup } from '@content/functions';
+import { getTabData, portSetup, isInFrame } from '@content/functions';
 import contentOnMessage from '@content/events/contentOnMessage.js';
 import storeLog from '@partials/storeLog.js';
 
 let tabData = null;
+let isTopFrame = false;
+let onMessageListener = null;
+
+const LISTENER_KEY = '__2fasMessageListener';
 
 /**
  * Main content script initialization function.
@@ -33,8 +37,18 @@ let tabData = null;
 const contentScriptRun = async () => {
   portSetup();
 
+  isTopFrame = !isInFrame();
+
   if (!browser?.runtime?.id) {
     return false;
+  }
+
+  if (window[LISTENER_KEY]) {
+    try {
+      browser.runtime.onMessage.removeListener(window[LISTENER_KEY]);
+    } catch (e) {}
+
+    window[LISTENER_KEY] = null;
   }
 
   try {
@@ -43,12 +57,28 @@ const contentScriptRun = async () => {
     throw new Error(e);
   }
 
-  const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
+  onMessageListener = (request, sender, sendResponse) => {
+    if (!browser?.runtime?.id) {
+      browser.runtime.onMessage.removeListener(onMessageListener);
+      window[LISTENER_KEY] = null;
+      return;
+    }
+
+    return contentOnMessage(request, sender, sendResponse, tabData, isTopFrame);
+  };
+
   browser.runtime.onMessage.addListener(onMessageListener);
+  window[LISTENER_KEY] = onMessageListener;
 
   window.addEventListener('beforeunload', () => {
-    browser.runtime.onMessage.removeListener(onMessageListener);
+    if (onMessageListener) {
+      browser.runtime.onMessage.removeListener(onMessageListener);
+    }
+
     tabData = null;
+    isTopFrame = false;
+    onMessageListener = null;
+    window[LISTENER_KEY] = null;
   }, { once: true });
 };
 
