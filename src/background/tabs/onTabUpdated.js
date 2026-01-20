@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const SDK = require('../../sdk');
-const checkTabCS = require('../functions/checkTabCS');
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage } from '@localStorage/index.js';
+import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import SDK from '@sdk/index.js';
+import checkTabCS from '@background/functions/checkTabCS.js';
 
+/**
+ * Handles tab update events.
+ * @async
+ * @param {number} tabID - The tab ID.
+ * @param {Object} changeInfo - Information about the tab change.
+ * @return {Promise<boolean|void>}
+ */
 const onTabUpdated = async (tabID, changeInfo) => {
   if (!changeInfo) {
     return false;
@@ -36,29 +44,36 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  let storage;
+  let storage = null;
+  let sessionData = null;
 
   try {
-    storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
+    storage = await loadFromLocalStorage(['extensionID']);
+    sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
+    await storeLog('error', 3, err, sessionData?.[`tabData-${tabID}`]?.url);
+    storage = null;
+    sessionData = null;
+    return false;
   }
 
-  if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].requestID) {
-    await new SDK().close2FARequest(storage.extensionID, storage[`tabData-${tabID}`].requestID, false);
+  if (sessionData?.[`tabData-${tabID}`]?.requestID) {
+    await new SDK().close2FARequest(storage.extensionID, sessionData[`tabData-${tabID}`].requestID, false);
   }
 
-  if (storage[`tabData-${tabID}`]) {
+  if (sessionData?.[`tabData-${tabID}`]) {
     try {
-      await saveToLocalStorage({ [`tabData-${tabID}`]: {} });
-      storage = null;
+      await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, storage[`tabData-${tabID}`]?.url);
+      await storeLog('error', 3, err, sessionData[`tabData-${tabID}`]?.url);
     }
   }
 
+  storage = null;
+  sessionData = null;
+
   return browser.tabs.sendMessage(tabID, { action: 'pageLoadComplete' })
-    .catch(() => {}); // ignore error
+    .catch(() => {});
 };
 
-module.exports = onTabUpdated;
+export default onTabUpdated;

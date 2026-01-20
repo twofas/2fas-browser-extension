@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const showConfirmModal = require('./showConfirmModal');
-const clearLocalStorage = require('../../localStorage/clearLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const delay = require('../../partials/delay');
+import browser from 'webextension-polyfill';
+import config from '@/config.js';
+import TwoFasNotification from '@notification';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import clearLocalStorage from '@localStorage/clearLocalStorage.js';
+import storeLog from '@partials/storeLog.js';
+import delay from '@partials/delay.js';
 
+/**
+ * Handles the Safari storage reset action by showing a confirmation modal and clearing storage.
+ *
+ * @returns {void}
+ */
 const handleSafariReset = () => {
   showConfirmModal(
     browser.i18n.getMessage('modalSafariResetHeader'),
@@ -41,4 +46,4 @@ const handleSafariReset = () => {
   );
 };
 
-module.exports = handleSafariReset;
+export default handleSafariReset;

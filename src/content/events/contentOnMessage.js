@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,19 +17,32 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const { notification, inputToken, getTokenInput, showNotificationInfo, loadFonts, isInFrame, getActiveElement, tokenNotification } = require('../functions');
-const storeLog = require('../../partials/storeLog');
+import browser from 'webextension-polyfill';
+import config from '@/config.js';
+import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain } from '@content/functions';
+import storeLog from '@partials/storeLog.js';
 
-const contentOnMessage = (request, sender, sendResponse, tabData) => {
+/**
+ * Handles messages received by the content script.
+ * @param {Object} request - The message request object.
+ * @param {Object} sender - Information about the message sender.
+ * @param {Function} sendResponse - Function to send a response.
+ * @param {Object} tabData - The tab data from getTabData.
+ * @param {boolean} isTopFrame - Whether this content script is running in the top frame.
+ * @return {boolean} Always returns true for async response handling.
+ */
+const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) => {
   if (!request || !request.action) {
     sendResponse({ status: 'error' });
     return true;
   }
 
-  if (request?.action === 'contentScript' || request?.action === 'notification' || request?.action === 'notificationInfo') {
-    if (isInFrame()) {
+  if (
+    request?.action === 'contentScript' ||
+    request?.action === 'notification' ||
+    request?.action === 'showTokenNotification'
+  ) {
+    if (!isTopFrame) {
       sendResponse({ status: 'omitted' });
       return true;
     }
@@ -38,44 +51,74 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
   switch (request.action) {
     case 'inputToken': {
       (async () => {
-        let storage;
+        let sessionTabData = null;
 
         try {
-          storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
+          const response = await browser.runtime.sendMessage({ action: 'getSessionTabData' });
+
+          if (response?.status === 'ok' && response?.data) {
+            sessionTabData = response.data;
+          }
         } catch (err) {
-          await storeLog('error', 17, err, 'contentOnMessage loadFromLocalStorage');
+          await storeLog('error', 17, err, 'contentOnMessage getSessionTabData');
           sendResponse({ status: 'error', message: 'Failed to load data' });
+          return;
         }
-  
-        if (!storage || !storage[`tabData-${tabData?.id}`] || storage[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
+
+        if (!sessionTabData || !sessionTabData[`tabData-${tabData?.id}`] || sessionTabData[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
+            return;
           }
-  
+
           sendResponse({
             status: 'notification',
             title: config.Texts.Error.OldRequest.Title,
             message: config.Texts.Error.OldRequest.Message
           });
-          return true;
+          return;
         }
-  
-        const lastFocusedInput = storage[`tabData-${tabData?.id}`].lastFocusedInput;
+
+        const lastFocusedInput = sessionTabData[`tabData-${tabData?.id}`].lastFocusedInput;
         let tokenInput;
-  
+
         if (lastFocusedInput) {
           tokenInput = getTokenInput(lastFocusedInput);
         }
-        
-        if (!lastFocusedInput || !tokenInput) {
-          if (!isInFrame()) {
+
+        if (!tokenInput) {
+          if (isInFrame()) {
+            sendResponse({ status: 'omitted' });
+            return;
+          }
+
+          if (!lastFocusedInput) {
             tokenNotification(request.token);
           }
 
           sendResponse({ status: 'ok' });
-        } else {
-          sendResponse(inputToken(request, tokenInput, tabData?.url));
+          return;
         }
+
+        const crossDomainCheck = checkCrossDomain();
+
+        if (crossDomainCheck.isCrossDomain) {
+          const confirmMessage = config.Texts.Warning.CrossDomain(
+            crossDomainCheck.currentHostname,
+            crossDomainCheck.topHostname
+          );
+
+          const userConfirmed = window.confirm(confirmMessage);
+
+          if (!userConfirmed) {
+            sendResponse({ status: 'cancelled' });
+            return;
+          }
+        }
+
+        sendResponse(await inputToken(request, tokenInput, tabData?.url));
+
+        sessionTabData = null;
       })();
 
       break;
@@ -88,26 +131,25 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
     }
 
     case 'pageLoadComplete': {
-      sendResponse({ status: 'ok' }); // Possibly for future use
+      sendResponse({ status: 'ok' });
       break;
     }
 
-    case 'notification':
-    case 'notificationInfo': {
+    case 'notification': {
       loadFonts();
-
-      if (request.action === 'notification') {
-        notification(request);
-        sendResponse({ status: 'ok' });
-      } else if (request.action === 'notificationInfo') {
-        showNotificationInfo();
-        sendResponse({ status: 'ok' });
-      }
-
+      notification(request);
+      sendResponse({ status: 'ok' });
       break;
     }
 
     case 'contentScript': {
+      sendResponse({ status: 'ok' });
+      break;
+    }
+
+    case 'showTokenNotification': {
+      loadFonts();
+      tokenNotification(request.token);
       sendResponse({ status: 'ok' });
       break;
     }
@@ -121,4 +163,4 @@ const contentOnMessage = (request, sender, sendResponse, tabData) => {
   return true;
 };
 
-module.exports = contentOnMessage;
+export default contentOnMessage;

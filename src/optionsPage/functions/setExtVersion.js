@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import S from '@/selectors.js';
 
+/**
+ * Displays the current extension version in all version elements on the page.
+ *
+ * @returns {void}
+ */
 const setExtVersion = () => {
   const version = browser.runtime.getManifest().version;
 
@@ -28,4 +33,4 @@ const setExtVersion = () => {
   });
 };
 
-module.exports = setExtVersion;
+export default setExtVersion;

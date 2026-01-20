@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const closeWSChannel = require('./closeWSChannel');
+import closeWSChannel from '@background/functions/closeWSChannel.js';
 
+/**
+ * Handles tab URL change event and closes WebSocket channel if the associated tab navigated.
+ *
+ * @param {number} tabIDChanged - The ID of the tab that changed
+ * @param {Object} changeInfo - The change information object from the browser
+ * @param {number} tabIDws - The ID of the tab associated with the WebSocket
+ * @param {Object} channel - The WebSocket channel object
+ * @param {number} timeoutID - The timeout ID to clear
+ * @returns {boolean|void} Returns false if change is not relevant
+ */
 const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID) => {
   if (!changeInfo.url || !changeInfo.status === 'complete' || !changeInfo.status === 'loading') {
     return false;
@@ -30,4 +40,4 @@ const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID) => 
   }
 };
 
-module.exports = wsTabChanged;
+export default wsTabChanged;

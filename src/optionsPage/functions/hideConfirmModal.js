@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Hides the confirmation modal dialog and clears its content after transition.
+ *
+ * @returns {void}
+ */
 const hideConfirmModal = () => {
   const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
   const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
@@ -32,4 +37,4 @@ const hideConfirmModal = () => {
   }, 201);
 };
 
-module.exports = hideConfirmModal;
+export default hideConfirmModal;

@@ -1,28 +1,29 @@
 {
   "name": "2fas-browser-extension",
-  "version": "1.7.4",
+  "version": "1.8.0",
   "description": "This is the official Browser Extension for the Open Source 2FAS project.",
   "engines": {
-    "node": "22.12.0"
+    "node": "24.12.0"
   },
   "scripts": {
     "clean": "npx -y rimraf --glob ./public/*",
-    "chrome-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Chrome node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
+    "chrome-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Chrome node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=chrome MODE=development yon copy-build && npx -y cross-env PLATFORM=chrome MODE=development yon zip-build",
     "chrome-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Chrome NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "chrome-build": "yon chrome-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=Chrome yon zip-build",
-    "opera-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Opera node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
+    "chrome-build": "yon chrome-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=chrome MODE=production yon copy-build && npx -y cross-env PLATFORM=chrome MODE=production yon zip-build",
+    "opera-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Opera node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=opera MODE=development yon copy-build && npx -y cross-env PLATFORM=opera MODE=development yon zip-build",
     "opera-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Opera NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "opera-build": "yon opera-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=Opera yon zip-build",
-    "firefox-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Firefox node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
+    "opera-build": "yon opera-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=opera MODE=production yon copy-build && npx -y cross-env PLATFORM=opera MODE=production yon zip-build",
+    "firefox-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Firefox node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=firefox MODE=development yon copy-build && npx -y cross-env PLATFORM=firefox MODE=development yon zip-build",
     "firefox-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Firefox NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "firefox-build": "yon firefox-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=Firefox yon zip-build",
+    "firefox-build": "yon firefox-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=firefox MODE=production yon copy-build && npx -y cross-env PLATFORM=firefox MODE=production yon zip-build",
     "firefox-run": "npx -y web-ext run --source-dir ./public/",
-    "edge-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Edge node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
+    "edge-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Edge node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=edge MODE=development yon copy-build && npx -y cross-env PLATFORM=edge MODE=development yon zip-build",
     "edge-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Edge NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "edge-build": "yon edge-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=Edge yon zip-build",
-    "safari-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Safari node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js",
+    "edge-build": "yon edge-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=edge MODE=production yon copy-build && npx -y cross-env PLATFORM=edge MODE=production yon zip-build",
+    "safari-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Safari node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=safari MODE=development yon copy-build",
     "safari-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Safari NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
-    "all-build": "npx -y rimraf --glob ./build/* && yon generate-license-info && yon chrome-build && yon opera-build && yon firefox-build && yon edge-build",
+    "safari-build": "yon safari-prod && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=safari MODE=production yon copy-build",
+    "all-build": "npx -y rimraf --glob ./build/* && yon generate-license-info && yon chrome-build && yon opera-build && yon firefox-build && yon edge-build && yon safari-build",
     "browserlist-update": "npx -y browserslist@latest --update-db",
     "loco-export": "node webpack/utils/locoExport.js",
     "loco-import": "node webpack/utils/locoImport.js",
@@ -31,15 +32,16 @@
     "generate-license-info-html": "npx -y license-report --output=html >> open-source-licenses.html",
     "generate-license-info-json": "npx -y license-report --output=json >> open-source-licenses.json",
     "generate-license-info": "yon generate-license-info-html && yon generate-license-info-json",
-    "zip-build": "cd ./public/ && npx -y cross-var npx -y bestzip ../build/$PLATFORM_ext_$npm_package_version.zip * & cd .."
+    "copy-build": "node webpack/utils/copyBuild.js",
+    "zip-build": "cd ./public/ && npx -y cross-var npx -y bestzip ../build/2fas-auth-browser-extension-$npm_package_version-$PLATFORM-$MODE.zip * && cd .."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/twofas/2fas-browser-extension.git"
   },
   "author": {
-    "name": "Grzegorz Zając",
-    "email": "g.zajac@2fas.com"
+    "name": "2FAS",
+    "url": "https://github.com/twofas"
   },
   "license": "GPL-3.0",
   "bugs": {
@@ -51,36 +53,37 @@
     "url": "https://2fas.com/donate/"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.9",
-    "@babel/eslint-parser": "^7.26.8",
+    "@babel/core": "^7.28.6",
+    "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-runtime": "^7.26.9",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/register": "^7.25.9",
+    "@babel/preset-env": "^7.28.6",
+    "@babel/register": "^7.28.6",
     "autoprefixer": "^10.4.19",
-    "babel-loader": "^9.1.3",
+    "babel-loader": "^10.0.0",
     "babel-plugin-transform-minify-booleans": "^6.9.4",
     "babel-plugin-transform-remove-debugger": "^6.9.4",
     "browserslist": "^4.24.4",
-    "copy-webpack-plugin": "^12.0.2",
-    "cross-env": "^7.0.3",
+    "copy-webpack-plugin": "^13.0.1",
+    "cross-env": "^10.1.0",
     "crypto-browserify": "^3.12.1",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.2.3",
     "dotenv-webpack": "^8.1.0",
     "eslint": "^9.20.1",
     "eslint-config-standard": "^17.1.0",
     "eslint-friendly-formatter": "^4.0.1",
+    "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-n": "^17.23.2",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-standard": "^5.0.0",
-    "eslint-webpack-plugin": "^4.2.0",
+    "eslint-webpack-plugin": "^5.0.2",
     "exports-loader": "^5.0.0",
     "file-loader": "^6.0.0",
     "html-loader": "^5.0.0",
-    "html-webpack-plugin": "^5.6.3",
-    "mini-css-extract-plugin": "^2.9.2",
+    "html-webpack-plugin": "^5.6.6",
+    "mini-css-extract-plugin": "^2.10.0",
     "noop-loader": "^1.0.0",
     "path": "^0.12.7",
     "postcss": "^8.5.3",
@@ -96,7 +99,7 @@
     "streamify": "^1.0.0",
     "style-loader": "^4.0.0",
     "stylelint": "^16.14.1",
-    "stylelint-config-recommended-scss": "^14.0.0",
+    "stylelint-config-recommended-scss": "^16.0.2",
     "stylelint-webpack-plugin": "^5.0.1",
     "svg-inline-loader": "^0.8.2",
     "terser-webpack-plugin": "^5.3.11",
@@ -109,9 +112,9 @@
     "yarn-or-npm": "^3.0.1"
   },
   "dependencies": {
-    "@babel/runtime": "^7.26.9",
+    "@babel/runtime": "^7.28.6",
     "qrcode": "^1.5.3",
-    "slim-select": "^2.10.0",
-    "uuid": "^11.0.5"
+    "slim-select": "^3.3.0",
+    "uuid": "^13.0.0"
   }
 }

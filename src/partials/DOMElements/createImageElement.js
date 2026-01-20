@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Creates an image element with specified source and alt text.
+ * @param {string} src - The image source URL
+ * @param {string} alt - The alternative text for the image
+ * @returns {HTMLImageElement} The created image element
+ */
 const createImageElement = (src, alt) => {
   const img = document.createElement('img');
   img.src = src;
@@ -25,4 +31,4 @@ const createImageElement = (src, alt) => {
   return img;
 };
 
-module.exports = createImageElement;
+export default createImageElement;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleAutoSubmitChange = require('./handleAutoSubmitChange');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import S from '@/selectors.js';
+import handleAutoSubmitChange from '@optionsPage/functions/handleAutoSubmitChange.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes the auto-submit toggle switch with stored value and attaches change handler.
+ *
+ * @returns {Promise<void>} A promise that resolves when the toggle is initialized
+ */
 const setAutoSubmitSwitch = () => {
   return loadFromLocalStorage(['autoSubmitEnabled'])
     .then(storage => {
@@ -44,4 +49,4 @@ const setAutoSubmitSwitch = () => {
     .catch(() => {});
 };
 
-module.exports = setAutoSubmitSwitch;
+export default setAutoSubmitSwitch;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import { querySelectorDeep } from '@content/functions/shadowDomUtils.js';
+
+/**
+ * Finds and returns the input element marked with the specified 2FAS input ID.
+ * Searches both the main document and any shadowRoots.
+ *
+ * @param {string} inputID - The unique identifier assigned to the input element
+ * @returns {HTMLElement|boolean} The matching input element or false if not found
+ */
 const getTokenInputs = inputID => {
   if (!inputID) {
     return false;
   }
 
-  return document.querySelector(`*[data-twofas-input="${inputID}"]`);
+  return querySelectorDeep(`*[data-twofas-input="${inputID}"]`);
 };
 
-module.exports = getTokenInputs;
+export default getTokenInputs;

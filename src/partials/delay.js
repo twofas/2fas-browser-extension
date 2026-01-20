@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const delay = (f, t) => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      f();
-      return resolve();
-    }, t);
-  });
+/**
+ * Executes a callback function after a specified delay.
+ *
+ * @param {Function} callback - The function to execute after the delay
+ * @param {number} ms - The delay in milliseconds
+ * @returns {Promise<void>} A promise that resolves after the callback completes
+ */
+const delay = async (callback, ms) => {
+  await new Promise(resolve => setTimeout(resolve, ms));
+  await callback();
 };
 
-module.exports = delay;
+export default delay;

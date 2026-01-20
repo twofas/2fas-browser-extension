@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const createTextElement = require('../../partials/DOMElements/createTextElement');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import createTextElement from '@partials/DOMElements/createTextElement.js';
+import S from '@/selectors.js';
 
+/**
+ * Generates the shortcut display box with an unknown state when no shortcut is configured.
+ *
+ * @param {HTMLElement} box - The container element for the shortcut display
+ * @returns {void}
+ */
 const generateEmptyShortcutBox = box => {
   const btnBox = createTextElement('div', browser.i18n.getMessage('unknown').toUpperCase());
 
@@ -43,4 +49,4 @@ const generateEmptyShortcutBox = box => {
   }
 };
 
-module.exports = generateEmptyShortcutBox;
+export default generateEmptyShortcutBox;

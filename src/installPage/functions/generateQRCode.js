@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const qrcode = require('qrcode');
+import qrcode from 'qrcode';
 
+/**
+ * Generates a QR code image as a data URL from a configuration link.
+ *
+ * @param {string} configLink - The configuration URL to encode in the QR code
+ * @returns {Promise<string>} A promise that resolves to the QR code data URL
+ */
 const generateQRCode = configLink => {
   return qrcode.toDataURL(configLink, {
     errorCorrectionLevel: 'H',
@@ -29,4 +35,4 @@ const generateQRCode = configLink => {
   });
 };
 
-module.exports = generateQRCode;
+export default generateQRCode;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { notification, showNotificationInfo } = require('../content/functions');
+import { notification } from '../content/functions/index.js';
 
+/**
+ * Message handler for extension pages (options/install page).
+ * @param {Object} request - The message request object
+ * @param {string} request.action - The action to perform
+ * @returns {Object} Response object with status
+ */
 const extPageOnMessage = (request) => {
   if (!request || !request.action) {
     return { status: 'error' };
@@ -29,14 +35,10 @@ const extPageOnMessage = (request) => {
       return notification(request);
     }
 
-    case 'notificationInfo': {
-      return showNotificationInfo();
-    }
-
     default: {
       return { status: 'error' };
     }
   }
 };
 
-module.exports = extPageOnMessage;
+export default extPageOnMessage;

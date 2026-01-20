@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const createTextElement = require('../../partials/DOMElements/createTextElement');
-const generateEmptyShortcutBox = require('./generateEmptyShortcutBox');
-const S = require('../../selectors');
+import browser from 'webextension-polyfill';
+import createTextElement from '@partials/DOMElements/createTextElement.js';
+import generateEmptyShortcutBox from '@optionsPage/functions/generateEmptyShortcutBox.js';
+import S from '@/selectors.js';
 
+/**
+ * Generates and renders the keyboard shortcut display box based on configured commands.
+ *
+ * @returns {Promise<void>|void} A promise that resolves when the shortcut box is rendered, or void for Safari
+ */
 const generateShortcutBox = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
     return;
@@ -102,4 +107,4 @@ const generateShortcutBox = () => {
     });
 };
 
-module.exports = generateShortcutBox;
+export default generateShortcutBox;

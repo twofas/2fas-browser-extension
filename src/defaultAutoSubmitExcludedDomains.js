@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Default list of domains excluded from auto-submit functionality.
+ * @type {string[]}
+ */
 const defaultAutoSubmitExcludedDomains = [];
 
-module.exports = defaultAutoSubmitExcludedDomains;
+export default defaultAutoSubmitExcludedDomains;

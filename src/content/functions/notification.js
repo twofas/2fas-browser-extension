@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,34 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const isInFrame = require('./isInFrame');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const iconSrc = require('../../images/notification-logo.svg');
-const S = require('../../selectors');
+import isInFrame from '@content/functions/isInFrame.js';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import iconSrc from '@images/notification-logo.svg';
+import S from '@/selectors.js';
 
+let lastNotificationUuid = null;
+
+/**
+ * Displays a front-end notification with a title and message.
+ *
+ * @param {Object} request - The notification request object
+ * @param {string} request.title - The notification title
+ * @param {string} request.message - The notification message
+ * @param {boolean} [request.timeout] - Whether to auto-dismiss the notification
+ * @param {string} [request.uuid] - Unique identifier for deduplication
+ * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
+ */
 const notification = request => {
   if (isInFrame()) {
     return false;
+  }
+
+  if (request.uuid && request.uuid === lastNotificationUuid) {
+    return false;
+  }
+
+  if (request.uuid) {
+    lastNotificationUuid = request.uuid;
   }
 
   let n = {
@@ -97,4 +117,4 @@ const notification = request => {
   }
 };
 
-module.exports = notification;
+export default notification;

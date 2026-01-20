@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
+/**
+ * Loads data from browser local storage.
+ * @param {string|string[]|Object} key - The key(s) to retrieve from storage
+ * @returns {Promise<Object>} Promise resolving to the stored data
+ */
 const loadFromLocalStorage = key => {
   return browser.storage.local.get(key)
     .catch(err => {
@@ -27,4 +32,4 @@ const loadFromLocalStorage = key => {
     });
 };
 
-module.exports = loadFromLocalStorage;
+export default loadFromLocalStorage;

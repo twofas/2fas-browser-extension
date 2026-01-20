@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const hideConfirmModal = require('./hideConfirmModal');
-const hideDomainModal = require('./hideDomainModal');
-const confirmModalBackdropClick = require('./confirmModalBackdropClick');
-const domainModalBackdropClick = require('./domainModalBackdropClick');
-const domainModalFormSubmit = require('./domainModalFormSubmit');
-const showDomainModal = require('./showDomainModal');
+import S from '@/selectors.js';
+import hideConfirmModal from '@optionsPage/functions/hideConfirmModal.js';
+import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
+import confirmModalBackdropClick from '@optionsPage/functions/confirmModalBackdropClick.js';
+import domainModalBackdropClick from '@optionsPage/functions/domainModalBackdropClick.js';
+import domainModalFormSubmit from '@optionsPage/functions/domainModalFormSubmit.js';
+import showDomainModal from '@optionsPage/functions/showDomainModal.js';
 
+/**
+ * Sets up all event listeners for confirm and domain modals including keyboard shortcuts.
+ *
+ * @returns {void}
+ */
 const setModalsListeners = () => {
   const confirmModalCancel = document.querySelectorAll(S.optionsPage.confirmModal.cancel);
   Array.from(confirmModalCancel).forEach(el => el.addEventListener('click', hideConfirmModal));
@@ -57,4 +62,4 @@ const setModalsListeners = () => {
   })
 };
 
-module.exports = setModalsListeners;
+export default setModalsListeners;

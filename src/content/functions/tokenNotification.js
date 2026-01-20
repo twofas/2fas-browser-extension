@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,18 +17,32 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const isInFrame = require('./isInFrame');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const iconSrc = require('../../images/notification-logo.svg');
-const copySrc = require('../../images/copy-icon.svg');
-const closeSrc = require('../../images/notification-close.svg');
-const S = require('../../selectors');
+import config from '@/config.js';
+import isInFrame from '@content/functions/isInFrame.js';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import iconSrc from '@images/notification-logo.svg';
+import copySrc from '@images/copy-icon.svg';
+import closeSrc from '@images/notification-close.svg';
+import S from '@/selectors.js';
 
+let lastTokenNotificationToken = null;
+
+/**
+ * Displays a notification with the 2FA token and a copy button.
+ *
+ * @param {string} token - The 2FA token to display
+ * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
+ */
 const tokenNotification = token => {
   if (isInFrame()) {
     return false;
   }
+
+  if (token === lastTokenNotificationToken) {
+    return false;
+  }
+
+  lastTokenNotificationToken = token;
 
   let n = {
     container: document.querySelector(S.notification.container),
@@ -143,4 +157,4 @@ const tokenNotification = token => {
   }, 30600);
 };
 
-module.exports = tokenNotification;
+export default tokenNotification;

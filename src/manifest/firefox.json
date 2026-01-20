@@ -3,11 +3,11 @@
   "name": "2FAS Auth - Two Factor Authentication",
   "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.7.4",
+  "version": "1.8.0",
   "browser_specific_settings": {
     "gecko": {
       "id": "admin@2fas.com",
-      "strict_min_version": "58.0"
+      "strict_min_version": "131.0"
     }
   },
   "description": "__MSG_appDesc__",

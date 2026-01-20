@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,18 @@
 //
 
 /* global atob */
+
+/**
+ * Converts a base64 string to an ArrayBuffer.
+* @param {string} base64string - The base64 string to convert to an ArrayBuffer.
+* @return {ArrayBuffer} The resulting ArrayBuffer from the base64 string.
+*/
 const b642ab = base64string => {
-  return Uint8Array.from(atob(base64string), c => c.charCodeAt(0));
+  if (typeof base64string !== 'string') {
+    throw new TypeError('Base64ToArrayBuffer: Expected input to be a string');
+  }
+
+  return Uint8Array.from(atob(base64string), c => c.charCodeAt(0)).buffer;
 }
 
-module.exports = b642ab;
+export default b642ab;

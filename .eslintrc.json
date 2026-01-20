@@ -1,6 +1,10 @@
 {
   "extends": ["standard"],
   "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2022
+  },
   "rules": {
     "no-tabs": "off",
     "semi": "off",
@@ -8,5 +12,24 @@
     "no-useless-escape": "off",
     "no-trailing-spaces": ["error", { "skipBlankLines": true }],
     "no-irregular-whitespace": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@", "./src"],
+          ["@background", "./src/background"],
+          ["@content", "./src/content"],
+          ["@partials", "./src/partials"],
+          ["@localStorage", "./src/localStorage"],
+          ["@notification", "./src/notification"],
+          ["@sdk", "./src/sdk"],
+          ["@optionsPage", "./src/optionsPage"],
+          ["@installPage", "./src/installPage"],
+          ["@images", "./src/images"]
+        ],
+        "extensions": [".js", ".json"]
+      }
+    }
   }
 }

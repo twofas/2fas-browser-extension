@@ -1,46 +1,178 @@
 {
-  "optionsTitle": "2FAS Browser Extension | Options",
-  "optionsHeader": "2FAS Browser Extension Settings",
-  "optionsIntroHeader": "Introduction to 2FAS Browser Extension",
-  "optionsIntro": "Intro",
-  "optionsSettings": "Settings",
-  "optionsCheckExt": "Ext Check",
-  "optionsAbout": "About 2FAS",
-  "optionsDonate": "Donate",
-  "optionsPairedHeader": "Paired devices:",
-  "optionsAddAnotherDevice": "Add another device",
-  "optionsAutoSubmitSwitchHeader": "[EXPERIMENTAL] Auto submit:",
-  "optionsAutoSubmitSwitchLabel": "Enable auto submit for 2FA forms",
-  "optionsExcludedDomainsHeader": "[EXPERIMENTAL] Auto submit excluded domains:",
-  "optionsRemoveFromExcluded": "Remove from excluded",
-  "optionsExcludeAnotherDomain": "Exclude domain",
-  "optionsExcludeImportDefault": "Import default list",
-  "optionsDomainModalHeader": "Exclude new domain",
-  "optionsDomainModalText": "With the form below, you can add your domain to exclusion list, ensuring it won't be subjected to the auto submit mechanism.",
-  "optionsDomainInputPlaceholder": "Type in domain to exclude...",
-  "optionsLogsLabel": "Approve 2FAS Browser Extension logs",
-  "optionsLogsDesc": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
-  "optionsContextMenuLabel": "Show 2FAS Browser Extension option in context menu",
-  "optionsPushDesc": "Choose a notification mechanism which will prompt you about communication with the 2FAS Auth mobile app when you use this browser extension.",
-  "optionsPushCustom": "2FAS Custom Notifications",
-  "optionsPushNative": "Native Browser's Notifications",
-  "optionsPushTest": "Test push Notification",
-  "optionsPushConfigDesc1": "Native Browser's Notifications do not work?",
-  "optionsPushConfigDesc2": "Make sure they are enabled in the system settings",
-  "optionsShortcutFirefoxDesc": "To set or change this shortcut go to your browser settings, and extensions, then click on the gear icon and choose “Manage Extension Shortcuts.”",
-  "optionsPinHeader": "Pin 2FAS for faster authentication",
-  "optionsPinDesc": "Check the Extension List to make it visible.",
-  "optionsPinSafariStep1": "Right click on the address bar, select Toolbar customization",
-  "optionsPinSafariStep2": "Find 2FAS icon on the list, drag it to the toolbar",
-  "optionsPinOperaStep2Header": "Find added Extension on the list and click “Details”.",
-  "optionsPinOperaStep2SubHeader": "Then turn on “Allow on site with finding results”.",
-  "optionsPinSafariToolbarCustomization": "Toolbar customization",
-  "optionsDangerZone": "Danger Zone",
-  "optionsSafariResetDesc": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
-  "optionsSafariReset": "Reset Browser Extension",
-  "optionsDomainRequired": "Domain is required",
-  "optionsDomainTooLong": "Domain is too long",
-  "optionsDomainIncorrect": "Domain is not correct",
-  "optionsDomainExists": "Domain exists on excluded list",
-  "optionsIconDesc": "Choose an icon for the 2FAS Browser Extension to personalize its appearance in your browser."
+  "optionsTitle": {
+    "message": "2FAS Browser Extension | Options",
+    "description": ""
+  },
+  "optionsHeader": {
+    "message": "2FAS Browser Extension Settings",
+    "description": ""
+  },
+  "optionsIntroHeader": {
+    "message": "Introduction to 2FAS Browser Extension",
+    "description": ""
+  },
+  "optionsIntro": {
+    "message": "Intro",
+    "description": ""
+  },
+  "optionsSettings": {
+    "message": "Settings",
+    "description": ""
+  },
+  "optionsCheckExt": {
+    "message": "Ext Check",
+    "description": ""
+  },
+  "optionsAbout": {
+    "message": "About 2FAS",
+    "description": ""
+  },
+  "optionsDonate": {
+    "message": "Donate",
+    "description": ""
+  },
+  "optionsPairedHeader": {
+    "message": "Paired devices:",
+    "description": ""
+  },
+  "optionsAddAnotherDevice": {
+    "message": "Add another device",
+    "description": ""
+  },
+  "optionsAutoSubmitSwitchHeader": {
+    "message": "[EXPERIMENTAL] Auto submit:",
+    "description": ""
+  },
+  "optionsAutoSubmitSwitchLabel": {
+    "message": "Enable auto submit for 2FA forms",
+    "description": ""
+  },
+  "optionsExcludedDomainsHeader": {
+    "message": "[EXPERIMENTAL] Auto submit excluded domains:",
+    "description": ""
+  },
+  "optionsRemoveFromExcluded": {
+    "message": "Remove from exclusion list",
+    "description": ""
+  },
+  "optionsExcludeAnotherDomain": {
+    "message": "Exclude domain",
+    "description": ""
+  },
+  "optionsExcludeImportDefault": {
+    "message": "Import default list",
+    "description": ""
+  },
+  "optionsDomainModalHeader": {
+    "message": "Exclude new domain",
+    "description": ""
+  },
+  "optionsDomainModalText": {
+    "message": "You can add your domain to the exclusion list using the form below, ensuring it won't be subjected to the auto-submit mechanism.",
+    "description": ""
+  },
+  "optionsDomainInputPlaceholder": {
+    "message": "Type in domain to exclude...",
+    "description": ""
+  },
+  "optionsLogsLabel": {
+    "message": "Approve 2FAS Browser Extension logs",
+    "description": ""
+  },
+  "optionsLogsDesc": {
+    "message": "Help us improve our browser extension by approving anonymous logs from your browser regarding 2FAS Browser Extension errors only.",
+    "description": ""
+  },
+  "optionsContextMenuLabel": {
+    "message": "Show 2FAS Browser Extension option in context menu",
+    "description": ""
+  },
+  "optionsPushDesc": {
+    "message": "Choose a notification mechanism which will prompt you about communication with the 2FAS Auth mobile app when you use this browser extension.",
+    "description": ""
+  },
+  "optionsPushCustom": {
+    "message": "2FAS Custom Notifications",
+    "description": ""
+  },
+  "optionsPushNative": {
+    "message": "Native Browser's Notifications",
+    "description": ""
+  },
+  "optionsPushTest": {
+    "message": "Test push Notification",
+    "description": ""
+  },
+  "optionsPushConfigDesc1": {
+    "message": "Native Browser's Notifications do not work?",
+    "description": ""
+  },
+  "optionsPushConfigDesc2": {
+    "message": "Make sure they are enabled in the system settings",
+    "description": ""
+  },
+  "optionsShortcutFirefoxDesc": {
+    "message": "To set or change this shortcut go to your browser settings, and extensions, then click on the gear icon and choose “Manage Extension Shortcuts.”",
+    "description": ""
+  },
+  "optionsPinHeader": {
+    "message": "Pin 2FAS for faster authentication",
+    "description": ""
+  },
+  "optionsPinDesc": {
+    "message": "Check the Extension List to make it visible.",
+    "description": ""
+  },
+  "optionsPinSafariStep1": {
+    "message": "Right click on the address bar, select Toolbar customization",
+    "description": ""
+  },
+  "optionsPinSafariStep2": {
+    "message": "Find 2FAS icon on the list, drag it to the toolbar",
+    "description": ""
+  },
+  "optionsPinOperaStep2Header": {
+    "message": "Find added Extension on the list and click “Details”.",
+    "description": ""
+  },
+  "optionsPinOperaStep2SubHeader": {
+    "message": "Then turn on “Allow on site with finding results”.",
+    "description": ""
+  },
+  "optionsPinSafariToolbarCustomization": {
+    "message": "Toolbar customization",
+    "description": ""
+  },
+  "optionsDangerZone": {
+    "message": "Danger Zone",
+    "description": ""
+  },
+  "optionsSafariResetDesc": {
+    "message": "By resetting the extension you'll erase all your 2FAS Browser Extension settings and paired devices. Do so, if you're absolutely sure and aware of losing your settings and paired devices with the 2FAS Browser Extension! This action is not reversible!",
+    "description": ""
+  },
+  "optionsSafariReset": {
+    "message": "Reset Browser Extension",
+    "description": ""
+  },
+  "optionsDomainRequired": {
+    "message": "Domain is required",
+    "description": ""
+  },
+  "optionsDomainTooLong": {
+    "message": "Domain is too long",
+    "description": ""
+  },
+  "optionsDomainIncorrect": {
+    "message": "Domain is incorrect",
+    "description": ""
+  },
+  "optionsDomainExists": {
+    "message": "Domain exists on the exclusion list",
+    "description": ""
+  },
+  "optionsIconDesc": {
+    "message": "Choose an icon for the 2FAS Browser Extension to personalize its appearance in your browser.",
+    "description": ""
+  }
 }

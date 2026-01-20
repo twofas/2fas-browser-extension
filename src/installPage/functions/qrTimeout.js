@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,83 +17,93 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const S = require('../../selectors');
+import config from '@/config.js';
+import TwoFasNotification from '@/notification';
+import S from '@/selectors.js';
 
-const qrTimeout = (QRImgs, channel) => {
-  let t;
-  const timeoutElements = document.querySelectorAll(S.installPage.qr.timeout);
-  const QRManuals = document.querySelectorAll(S.installPage.qr.manual);
-  
-  if (timeoutElements) {
-    timeoutElements.forEach(el => { el.classList.remove('visible'); });
-  }
+const TIMEOUT_MS = (1000 * 60 * config.WebSocketTimeout) - 100;
 
-  if (QRManuals) {
-    QRManuals.forEach(manual => { manual.classList.remove('twofas-manual-timeout') });
-  }
-  
-  if (QRImgs) {
-    QRImgs.forEach(img => { img.classList.remove('twofas-qrcode-timeout'); });
-  }
+/**
+ * Toggles timeout-related CSS classes on QR code elements.
+ *
+ * @param {NodeList} qrImages - Collection of QR code image elements
+ * @param {NodeList} qrManuals - Collection of manual QR code elements
+ * @param {NodeList} timeoutElements - Collection of timeout overlay elements
+ * @param {boolean} isTimedOut - Whether to add (true) or remove (false) timeout classes
+ */
+const toggleTimeoutClasses = (qrImages, qrManuals, timeoutElements, isTimedOut) => {
+  const action = isTimedOut ? 'add' : 'remove';
 
-  const btnListener = () => {
-    clearTimeout(t);
-
-    channel.connect();
-    
-    if (QRImgs) {
-      QRImgs.forEach(img => { img.classList.remove('twofas-qrcode-timeout'); });
-    }
-
-    if (QRManuals) {
-      QRManuals.forEach(manual => { manual.classList.remove('twofas-manual-timeout') });
-    }
-
-    if (timeoutElements) {
-      timeoutElements.forEach(el => { el.classList.remove('visible'); });
-    }
-
-    TwoFasNotification.clearAll();
-    
-    t = setTimeout(timeout, (1000 * 60 * config.WebSocketTimeout) - 100);
-  };
-
-  const timeout = () => {
-    const regenerateQRBtns = document.querySelectorAll(S.installPage.qr.regenerate);
-
-    if (QRImgs) {
-      QRImgs.forEach(img => { img.classList.add('twofas-qrcode-timeout'); });
-    }
-
-    if (QRManuals) {
-      QRManuals.forEach(manual => { manual.classList.add('twofas-manual-timeout') });
-    }
-
-    if (timeoutElements) {
-      timeoutElements.forEach(el => { el.classList.add('visible'); });
-    }
-
-    if (!regenerateQRBtns) {
-      return false;
-    }
-
-    regenerateQRBtns.forEach(btn => {
-      const btnClone = btn.cloneNode(true);
-      btn.parentNode.replaceChild(btnClone, btn);
-      btnClone.addEventListener('click', btnListener);
-    });
-  };
-
-  t = setTimeout(timeout, (1000 * 60 * config.WebSocketTimeout) - 100);
-
-  document.addEventListener('qrHidden', () => {
-    clearTimeout(t);
-    t = undefined;
-  });
-
-  return t;
+  qrImages.forEach(img => { img.classList[action]('twofas-qrcode-timeout'); });
+  qrManuals.forEach(manual => { manual.classList[action]('twofas-manual-timeout'); });
+  timeoutElements.forEach(el => { el.classList[action]('visible'); });
 };
 
-module.exports = qrTimeout;
+/**
+ * Manages QR code timeout state and provides regeneration functionality.
+ *
+ * @param {NodeList} qrImages - Collection of QR code image elements
+ * @param {Object} channel - WebSocket channel object with connect method
+ * @returns {Function} Cleanup function to clear timeout and remove event listeners
+ */
+const qrTimeout = (qrImages, channel) => {
+  let timeoutId = null;
+  let currentBtnListener = null;
+
+  const timeoutElements = document.querySelectorAll(S.installPage.qr.timeout);
+  const qrManuals = document.querySelectorAll(S.installPage.qr.manual);
+
+  toggleTimeoutClasses(qrImages, qrManuals, timeoutElements, false);
+
+  const handleRegenerate = () => {
+    clearTimeout(timeoutId);
+    channel.connect();
+    toggleTimeoutClasses(qrImages, qrManuals, timeoutElements, false);
+    TwoFasNotification.clearAll();
+    timeoutId = setTimeout(handleTimeout, TIMEOUT_MS);
+  };
+
+  const handleTimeout = () => {
+    const regenerateBtns = document.querySelectorAll(S.installPage.qr.regenerate);
+
+    toggleTimeoutClasses(qrImages, qrManuals, timeoutElements, true);
+
+    if (regenerateBtns.length === 0) {
+      return;
+    }
+
+    regenerateBtns.forEach(btn => {
+      btn.removeEventListener('click', currentBtnListener);
+      btn.addEventListener('click', handleRegenerate);
+    });
+
+    currentBtnListener = handleRegenerate;
+  };
+
+  const handleQrHidden = () => {
+    cleanup();
+  };
+
+  const cleanup = () => {
+    clearTimeout(timeoutId);
+    timeoutId = null;
+    document.removeEventListener('qrHidden', handleQrHidden);
+
+    if (currentBtnListener) {
+      const regenerateBtns = document.querySelectorAll(S.installPage.qr.regenerate);
+
+      regenerateBtns.forEach(btn => {
+        btn.removeEventListener('click', currentBtnListener);
+      });
+
+      currentBtnListener = null;
+    }
+  };
+
+  document.addEventListener('qrHidden', handleQrHidden);
+  timeoutId = setTimeout(handleTimeout, TIMEOUT_MS);
+
+  return cleanup;
+};
+
+export default qrTimeout;

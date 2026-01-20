@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
 
+/**
+ * Handles change of the logging toggle and saves the setting to storage.
+ *
+ * @param {Event} e - The change event from the checkbox input
+ * @returns {Promise<Object>} A promise that resolves with the updated storage
+ */
 const handleLoggingChange = e => {
   return saveToLocalStorage({ logging: e.currentTarget.checked });
 };
 
-module.exports = handleLoggingChange;
+export default handleLoggingChange;

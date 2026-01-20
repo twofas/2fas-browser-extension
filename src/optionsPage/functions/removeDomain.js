@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const showConfirmModal = require('./showConfirmModal');
-const TwoFasNotification = require('../../notification');
-const removeDomainFromDOM = require('./removeDomainFromDOM');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import storeLog from '@partials/storeLog.js';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import TwoFasNotification from '@notification';
+import removeDomainFromDOM from '@optionsPage/functions/removeDomainFromDOM.js';
 
+/**
+ * Handles the domain removal process from excluded list with confirmation modal.
+ *
+ * @param {Event} e - The click event that triggered the removal
+ * @returns {Promise<void>|void}
+ */
 const removeDomain = function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -61,4 +67,4 @@ const removeDomain = function (e) {
   );
 }
 
-module.exports = removeDomain;
+export default removeDomain;

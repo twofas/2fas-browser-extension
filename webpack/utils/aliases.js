@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,21 +17,25 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const browserAction = require('./browserAction');
+const path = require('path');
 
-const onCommand = command => {
-  switch (command) {
-    case 'tokenRequest':
-    case 'tokenRequestSecondary': {
-      return browser
-        .tabs
-        .query({ active: true, currentWindow: true })
-        .then(tabs => browserAction(tabs[0]));
-    }
+const srcPath = path.resolve(__dirname, '../../src');
 
-    default: return false;
-  }
+/**
+ * Webpack path aliases for cleaner imports
+ */
+const aliases = {
+  '@': srcPath,
+  '@background': path.join(srcPath, 'background'),
+  '@content': path.join(srcPath, 'content'),
+  '@partials': path.join(srcPath, 'partials'),
+  '@localStorage': path.join(srcPath, 'localStorage'),
+  '@sessionStorage': path.join(srcPath, 'sessionStorage'),
+  '@notification': path.join(srcPath, 'notification'),
+  '@sdk': path.join(srcPath, 'sdk'),
+  '@optionsPage': path.join(srcPath, 'optionsPage'),
+  '@installPage': path.join(srcPath, 'installPage'),
+  '@images': path.join(srcPath, 'images')
 };
 
-module.exports = onCommand;
+module.exports = aliases;

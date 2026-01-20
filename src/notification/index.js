@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { sendFrontEndPushAction, showFrontEndPush, showNativePush, showNativePushWithoutTimeout } = require('./functions');
-const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
-const S = require('../selectors');
+import { sendFrontEndPushAction, showFrontEndPush, showNativePush, showNativePushWithoutTimeout } from '@notification/functions';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import S from '@/selectors.js';
 
+/**
+ * Notification class for displaying native and front-end push notifications.
+ */
 class twoFasNotification {
+  /**
+   * Shows a notification with automatic timeout.
+   * @param {Object} notificationObject - The notification content with Title and Message
+   * @param {number|null} [tabID=null] - The tab ID to show notification in
+   * @param {boolean} [alert=false] - Whether to show as alert
+   * @returns {Promise<void>} Promise resolving when notification is shown
+   */
   static show (notificationObject, tabID = null, alert = false) {
     return loadFromLocalStorage(['nativePush'])
       .then(storage => {
@@ -37,6 +47,12 @@ class twoFasNotification {
       });
   }
 
+  /**
+   * Shows a notification without automatic timeout.
+   * @param {Object} notificationObject - The notification content with Title and Message
+   * @param {number|null} [tabID=null] - The tab ID to show notification in
+   * @returns {Promise<void>} Promise resolving when notification is shown
+   */
   static showWithoutTimeout (notificationObject, tabID = null) {
     return loadFromLocalStorage(['nativePush'])
       .then(storage => {
@@ -52,6 +68,10 @@ class twoFasNotification {
       });
   }
 
+  /**
+   * Clears all visible notifications from the DOM.
+   * @returns {void}
+   */
   static clearAll () {
     const container = document.querySelector(S.notification.container);
     const notifications = container.querySelectorAll(S.notification.notification);
@@ -68,4 +88,4 @@ class twoFasNotification {
   }
 }
 
-module.exports = twoFasNotification;
+export default twoFasNotification;

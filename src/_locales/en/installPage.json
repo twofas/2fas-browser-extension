@@ -1,17 +1,62 @@
 {
-  "installTitle": "2FAS Browser Extension | Configuration",
-  "installH1": "To start, you need to pair this extension with the 2FAS Auth mobile application.",
-  "installAppInstalled": "I've installed the app",
-  "installScan": "Scan this code with your 2FAS Auth mobile app",
-  "installStep1": "Open the 2FAS Auth mobile app",
-  "installStep2": "Go to Settings → Browser Extension",
-  "installStep3": "Tap \"Pair with web browser\" and scan the QR code",
-  "installSuccessHeader": "2FAS Browser Extension is successfully paired with your 2FAS Auth app",
-  "installSuccessSubheader": "Now you can quickly autofill Two-Factor forms with mobile app confirmation.",
-  "installStart": "Learn how it works",
-  "installGoToSettings": "Go to settings",
-  "installQuestions": "Any questions? Read our",
-  "installBackToStep1": "Back to step 1",
-  "installQRTimeoutText": "The QR code has expired",
-  "installQRTimeoutButton": "Click here to regenerate"
+  "installTitle": {
+    "message": "2FAS Browser Extension | Configuration",
+    "description": ""
+  },
+  "installH1": {
+    "message": "To start, you need to pair this extension with the 2FAS Auth mobile application.",
+    "description": ""
+  },
+  "installAppInstalled": {
+    "message": "I've installed the app",
+    "description": ""
+  },
+  "installScan": {
+    "message": "Scan this code with your 2FAS Auth mobile app",
+    "description": ""
+  },
+  "installStep1": {
+    "message": "Open the 2FAS Auth mobile app",
+    "description": ""
+  },
+  "installStep2": {
+    "message": "Go to Settings → Browser Extension",
+    "description": ""
+  },
+  "installStep3": {
+    "message": "Tap \"Pair with web browser\" and scan the QR code",
+    "description": ""
+  },
+  "installSuccessHeader": {
+    "message": "2FAS Browser Extension is successfully paired with your 2FAS Auth app",
+    "description": ""
+  },
+  "installSuccessSubheader": {
+    "message": "Now you can quickly autofill Two-Factor forms with mobile app confirmation.",
+    "description": ""
+  },
+  "installStart": {
+    "message": "Learn how it works",
+    "description": ""
+  },
+  "installGoToSettings": {
+    "message": "Go to settings",
+    "description": ""
+  },
+  "installQuestions": {
+    "message": "Any questions? Read our",
+    "description": ""
+  },
+  "installBackToStep1": {
+    "message": "Back to step 1",
+    "description": ""
+  },
+  "installQRTimeoutText": {
+    "message": "The QR code has expired",
+    "description": ""
+  },
+  "installQRTimeoutButton": {
+    "message": "Click here to regenerate",
+    "description": ""
+  }
 }

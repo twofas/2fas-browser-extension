@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const generateEmptyDeviceRow = require('./generateEmptyDeviceRow');
-const S = require('../../selectors');
+import generateEmptyDeviceRow from '@optionsPage/functions/generateEmptyDeviceRow.js';
+import S from '@/selectors.js';
 
+/**
+ * Removes a device row from the DOM and shows empty state if no devices remain.
+ *
+ * @param {string} deviceID - The unique identifier of the device to remove
+ * @returns {boolean} Always returns true after removal
+ */
 const removeDeviceFromDOM = deviceID => {
   const tr = document.querySelector(`tr[data-device-id="${deviceID}"]`);
 
@@ -36,4 +42,4 @@ const removeDeviceFromDOM = deviceID => {
   return true;
 };
 
-module.exports = removeDeviceFromDOM;
+export default removeDeviceFromDOM;

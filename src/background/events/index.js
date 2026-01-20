@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,5 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.handleConfigurationRequest = require('./handleConfigurationRequest');
-exports.handleLoginRequest = require('./handleLoginRequest');
+export { default as handleConfigurationRequest } from './handleConfigurationRequest.js';
+export { default as handleLoginRequest } from './handleLoginRequest.js';
+export { default as onInstalled } from './onInstalled.js';
+export { default as onStartup } from './onStartup.js';
+export { default as onMessage } from './onMessage.js';
+export { default as onCommand } from './onCommand.js';
+export { default as onConnect } from './onConnect.js';

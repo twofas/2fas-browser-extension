@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,20 +18,37 @@
 //
 
 import './styles/content_script.scss';
-const browser = require('webextension-polyfill');
-const { getTabData, portSetup } = require('./functions');
-const contentOnMessage = require('./events/contentOnMessage');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../localStorage');
-const storeLog = require('../partials/storeLog');
+import browser from 'webextension-polyfill';
+import { getTabData, portSetup, isInFrame } from '@content/functions';
+import contentOnMessage from '@content/events/contentOnMessage.js';
+import storeLog from '@partials/storeLog.js';
 
-let tabData;
-let storage;
+let tabData = null;
+let isTopFrame = false;
+let onMessageListener = null;
 
+const LISTENER_KEY = '__2fasMessageListener';
+
+/**
+ * Main content script initialization function.
+ * @async
+ * @return {Promise<boolean|void>}
+ */
 const contentScriptRun = async () => {
   portSetup();
 
+  isTopFrame = !isInFrame();
+
   if (!browser?.runtime?.id) {
     return false;
+  }
+
+  if (window[LISTENER_KEY]) {
+    try {
+      browser.runtime.onMessage.removeListener(window[LISTENER_KEY]);
+    } catch (e) {}
+
+    window[LISTENER_KEY] = null;
   }
 
   try {
@@ -40,26 +57,28 @@ const contentScriptRun = async () => {
     throw new Error(e);
   }
 
-  const onMessageListener = (request, sender, sendResponse) => contentOnMessage(request, sender, sendResponse, tabData);
+  onMessageListener = (request, sender, sendResponse) => {
+    if (!browser?.runtime?.id) {
+      browser.runtime.onMessage.removeListener(onMessageListener);
+      window[LISTENER_KEY] = null;
+      return;
+    }
+
+    return contentOnMessage(request, sender, sendResponse, tabData, isTopFrame);
+  };
+
   browser.runtime.onMessage.addListener(onMessageListener);
+  window[LISTENER_KEY] = onMessageListener;
 
-  try {
-    storage = await loadFromLocalStorage([`tabData-${tabData?.id}`]);
-  } catch (err) {}
+  window.addEventListener('beforeunload', () => {
+    if (onMessageListener) {
+      browser.runtime.onMessage.removeListener(onMessageListener);
+    }
 
-  const storageTabData = storage[`tabData-${tabData?.id}`] ? storage[`tabData-${tabData?.id}`] : {};
-
-  if (!storageTabData?.url || !storageTabData?.urlPath) {
-    storageTabData.url = tabData?.url;
-    storageTabData.urlPath = tabData?.urlPath;
-    storageTabData.timestamp = Date.now();
-
-    await saveToLocalStorage({ [`tabData-${tabData?.id}`]: storageTabData });
-    storage = null;
-  }
-
-  window.addEventListener('beforeunload', async () => {
-    browser.runtime.onMessage.removeListener(onMessageListener);
+    tabData = null;
+    isTopFrame = false;
+    onMessageListener = null;
+    window[LISTENER_KEY] = null;
   }, { once: true });
 };
 

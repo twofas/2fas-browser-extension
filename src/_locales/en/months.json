@@ -1,14 +1,50 @@
 {
-  "january": "January",
-  "february": "February",
-  "march": "March",
-  "april": "April",
-  "may": "May",
-  "june": "June",
-  "july": "July",
-  "august": "August",
-  "september": "September",
-  "october": "October",
-  "november": "November",
-  "december": "December"
+  "january": {
+    "message": "January",
+    "description": ""
+  },
+  "february": {
+    "message": "February",
+    "description": ""
+  },
+  "march": {
+    "message": "March",
+    "description": ""
+  },
+  "april": {
+    "message": "April",
+    "description": ""
+  },
+  "may": {
+    "message": "May",
+    "description": ""
+  },
+  "june": {
+    "message": "June",
+    "description": ""
+  },
+  "july": {
+    "message": "July",
+    "description": ""
+  },
+  "august": {
+    "message": "August",
+    "description": ""
+  },
+  "september": {
+    "message": "September",
+    "description": ""
+  },
+  "october": {
+    "message": "October",
+    "description": ""
+  },
+  "november": {
+    "message": "November",
+    "description": ""
+  },
+  "december": {
+    "message": "December",
+    "description": ""
+  }
 }

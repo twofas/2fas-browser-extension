@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const onTabFocused = require('../../partials/onTabFocused');
-const openShortcutEdit = require('../../partials/openShortcutEdit');
-const generateShortcutBox = require('./generateShortcutBox');
+import S from '@/selectors.js';
+import onTabFocused from '@partials/onTabFocused.js';
+import openShortcutEdit from '@partials/openShortcutEdit.js';
+import generateShortcutBox from '@optionsPage/functions/generateShortcutBox.js';
 
+/**
+ * Sets up the keyboard shortcut box with edit button, tooltip, and tab focus handling.
+ *
+ * @returns {void}
+ */
 const setShortcutBox = () => {
   const editBtn = document.querySelector(S.optionsPage.shortcut.edit);
 
@@ -44,4 +49,4 @@ const setShortcutBox = () => {
   document.addEventListener('visibilitychange', () => onTabFocused(generateShortcutBox, null));
 };
 
-module.exports = setShortcutBox;
+export default setShortcutBox;

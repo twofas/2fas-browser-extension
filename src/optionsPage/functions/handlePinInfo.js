@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const S = require('../../selectors');
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import S from '@/selectors.js';
 
+/**
+ * Handles dismissal of the pin info overlay and saves the preference to storage.
+ *
+ * @returns {Promise<Object>} A promise that resolves with the updated storage
+ */
 const handlePinInfo = () => {
   const view = document.querySelector(S.optionsPage.pin.info);
   view.classList.add('hidden');
@@ -27,4 +32,4 @@ const handlePinInfo = () => {
   return saveToLocalStorage({ pinInfo: true });
 };
 
-module.exports = handlePinInfo;
+export default handlePinInfo;

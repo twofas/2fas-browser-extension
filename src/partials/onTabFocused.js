@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Executes a callback based on the current tab visibility state.
+ * @param {Function} onFocus - Callback to execute when tab is visible
+ * @param {Function} onBlur - Callback to execute when tab is hidden
+ * @returns {void}
+ */
 const onTabFocused = (onFocus, onBlur) => {
   if (document.visibilityState === 'visible') {
     if (typeof onFocus === 'function') {
@@ -29,4 +35,4 @@ const onTabFocused = (onFocus, onBlur) => {
   }
 };
 
-module.exports = onTabFocused;
+export default onTabFocused;

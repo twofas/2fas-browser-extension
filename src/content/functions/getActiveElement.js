@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { v4: uuidv4 } = require('uuid');
-const clearFormElementsNumber = require('./clearFormElementsNumber');
-const addFormElementsNumber = require('./addFormElementsNumber');
-const getFormElements = require('./getFormElements');
+import { v4 as uuidv4 } from 'uuid';
+import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.js';
+import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
+import getFormElements from '@content/functions/getFormElements.js';
+import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
+/**
+ * Gets the currently focused element and marks it with a unique identifier.
+ * Traverses shadowRoots to find deeply nested focused elements.
+ *
+ * @returns {Object} Status object with nodeName and input ID (null if not an input/textarea)
+ */
 const getActiveElement = () => {
-  const activeElement = document.activeElement;
+  const activeElement = getDeepActiveElement();
   let nodeName;
 
   if (activeElement) {
@@ -51,4 +58,4 @@ const getActiveElement = () => {
   };
 };
 
-module.exports = getActiveElement;
+export default getActiveElement;

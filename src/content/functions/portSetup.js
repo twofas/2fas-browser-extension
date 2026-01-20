@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,37 +17,65 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
-const portSetup = async () => {
-  function portConnect (port) {
-    return new Promise(resolve => {
-      port = browser.runtime.connect({ name: '2FAS' });
+const PING_INTERVAL_MS = 10000;
 
-      port._oM = function (msg, p) {
-        setTimeout(() => {
-          try {
-            return p.postMessage({ msg: 'ping' });
-          } catch (e) {}
-        }, 10000);
-      };
+/**
+ * Establishes and maintains a persistent connection to the background script.
+ * Automatically reconnects when the port disconnects (e.g., service worker restart).
+ */
+const portSetup = () => {
+  let isConnected = false;
+  let pingTimeoutId = null;
 
-      port.onMessage.addListener(port._oM);
-      port._resolve = resolve;
-      port.onDisconnect.addListener(port._resolve);
+  const sendPing = port => {
+    if (!isConnected) {
+      return;
+    }
+
+    try {
       port.postMessage({ msg: 'ping' });
-    });
+    } catch {
+      isConnected = false;
+    }
   };
 
-  while (true) {
-    let p;
-    p = await portConnect(p);
-    p.onDisconnect.removeListener(p._resolve);
-    p.onMessage.removeListener(p._oM);
-    p._oM = undefined;
-    p._resolve = undefined;
-    p = undefined;
-  }
+  const handleMessage = port => {
+    pingTimeoutId = setTimeout(() => sendPing(port), PING_INTERVAL_MS);
+  };
+
+  const connect = () => {
+    if (!browser?.runtime?.id) {
+      return;
+    }
+
+    const port = browser.runtime.connect({ name: '2FAS' });
+    isConnected = true;
+
+    const onMessage = () => handleMessage(port);
+
+    const onDisconnect = () => {
+      isConnected = false;
+
+      if (pingTimeoutId !== null) {
+        clearTimeout(pingTimeoutId);
+        pingTimeoutId = null;
+      }
+
+      port.onMessage.removeListener(onMessage);
+      port.onDisconnect.removeListener(onDisconnect);
+
+      connect();
+    };
+
+    port.onMessage.addListener(onMessage);
+    port.onDisconnect.addListener(onDisconnect);
+
+    sendPing(port);
+  };
+
+  connect();
 };
 
-module.exports = portSetup;
+export default portSetup;

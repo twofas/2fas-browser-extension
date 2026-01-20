@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../../config');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
-const SDK = require('../../../sdk');
-const storeLog = require('../../../partials/storeLog');
-const getBrowserInfo = require('../getBrowserInfo');
+import config from '@/config.js';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import SDK from '@sdk/index.js';
+import storeLog from '@partials/storeLog.js';
+import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 
+/**
+ * Updates the browser extension registration with the 2FAS API when version or browser info changes.
+ *
+ * @param {Object} browserInfo - Object containing browser name, version, and OS information
+ * @returns {Promise<void>} A promise that resolves when the update is complete
+ */
 const updateBrowserExtension = async browserInfo => {
   let data;
 
@@ -54,4 +60,4 @@ const updateBrowserExtension = async browserInfo => {
   data = null;
 };
 
-module.exports = updateBrowserExtension;
+export default updateBrowserExtension;

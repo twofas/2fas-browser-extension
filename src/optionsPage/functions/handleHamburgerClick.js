@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Handles click on the hamburger menu icon to toggle mobile menu visibility.
+ *
+ * @param {Event} e - The click event
+ * @returns {void}
+ */
 const handleHamburgerClick = e => {
   e.preventDefault();
   e.stopPropagation();
@@ -27,4 +33,4 @@ const handleHamburgerClick = e => {
   menuContent.classList.toggle('visible');
 };
 
-module.exports = handleHamburgerClick;
+export default handleHamburgerClick;

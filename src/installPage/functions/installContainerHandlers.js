@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,31 +17,53 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global CustomEvent */
-const S = require('../../selectors');
-const setQRCode = require('./setQRCode');
+/* global CustomEvent, WebSocket */
+import S from '@/selectors.js';
+import setQRCode from '@installPage/functions/setQRCode.js';
 
+/**
+ * Closes WebSocket channel and dispatches qrHidden event.
+ *
+ * @param {Object} channel - WebSocket channel object with ws property
+ * @param {Function|null} cleanupFn - Cleanup function from qrTimeout
+ * @returns {null} Returns null to reset the cleanup reference
+ */
+const closeChannelAndCleanup = (channel, cleanupFn) => {
+  channel.ws.close();
+
+  if (typeof cleanupFn === 'function') {
+    cleanupFn();
+  }
+
+  document.dispatchEvent(new CustomEvent('qrHidden'));
+
+  return null;
+};
+
+/**
+ * Sets up click handlers for toggling between app download and QR code views.
+ *
+ * @param {Object} channel - WebSocket channel object with ws property and connect method
+ * @param {string} imageURL - Data URL of the QR code image
+ * @param {string} extensionID - Unique identifier of the extension instance
+ */
 const installContainerHandlers = (channel, imageURL, extensionID) => {
   const app = document.querySelector(S.installPage.container.app);
   const qr = document.querySelector(S.installPage.container.qr);
-  let t;
+  let cleanupQrTimeout = null;
 
-  const installHandler = async function () {
-    const step = this.dataset.step;
+  const installHandler = event => {
+    const step = event.currentTarget.dataset.step;
+
     app.classList.toggle('active');
     qr.classList.toggle('active');
 
     if (step === '1') {
-      if (channel.ws.readyState === 1) {
-        channel.ws.close();
-        clearTimeout(t);
-        t = undefined;
-
-        const qrHiddenEvent = new CustomEvent('qrHidden');
-        document.dispatchEvent(qrHiddenEvent);
+      if (channel.ws.readyState === WebSocket.OPEN) {
+        cleanupQrTimeout = closeChannelAndCleanup(channel, cleanupQrTimeout);
       }
     } else {
-      t = setQRCode(imageURL, channel, extensionID);
+      cleanupQrTimeout = setQRCode(imageURL, channel, extensionID);
       channel.connect();
     }
   };
@@ -49,11 +71,9 @@ const installContainerHandlers = (channel, imageURL, extensionID) => {
   app.classList.add('loaded');
   qr.classList.add('loaded');
 
-  const btn = document.querySelectorAll(S.installPage.container.handler);
-  
-  if (btn) {
-    btn.forEach(b => b.addEventListener('click', installHandler));
-  }
+  document
+    .querySelectorAll(S.installPage.container.handler)
+    .forEach(btn => btn.addEventListener('click', installHandler));
 };
 
-module.exports = installContainerHandlers;
+export default installContainerHandlers;

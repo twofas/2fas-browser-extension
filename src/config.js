@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const t = require('./_locales/en/notifications.json');
+import browser from 'webextension-polyfill';
+import t from './_locales/en/notifications.json';
 
+/**
+ * Application configuration object containing timeouts, version, and localized text strings.
+ * @type {Object}
+ */
 const config = {
   WebSocketTimeout: 3, // in minutes
-  ResendPushTimeout: 30, // in seconds
-  ExtensionVersion: '1.7.4',
+  ResendPushTimeout: 10, // in seconds
+  ExtensionVersion: browser.runtime.getManifest().version,
 
   Texts: {
     Error: {
@@ -100,6 +104,10 @@ const config = {
       OldRequest: {
         Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
         Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
+      },
+      DeviceUnpaired: {
+        Title: browser.i18n.getMessage('errorDeviceUnpairedTitle') || t.errorDeviceUnpairedTitle,
+        Message: browser.i18n.getMessage('errorDeviceUnpairedMessage') || t.errorDeviceUnpairedMessage
       }
     },
     Warning: {
@@ -107,7 +115,17 @@ const config = {
         return {
           Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
           Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
+        };
+      },
+      CrossDomain: (currentDomain, topDomain) => {
+        if (topDomain) {
+          return (browser.i18n.getMessage('warningCrossDomainMessage') || t.warningCrossDomainMessage)
+            .replace('CURRENT_DOMAIN', currentDomain)
+            .replace('TOP_DOMAIN', topDomain);
         }
+
+        return (browser.i18n.getMessage('warningCrossDomainNoAccessMessage') || t.warningCrossDomainNoAccessMessage)
+          .replace('CURRENT_DOMAIN', currentDomain);
       }
     },
     Success: {
@@ -141,11 +159,6 @@ const config = {
       }
     },
     Info: {
-      NativeNotifications: {
-        Title: browser.i18n.getMessage('infoNativeNotificationsTitle') || t.infoNativeNotificationsTitle,
-        Message: browser.i18n.getMessage('infoNativeNotificationsMessage') || t.infoNativeNotificationsMessage
-      },
-      EnabledNativeNotifications: browser.i18n.getMessage('infoEnabledNativeNotifications') || t.infoEnabledNativeNotifications,
       UnsupportedProtocol: {
         Title: browser.i18n.getMessage('infoUnsupportedProtocolTitle') || t.infoUnsupportedProtocolTitle,
         Message: browser.i18n.getMessage('infoUnsupportedProtocolMessage') || t.infoUnsupportedProtocolMessage
@@ -172,4 +185,4 @@ const config = {
   }
 };
 
-module.exports = config;
+export default config;

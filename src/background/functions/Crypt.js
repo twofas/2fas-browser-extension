@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,25 @@
 //
 
 /* global TextEncoder, TextDecoder, crypto */
-const ab2b64 = require('./ab2b64');
-const b642ab = require('./b642ab');
+import ab2b64 from '@background/functions/ab2b64.js';
+import b642ab from '@background/functions/b642ab.js';
 
+/**
+ * Cryptography class for RSA-OAEP encryption/decryption operations.
+ */
 class Crypt {
+  /**
+   * Creates a new Crypt instance with text encoder/decoder.
+   */
   constructor () {
     this.encoder = new TextEncoder();
     this.decoder = new TextDecoder('utf-8');
   }
 
+  /**
+   * Generates a new RSA-OAEP key pair.
+   * @returns {Promise<CryptoKeyPair>} Promise resolving to the generated key pair
+   */
   generateKeys () {
     return crypto.subtle.generateKey(
       {
@@ -40,6 +50,13 @@ class Crypt {
     );
   }
 
+  /**
+   * Imports a cryptographic key.
+   * @param {ArrayBuffer|JsonWebKey} key - The key data to import
+   * @param {string} format - The format of the key (spki, pkcs8, jwk, raw)
+   * @param {string[]} keyUsages - Array of key usages (encrypt, decrypt)
+   * @returns {Promise<CryptoKey>} Promise resolving to the imported key
+   */
   importKey (key, format, keyUsages) {
     return crypto.subtle.importKey(
       format,
@@ -50,28 +67,59 @@ class Crypt {
     )
   }
 
+  /**
+   * Exports a cryptographic key.
+   * @param {string} format - The format to export to (spki, pkcs8, jwk, raw)
+   * @param {CryptoKey} key - The key to export
+   * @returns {Promise<ArrayBuffer|JsonWebKey>} Promise resolving to the exported key
+   */
   exportKey (format, key) {
     return crypto.subtle.exportKey(format, key);
   }
 
+  /**
+   * Converts an ArrayBuffer to a Base64 string.
+   * @param {ArrayBuffer} key - The ArrayBuffer to convert
+   * @returns {string} Base64 encoded string
+   */
   ArrayBufferToString (key) {
-    const buf = new Uint8Array(key);
-    return ab2b64(buf);
+    return ab2b64(key);
   }
 
+  /**
+   * Converts a Base64 string to an ArrayBuffer.
+   * @param {string} string - The Base64 string to convert
+   * @returns {ArrayBuffer} The converted ArrayBuffer
+   */
   stringToArrayBuffer (string) {
     return b642ab(string);
   }
 
+  /**
+   * Encodes text to a Uint8Array.
+   * @param {string} text - The text to encode
+   * @returns {Uint8Array} The encoded text
+   */
   encodeText (text) {
     return this.encoder.encode(text);
   }
 
+  /**
+   * Decodes an ArrayBuffer to text.
+   * @param {ArrayBuffer} text - The ArrayBuffer to decode
+   * @returns {string} The decoded text
+   */
   decodeText (text) {
     const decDV = new DataView(text);
     return this.decoder.decode(decDV);
   }
 
+  /**
+   * Encrypts data using RSA-OAEP.
+   * @param {CryptoKey} key - The public key for encryption
+   * @param {ArrayBuffer} encodedText - The data to encrypt
+   * @returns {Promise<ArrayBuffer>} Promise resolving to the encrypted data
+   */
   encrypt (key, encodedText) {
     return crypto.subtle.encrypt(
       { name: 'RSA-OAEP' },
@@ -80,6 +128,12 @@ class Crypt {
     );
   }
 
+  /**
+   * Decrypts data using RSA-OAEP.
+   * @param {CryptoKey} key - The private key for decryption
+   * @param {ArrayBuffer} encryptedText - The data to decrypt
+   * @returns {Promise<ArrayBuffer>} Promise resolving to the decrypted data
+   */
   decrypt (key, encryptedText) {
     return crypto.subtle.decrypt(
       { name: 'RSA-OAEP' },
@@ -89,4 +143,4 @@ class Crypt {
   }
 }
 
-module.exports = Crypt;
+export default Crypt;

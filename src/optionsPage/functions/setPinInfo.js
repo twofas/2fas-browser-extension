@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const S = require('../../selectors');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import S from '@/selectors.js';
 
+/**
+ * Shows the pin info banner if user has not dismissed it previously.
+ *
+ * @returns {Promise<void>} A promise that resolves when the pin info visibility is set
+ */
 const setPinInfo = () => {
   return loadFromLocalStorage('pinInfo')
     .then(data => {
@@ -33,4 +38,4 @@ const setPinInfo = () => {
     });
 };
 
-module.exports = setPinInfo;
+export default setPinInfo;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,48 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../../localStorage/loadFromLocalStorage');
-const generateDefaultStorage = require('../generateDefaultStorage');
-const storeLog = require('../../../partials/storeLog');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import storeLog from '@partials/storeLog.js';
 
-const verifyStorageIntegrity = browserInfo => {
-  return loadFromLocalStorage(['keys', 'extensionID'])
-    .then(storage => {
-      if (
-        !storage.keys ||
-        !storage?.keys?.publicKey ||
-        !storage?.keys?.privateKey ||
-        !storage?.extensionID
-      ) {
-        return generateDefaultStorage(browserInfo);
-      }
+/**
+ * Checks if the storage contains valid encryption keys and extension ID.
+ *
+ * @param {Object} storage - The storage object to validate
+ * @returns {boolean} True if storage has valid keys and extension ID
+ */
+const isStorageValid = storage => {
+  if (!storage?.keys || !storage?.extensionID) {
+    return false;
+  }
 
-      return true;
-    })
-    .catch(err => storeLog('error', 29, err, 'verifyStorageIntegrity'));
+  const { publicKey, privateKey } = storage.keys;
+
+  return Boolean(publicKey && privateKey);
 };
 
-module.exports = verifyStorageIntegrity;
+/**
+ * Verifies that required storage keys exist and regenerates default storage if corrupted.
+ *
+ * @param {Object} browserInfo - Object containing browser name, version, and OS information
+ * @returns {Promise<boolean>} A promise that resolves to true if storage is valid or was successfully regenerated
+ */
+const verifyStorageIntegrity = async browserInfo => {
+  try {
+    const storage = await loadFromLocalStorage(['keys', 'extensionID']);
+
+    if (isStorageValid(storage)) {
+      return true;
+    }
+
+    await generateDefaultStorage(browserInfo);
+
+    return true;
+  } catch (err) {
+    storeLog('error', 29, err, 'verifyStorageIntegrity');
+
+    return false;
+  }
+};
+
+export default verifyStorageIntegrity;

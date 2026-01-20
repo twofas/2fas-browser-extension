@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,21 @@
 //
 
 /* global FormData */
-const config = require('../config');
-const SDK = require('../sdk');
-const TwoFasNotification = require('../notification');
-const storeLog = require('./storeLog');
-const saveToLocalStorage = require('../localStorage/saveToLocalStorage');
-const S = require('../selectors');
+import config from '../config.js';
+import SDK from '../sdk/index.js';
+import TwoFasNotification from '../notification/index.js';
+import storeLog from './storeLog.js';
+import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
+import S from '../selectors.js';
 
 let updateTimeout = false;
 
+/**
+ * Handles the extension name update form submission.
+ * @param {Object} storage - The storage object containing extension data
+ * @param {Event} e - The form submit event
+ * @returns {Promise<boolean>|boolean} False on validation error, Promise on API call
+ */
 const extNameUpdate = (storage, e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -86,4 +92,4 @@ const extNameUpdate = (storage, e) => {
     });
 };
 
-module.exports = extNameUpdate;
+export default extNameUpdate;

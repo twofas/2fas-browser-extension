@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.loadFromLocalStorage = require('./loadFromLocalStorage');
-exports.saveToLocalStorage = require('./saveToLocalStorage');
-exports.clearLocalStorage = require('./clearLocalStorage');
-exports.removeFromLocalStorage = require('./removeFromLocalStorage');
+export { default as loadFromLocalStorage } from './loadFromLocalStorage.js';
+export { default as saveToLocalStorage } from './saveToLocalStorage.js';
+export { default as clearLocalStorage } from './clearLocalStorage.js';
+export { default as removeFromLocalStorage } from './removeFromLocalStorage.js';

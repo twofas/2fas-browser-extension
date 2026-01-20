@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,36 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const openInstallPage = require('./openInstallPage');
-const storeLog = require('../../partials/storeLog');
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import openInstallPage from '@background/functions/openInstallPage.js';
+import storeLog from '@partials/storeLog.js';
 
-const checkSafariStorage = browserInfo => {
-  return loadFromLocalStorage(null)
-    .then(storage => {
-      if (
-        !storage.browserInfo ||
-        !storage.keys ||
-        !storage?.keys?.publicKey ||
-        !storage?.keys?.privateKey ||
-        !storage?.extensionID
-      ) {
-        return generateDefaultStorage(browserInfo)
-          .then(() => openInstallPage())
-          .catch(err => storeLog('error', 9, err, 'onInstalled'));
-      }
+/**
+ * Checks if Safari storage has all required data and regenerates it if missing.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>}
+ */
+const checkSafariStorage = async browserInfo => {
+  try {
+    const storage = await loadFromLocalStorage(null);
 
-      return false;
-    })
-    .catch(err => storeLog('error', 35, err, 'checkSafariStorage'));
+    const hasValidStorage =
+      storage?.browserInfo &&
+      storage?.keys?.publicKey &&
+      storage?.keys?.privateKey &&
+      storage?.extensionID;
+
+    if (hasValidStorage) {
+      return;
+    }
+
+    await generateDefaultStorage(browserInfo);
+    await openInstallPage();
+  } catch (err) {
+    storeLog('error', 35, err, 'checkSafariStorage');
+  }
 };
 
-module.exports = checkSafariStorage;
+export default checkSafariStorage;

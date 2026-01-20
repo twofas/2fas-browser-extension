@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Checks if the current script is running inside an iframe.
+ * Handles cross-origin frames in Safari where accessing window.top may throw.
+ *
+ * @returns {boolean} True if running in a frame, false otherwise
+ */
 const isInFrame = () => {
-  return window.self !== window.top;
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
 };
 
-module.exports = isInFrame;
+export default isInFrame;

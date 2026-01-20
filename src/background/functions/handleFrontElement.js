@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,30 +17,42 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const TwoFasNotification = require('../../notification');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
+import config from '@/config.js';
+import TwoFasNotification from '@notification/index.js';
+import { saveToSessionStorage } from '@sessionStorage/index.js';
 
-const handleFrontElement = async (activeElements, tabId, storage) => {
+/**
+ * Handles the focused input element and saves it to session storage.
+ * @async
+ * @param {Array} activeElements - Array of active element information from frames.
+ * @param {number} tabId - The tab ID.
+ * @param {Object} sessionData - The session data object containing tabData.
+ * @return {Promise<void>}
+ */
+const handleFrontElement = async (activeElements, tabId, sessionData) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
-    properElements = activeElements.filter(el => 
-      el?.id && 
+    properElements = activeElements.filter(el =>
+      el?.id &&
       (typeof el?.id === 'string' || el?.id instanceof String) &&
       el?.id?.length > 0 &&
       (el?.nodeName === 'input' || el?.nodeName === 'textarea')
     );
   }
 
+  const tabData = sessionData[`tabData-${tabId}`] || {};
+
   if (properElements.length > 0) {
-    const tabData = storage[`tabData-${tabId}`] || {};
     tabData.lastFocusedInput = properElements[0].id;
-    await saveToLocalStorage({ [`tabData-${tabId}`]: tabData }, storage);
+    await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
     return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
   }
+
+  delete tabData.lastFocusedInput;
+  await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
 
   return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);
 };
 
-module.exports = handleFrontElement;
+export default handleFrontElement;

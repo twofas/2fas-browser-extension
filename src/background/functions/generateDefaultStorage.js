@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const SDK = require('../../sdk');
-const Crypt = require('./Crypt');
-const storeLog = require('../../partials/storeLog');
-const defaultAutoSubmitExcludedDomains = require('../../defaultAutoSubmitExcludedDomains');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import SDK from '@sdk/index.js';
+import Crypt from '@background/functions/Crypt.js';
+import storeLog from '@partials/storeLog.js';
+import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 
+/**
+ * Generates default storage with encryption keys and registers extension with the 2FAS API.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>} A promise that resolves when storage is initialized and extension is registered
+ */
 const generateDefaultStorage = browserInfo => {
   const crypt = new Crypt();
   let attempt = 0;
@@ -54,7 +60,6 @@ const generateDefaultStorage = browserInfo => {
         keys,
         contextMenu: true,
         logging: false,
-        notifications: false,
         incognito: false,
         nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
         pinInfo: false,
@@ -77,9 +82,9 @@ const generateDefaultStorage = browserInfo => {
         return Promise.resolve();
       }
 
-      return browser.runtime.setUninstallURL(`https://2fas.com/byebye/${storage.extensionID}/`);
+      return browser.runtime.setUninstallURL(`https://2fas.com/auth/byebye/${storage.extensionID}/`);
     })
     .catch(err => storeLog('error', 28, err, 'generateDefaultStorage'));
 };
 
-module.exports = generateDefaultStorage;
+export default generateDefaultStorage;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,37 +17,45 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const setIcon = require('./setIcon');
-const dummyGetLocalStorage = require('./dummyGetLocalStorage');
+import browser from 'webextension-polyfill';
+import setIcon from '@background/functions/setIcon.js';
+import dummyGetLocalStorage from '@background/functions/dummyGetLocalStorage.js';
+import wait from '@partials/wait.js';
 
+/**
+ * Checks if content script is active in a tab and updates the extension icon accordingly.
+ * @param {number} tabId - The ID of the tab to check.
+ * @returns {Promise<void>}
+ */
 const checkTabCS = async tabId => {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  await dummyGetLocalStorage();
-  let tabInfo;
-
   if (!tabId) {
     return;
   }
 
+  await wait(100);
+  await dummyGetLocalStorage();
+
+  let tabInfo;
+
   try {
     tabInfo = await browser.tabs.get(tabId);
-  } catch (e) {
+  } catch {
     return;
   }
 
-  const tabUrl = tabInfo?.url ? tabInfo.url : (tabInfo?.pendingUrl ? tabInfo.pendingUrl : '');
+  const tabUrl = tabInfo?.url ?? tabInfo?.pendingUrl ?? '';
   const extUrl = browser.runtime.getURL('');
-  let urlObj;
 
   if (tabUrl.includes(extUrl)) {
     await setIcon(tabId, false, false);
     return;
   }
 
+  let urlObj;
+
   try {
     urlObj = new URL(tabUrl);
-  } catch (e) {
+  } catch {
     await setIcon(tabId, false, false);
     return;
   }
@@ -60,9 +68,9 @@ const checkTabCS = async tabId => {
   try {
     await browser.tabs.sendMessage(tabId, { action: 'contentScript' });
     await setIcon(tabId);
-  } catch (err) {
+  } catch {
     await setIcon(tabId, false, true);
   }
 };
 
-module.exports = checkTabCS;
+export default checkTabCS;

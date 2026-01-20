@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Array filter callback that returns only unique values.
+ * @param {*} value - Current array element
+ * @param {number} index - Current index
+ * @param {Array} self - The array being filtered
+ * @returns {boolean} True if this is the first occurrence of the value
+ */
 const uniqueOnly = (value, index, self) => {
   return self.indexOf(value) === index;
-}
+};
 
-module.exports = uniqueOnly;
+export default uniqueOnly;
