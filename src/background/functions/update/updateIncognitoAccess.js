@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../../localStorage');
-const storeLog = require('../../../partials/storeLog');
-const checkTabCS = require('../checkTabCS');
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import checkTabCS from '@background/functions/checkTabCS.js';
 
+/**
+ * Updates the stored incognito access status and refreshes content scripts if changed.
+ *
+ * @returns {Promise<void>} A promise that resolves when the update is complete
+ */
 const updateIncognitoAccess = async () => {
   let storage = null;
   let incognitoAllowed = await browser.extension.isAllowedIncognitoAccess();
@@ -44,4 +49,4 @@ const updateIncognitoAccess = async () => {
   }
 };
 
-module.exports = updateIncognitoAccess;
+export default updateIncognitoAccess;

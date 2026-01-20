@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleMenuLink = require('./handleMenuLink');
+import S from '@/selectors.js';
+import handleMenuLink from '@optionsPage/functions/handleMenuLink.js';
 
+/**
+ * Attaches click event listeners to all menu navigation links.
+ *
+ * @returns {void}
+ */
 const setMenuLinks = () => {
   const menuLinks = document.querySelectorAll(S.optionsPage.menuLink);
   menuLinks.forEach(el => el.addEventListener('click', handleMenuLink));
 };
 
-module.exports = setMenuLinks;
+export default setMenuLinks;

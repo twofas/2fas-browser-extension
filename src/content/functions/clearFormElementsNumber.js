@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
+
+/**
+ * Removes the data-twofas-element-number attribute from all elements in the document.
+ * Searches both the main document and any shadowRoots.
+ *
+ * @returns {void}
+ */
 const clearFormElementsNumber = () => {
-  const elements = Array.from(document.querySelectorAll('*[data-twofas-element-number]'));
+  const elements = querySelectorAllDeep('*[data-twofas-element-number]');
+
   elements.forEach(element => {
     if (typeof element?.removeAttribute === 'function') {
       element.removeAttribute('data-twofas-element-number');
@@ -26,4 +35,4 @@ const clearFormElementsNumber = () => {
   });
 };
 
-module.exports = clearFormElementsNumber;
+export default clearFormElementsNumber;

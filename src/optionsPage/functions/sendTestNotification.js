@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const TwoFasNotification = require('../../notification');
-const config = require('../../config');
+import TwoFasNotification from '@notification';
+import config from '@/config.js';
 
+/**
+ * Sends a test notification to verify the notification system is working.
+ *
+ * @returns {Promise<void>} A promise that resolves after displaying the notification
+ */
 const sendTestNotification = () => {
   return TwoFasNotification.show(config.Texts.Info.Test);
 };
 
-module.exports = sendTestNotification;
+export default sendTestNotification;

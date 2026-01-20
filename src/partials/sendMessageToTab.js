@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const config = require('../config');
-const TwoFasNotification = require('../notification');
+import browser from 'webextension-polyfill';
+import config from '../config.js';
+import TwoFasNotification from '../notification/index.js';
 
+/**
+ * Sends a message to a specific browser tab and handles the response.
+ * @param {number} tabID - The ID of the target tab
+ * @param {Object} message - The message object to send
+ * @returns {Promise<boolean|undefined>} Promise resolving to false or undefined based on response
+ */
 const sendMessageToTab = (tabID, message) => {
   return browser.tabs.sendMessage(tabID, message)
     .then(res => {
@@ -45,7 +51,9 @@ const sendMessageToTab = (tabID, message) => {
       if (err.toString().includes('Receiving end does not exist')) {
         return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
       }
+
+      return undefined;
     });
 };
 
-module.exports = sendMessageToTab;
+export default sendMessageToTab;

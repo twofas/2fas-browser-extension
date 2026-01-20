@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Shows the confirmation modal dialog with the specified header, text, and optional callback.
+ *
+ * @param {string} header - The modal header text
+ * @param {string} text - The modal body text
+ * @param {Function|null} func - Optional callback function executed when confirmed
+ * @returns {void}
+ */
 const showConfirmModal = (header, text, func = null) => {
   const modalEl = document.querySelector(S.optionsPage.confirmModal.element);
   const headerEl = document.querySelector(S.optionsPage.confirmModal.header);
@@ -41,4 +49,4 @@ const showConfirmModal = (header, text, func = null) => {
   }
 };
 
-module.exports = showConfirmModal;
+export default showConfirmModal;

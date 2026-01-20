@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,17 @@
 //
 
 /* global FontFace */
-// NEWEGG ETC. FIX
+import browser from 'webextension-polyfill';
+
+/**
+ * Loads Montserrat font faces into the document if not already available.
+ *
+ * @returns {boolean} False if fonts are already loaded, otherwise undefined
+ */
 const loadFonts = () => {
   if (document.fonts.check('bold 16px Montserrat') && document.fonts.check('normal 16px Montserrat')) {
     return false;
   }
-
-  const browser = require('webextension-polyfill');
 
   let fonts = [
     new FontFace(
@@ -47,4 +51,4 @@ const loadFonts = () => {
   }, { once: true });
 };
 
-module.exports = loadFonts;
+export default loadFonts;

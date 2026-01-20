@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handlePinInfo = require('./handlePinInfo');
-const handlePinInfoNext = require('./handlePinInfoNext');
-const handlePinInfoPrev = require('./handlePinInfoPrev');
+import S from '@/selectors.js';
+import handlePinInfo from '@optionsPage/functions/handlePinInfo.js';
+import handlePinInfoNext from '@optionsPage/functions/handlePinInfoNext.js';
+import handlePinInfoPrev from '@optionsPage/functions/handlePinInfoPrev.js';
 
+/**
+ * Attaches click event listeners to pin info navigation buttons.
+ *
+ * @returns {void}
+ */
 const setPinInfoBtns = () => {
   const gotIt = document.querySelector(S.optionsPage.pin.gotIt);
   const next = document.querySelectorAll(S.optionsPage.pin.next);
@@ -42,4 +47,4 @@ const setPinInfoBtns = () => {
   }
 };
 
-module.exports = setPinInfoBtns;
+export default setPinInfoBtns;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const extNameUpdate = require('../../partials/extNameUpdate');
+import S from '@/selectors.js';
+import extNameUpdate from '@partials/extNameUpdate.js';
 
+/**
+ * Attaches submit event listener to the extension name update form.
+ *
+ * @param {Object} storage - The storage object containing extension data
+ * @returns {void}
+ */
 const setExtNameUpdateForm = storage => {
   const extNameUpdateForm = document.querySelector(S.extName.updateForm);
   extNameUpdateForm.addEventListener('submit', e => extNameUpdate(storage, e));
 };
 
-module.exports = setExtNameUpdateForm;
+export default setExtNameUpdateForm;

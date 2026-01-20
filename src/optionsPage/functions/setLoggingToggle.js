@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes the logging toggle switch with stored value.
+ *
+ * @returns {Promise<void>} A promise that resolves when the toggle is initialized
+ */
 const setLoggingToggle = () => {
   return loadFromLocalStorage(['logging'])
     .then(storage => {
@@ -40,4 +45,4 @@ const setLoggingToggle = () => {
     .catch(() => {});
 };
 
-module.exports = setLoggingToggle;
+export default setLoggingToggle;

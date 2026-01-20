@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const SDK = require('../../sdk');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const removeDeviceFromDOM = require('./removeDeviceFromDOM');
-const showConfirmModal = require('./showConfirmModal');
-const TwoFasNotification = require('../../notification');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import SDK from '@sdk';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import storeLog from '@partials/storeLog.js';
+import removeDeviceFromDOM from '@optionsPage/functions/removeDeviceFromDOM.js';
+import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
+import TwoFasNotification from '@notification';
 
+/**
+ * Handles the device removal process with confirmation modal and API call.
+ *
+ * @param {Event} e - The click event that triggered the removal
+ * @returns {Promise<void>|void}
+ */
 const removeDevice = function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -76,4 +82,4 @@ const removeDevice = function (e) {
   );
 }
 
-module.exports = removeDevice;
+export default removeDevice;

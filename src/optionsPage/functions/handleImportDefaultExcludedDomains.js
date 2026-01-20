@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const defaultAutoSubmitExcludedDomains = require('../../defaultAutoSubmitExcludedDomains');
-const uniqueOnly = require('../../partials/uniqueOnly');
-const generateDomainsList = require('./generateDomainsList');
-const TwoFasNotification = require('../../notification');
-const config = require('../../config');
-const storeLog = require('../../partials/storeLog');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
+import uniqueOnly from '@partials/uniqueOnly.js';
+import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
+import TwoFasNotification from '@notification';
+import config from '@/config.js';
+import storeLog from '@partials/storeLog.js';
 
+/**
+ * Handles import of default excluded domains for auto-submit feature.
+ *
+ * @param {Event} e - The click event
+ * @returns {Promise<void>} A promise that resolves when domains are imported and UI is updated
+ */
 const handleImportDefaultExcludedDomains = e => {
   e.preventDefault();
   e.stopPropagation();
@@ -47,4 +53,4 @@ const handleImportDefaultExcludedDomains = e => {
     });
 };
 
-module.exports = handleImportDefaultExcludedDomains;
+export default handleImportDefaultExcludedDomains;

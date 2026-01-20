@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const hideDomainModal = require('./hideDomainModal');
+import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
+/**
+ * Handles click events on the domain modal backdrop to close the modal.
+ *
+ * @param {Event} e - The click event on the modal backdrop
+ * @returns {void}
+ */
 const domainModalBackdropClick = e => {
   const elClassList = Array.from(e.target.classList);
 
@@ -27,4 +33,4 @@ const domainModalBackdropClick = e => {
   }
 };
 
-module.exports = domainModalBackdropClick;
+export default domainModalBackdropClick;

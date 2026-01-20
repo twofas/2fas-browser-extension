@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,41 +17,61 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const loadFromLocalStorage = require('../../localStorage/loadFromLocalStorage');
+import browser from 'webextension-polyfill';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 
-const getIconObj = async (tabID, isActive) => {
-  const MAX_TYPE = 2;
-  
-  let type = 0;
-  let typeFilename = '';
-  let iconFileName = '';
+const MAX_ICON_TYPE = 2;
+const ICON_SIZES = [16, 32, 48, 96, 128];
 
+/**
+ * Builds the icon filename suffix based on icon type and active state.
+ *
+ * @param {number} iconType - The icon type (0, 1, or 2)
+ * @param {boolean} isActive - Whether the tab is active for 2FA
+ * @returns {string} The icon filename suffix
+ */
+const buildIconSuffix = (iconType, isActive) => {
+  const typeSuffix = iconType > 0 ? `_${iconType}` : '';
+  const stateSuffix = isActive ? '' : 'gray';
+
+  return `${typeSuffix}${stateSuffix}`;
+};
+
+/**
+ * Gets the validated icon type from storage.
+ *
+ * @returns {Promise<number>} The icon type (0, 1, or 2)
+ */
+const getIconType = async () => {
   const storage = await loadFromLocalStorage(['extIcon']);
+  const rawType = storage?.extIcon;
 
-  if (storage && storage?.extIcon && !isNaN(storage.extIcon)) {
-    type = parseInt(storage.extIcon, 10);
-
-    if (type > MAX_TYPE) {
-      type = 0;
-    }
+  if (rawType === undefined || rawType === null || isNaN(rawType)) {
+    return 0;
   }
 
-  if (type !== 0) {
-    typeFilename = `_${type}`;
-  }
+  const parsedType = parseInt(rawType, 10);
 
-  iconFileName = isActive ? typeFilename : `${typeFilename}gray`;
+  return (parsedType > 0 && parsedType <= MAX_ICON_TYPE) ? parsedType : 0;
+};
 
-  const iconObj = {
-    path: {
-      16: browser.runtime.getURL(`images/icons/icon16${iconFileName}.png`),
-      32: browser.runtime.getURL(`images/icons/icon32${iconFileName}.png`),
-      48: browser.runtime.getURL(`images/icons/icon48${iconFileName}.png`),
-      96: browser.runtime.getURL(`images/icons/icon96${iconFileName}.png`),
-      128: browser.runtime.getURL(`images/icons/icon128${iconFileName}.png`)
-    }
-  };
+/**
+ * Builds the icon object with paths for different icon sizes based on active state and icon type.
+ *
+ * @param {number|null} tabID - The ID of the tab, or null for global icon
+ * @param {boolean} isActive - Whether the tab is active for 2FA
+ * @returns {Promise<Object>} A promise that resolves to the icon object with paths
+ */
+const getIconObj = async (tabID, isActive) => {
+  const iconType = await getIconType();
+  const suffix = buildIconSuffix(iconType, isActive);
+
+  const path = ICON_SIZES.reduce((acc, size) => {
+    acc[size] = browser.runtime.getURL(`images/icons/icon${size}${suffix}.png`);
+    return acc;
+  }, {});
+
+  const iconObj = { path };
 
   if (tabID) {
     iconObj.tabId = tabID;
@@ -60,19 +80,30 @@ const getIconObj = async (tabID, isActive) => {
   return iconObj;
 };
 
+/**
+ * Sets the extension icon and optionally updates the title for a specific tab.
+ *
+ * @param {number|null} tabID - The ID of the tab, or null for global icon
+ * @param {boolean} [isActive=true] - Whether to show the active or inactive icon
+ * @param {boolean} [changeTitle=false] - Whether to update the icon title when inactive
+ * @returns {Promise<void>}
+ */
 const setIcon = async (tabID, isActive = true, changeTitle = false) => {
   if (process.env.EXT_PLATFORM === 'Safari') {
-    return false;
+    return;
   }
 
   const iconObj = await getIconObj(tabID, isActive);
-  const iconTitle = isActive ? '2FAS - Two Factor Authentication' : browser.i18n.getMessage('inActiveTabInfo');
 
   await browser.action.setIcon(iconObj);
 
-  if (isActive || (!isActive && changeTitle)) {
+  if (isActive || changeTitle) {
+    const iconTitle = isActive
+      ? '2FAS - Two Factor Authentication'
+      : browser.i18n.getMessage('inActiveTabInfo');
+
     await browser.action.setTitle({ tabId: tabID, title: iconTitle });
   }
 };
 
-module.exports = setIcon;
+export default setIcon;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,28 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Sets the extension name value in the input field.
+ *
+ * @param {string} extName - The extension name to display
+ * @returns {boolean} True if successfully set, false otherwise
+ */
 const setExtName = extName => {
   const extNameEl = document.querySelector(S.extName.input);
-  extNameEl.value = extName;
+
+  if (!extNameEl) {
+    return false;
+  }
+
+  if (typeof extName !== 'string') {
+    extNameEl.value = '';
+    return false;
+  }
+
+  extNameEl.value = extName.trim();
+  return true;
 };
 
-module.exports = setExtName;
+export default setExtName;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleHamburgerClick = require('./handleHamburgerClick');
+import S from '@/selectors.js';
+import handleHamburgerClick from '@optionsPage/functions/handleHamburgerClick.js';
 
+/**
+ * Attaches click event listener to the hamburger menu button.
+ *
+ * @returns {void}
+ */
 const setHamburger = () => {
   const hamburger = document.querySelector(S.optionsPage.hamburger.element);
 
@@ -28,4 +33,4 @@ const setHamburger = () => {
   }
 };
 
-module.exports = setHamburger;
+export default setHamburger;

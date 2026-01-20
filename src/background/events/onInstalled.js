@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,16 +17,23 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const openInstallPage = require('./openInstallPage');
-const storeLog = require('../../partials/storeLog');
-const updateBrowserInfo = require('./updateBrowserInfo');
-const createContextMenus = require('./createContextMenus');
-const generateDefaultStorage = require('./generateDefaultStorage');
-const checkSafariStorage = require('./checkSafariStorage');
+import openInstallPage from '@background/functions/openInstallPage.js';
+import storeLog from '@partials/storeLog.js';
+import updateBrowserInfo from '@background/functions/updateBrowserInfo.js';
+import { initContextMenu } from '@background/contextMenu/index.js';
+import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 
-const onInstalled = (details, browserInfo) => {
+/**
+ * Handles extension installation and update events.
+ * @async
+ * @param {Object} details - Installation details from the browser.
+ * @param {Object} browserInfo - Browser information object.
+ * @return {Promise<void>}
+ */
+const onInstalled = async (details, browserInfo) => {
   if (process.env.EXT_PLATFORM !== 'Firefox') {
-    createContextMenus();
+    await initContextMenu();
   }
 
   if (details?.reason !== 'install') {
@@ -37,9 +44,12 @@ const onInstalled = (details, browserInfo) => {
     return checkSafariStorage(browserInfo);
   }
 
-  return generateDefaultStorage(browserInfo)
-    .then(() => openInstallPage())
-    .catch(err => storeLog('error', 9, err, 'onInstalled'));
+  try {
+    await generateDefaultStorage(browserInfo);
+    await openInstallPage();
+  } catch (err) {
+    await storeLog('error', 9, err, 'onInstalled');
+  }
 };
 
-module.exports = onInstalled;
+export default onInstalled;

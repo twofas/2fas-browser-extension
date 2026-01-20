@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,27 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage')
+import browser from 'webextension-polyfill';
 
-const clearAfterInputToken = (inputElement, tabID) => {
-  // CLEAR INPUT
-  if (inputElement) {
-    if (typeof inputElement?.removeAttribute === 'function') {
-      inputElement.removeAttribute('data-twofas-input');
-    }
+/**
+ * Clears the 2FAS data attribute from the input element and removes stored input reference.
+ * @param {HTMLElement} inputElement - The input element to clear.
+ * @returns {Promise<void>} Promise that resolves when cleanup is complete.
+ */
+const clearAfterInputToken = inputElement => {
+  if (inputElement && typeof inputElement?.removeAttribute === 'function') {
+    inputElement.removeAttribute('data-twofas-input');
   }
 
-  // CLEAR STORAGE
-  return loadFromLocalStorage([`tabData-${tabID}`])
-    .then(storage => {
-      if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`].lastFocusedInput) {
-        delete storage[`tabData-${tabID}`].lastFocusedInput;
-        return saveToLocalStorage({ [`tabData-${tabID}`]: storage[`tabData-${tabID}`] });
-      }
-
-      return true;
-    })
-    .catch(() => {});
+  return browser.runtime.sendMessage({ action: 'clearLastFocusedInput' }).catch(() => {});
 };
 
-module.exports = clearAfterInputToken;
+export default clearAfterInputToken;

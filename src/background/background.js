@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { onConnect, onCommand, onContextMenuClick, onInstalled, getBrowserInfo, onMessage, onStartup, browserAction, createContextMenus, dummyGetLocalStorage, setIcon } = require('./functions');
-const { onTabRemoved, onTabUpdated, onTabActivated } = require('./tabs');
+import browser from 'webextension-polyfill';
+import { onConnect, onCommand, onInstalled, onMessage, onStartup } from '@background/events/index.js';
+import { createContextMenus, onContextMenuClick } from '@background/contextMenu/index.js';
+import { getBrowserInfo, browserAction, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
+import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 const browserInfo = getBrowserInfo();
-if (process.env.EXT_PLATFORM === 'Firefox') {
-  createContextMenus();
-}
+createContextMenus();
 
 browser.runtime.onInstalled.addListener(details => onInstalled(details, browserInfo));
 browser.runtime.onMessage.addListener(onMessage);

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const wait = require('./wait');
+import wait from './wait.js';
 
+/**
+ * Executes an array of tasks sequentially with a delay between each.
+ * @param {Function[]} tasks - Array of async functions to execute
+ * @param {number} delayTime - Delay in milliseconds between tasks
+ * @returns {Promise<void>}
+ */
 const runTasksWithDelay = async (tasks, delayTime) => {
   for (const task of tasks) {
     await task();
@@ -26,4 +32,4 @@ const runTasksWithDelay = async (tasks, delayTime) => {
   }
 };
 
-module.exports = runTasksWithDelay;
+export default runTasksWithDelay;

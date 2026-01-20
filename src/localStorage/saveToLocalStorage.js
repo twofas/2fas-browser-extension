@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,14 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
+/**
+ * Saves data to browser local storage and merges it with an optional storage object.
+ * @param {Object} data - The data to save to storage
+ * @param {Object} [storageObj={}] - Optional object to merge the saved data into
+ * @returns {Promise<Object>} Promise resolving to the merged storage object
+ */
 const saveToLocalStorage = (data, storageObj = {}) => {
   return browser.storage.local.set(data)
     .then(() => Object.assign(storageObj, data))
@@ -28,4 +34,4 @@ const saveToLocalStorage = (data, storageObj = {}) => {
     });
 };
 
-module.exports = saveToLocalStorage;
+export default saveToLocalStorage;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const browser = require('webextension-polyfill');
-const i18n = require('../partials/i18n');
-const loadFromLocalStorage = require('../localStorage/loadFromLocalStorage');
-const TwoFasNotification = require('../notification');
-const SDK = require('../sdk');
-const extPageOnMessage = require('../partials/extPageOnMessage');
-const { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } = require('../partials');
-const { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect } = require('./functions');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import i18n from '@partials/i18n.js';
+import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
+import TwoFasNotification from '@notification';
+import SDK from '@sdk';
+import extPageOnMessage from '@partials/extPageOnMessage.js';
+import { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } from '@partials';
+import { generateDevicesList, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect } from '@optionsPage/functions';
 
 const init = async storage => {
   i18n();
@@ -39,37 +39,45 @@ const init = async storage => {
       return false;
     }
 
-    return delay(() => {
-      return browser.runtime.sendMessage({ action: 'storageReset' })
-        .then(() => window.location.reload())
-        .catch(async err => await storeLog('error', 38, err, 'storageValidationReload'));
+    return delay(async () => {
+      try {
+        await browser.runtime.sendMessage({ action: 'storageReset' });
+        window.location.reload();
+      } catch (err) {
+        await storeLog('error', 38, err, 'storageValidationReload');
+      }
     }, 5300);
   }
 
-  return new SDK().getAllPairedDevices(storage.extensionID)
-    .then(generateDevicesList)
-    .then(() => generateDomainsList(storage.autoSubmitExcludedDomains))
-    .then(setImportDefaultExcludedDomains)
-    .then(setPinInfo)
-    .then(() => setExtName(storage.browserInfo.name))
-    .then(() => setExtNameUpdateForm(storage))
-    .then(setModalsListeners)
-    .then(setAdvanced)
-    .then(setAutoSubmitSwitch)
-    .then(setMenuLinks)
-    .then(setPinInfoBtns)
-    .then(generateShortcutBox)
-    .then(generateShortcutLink)
-    .then(setShortcutBox)
-    .then(setExtVersion)
-    .then(setLoggingToggle)
-    .then(setContextMenuToggle)
-    .then(setPushRadio)
-    .then(setHamburger)
-    .then(handleTargetBlank)
-    .then(setIconSelect)
-    .then(() => browser.runtime.onMessage.addListener(extPageOnMessage))
-    .then(() => hidePreloader());
+  const devicesList = await new SDK().getAllPairedDevices(storage.extensionID);
+  generateDevicesList(devicesList);
+  generateDomainsList(storage.autoSubmitExcludedDomains);
+
+  await Promise.all([
+    setPinInfo(),
+    setAutoSubmitSwitch(),
+    generateShortcutBox(),
+    setLoggingToggle(),
+    setContextMenuToggle(),
+    setPushRadio(),
+    setIconSelect()
+  ]);
+
+  setImportDefaultExcludedDomains();
+  setExtName(storage.browserInfo.name);
+  setExtNameUpdateForm(storage);
+  setModalsListeners();
+  setAdvanced();
+  setMenuLinks();
+  setPinInfoBtns();
+  generateShortcutLink();
+  setShortcutBox();
+  setExtVersion();
+  setHamburger();
+  handleTargetBlank();
+
+  browser.runtime.onMessage.addListener(extPageOnMessage);
+  hidePreloader();
 };
 
 const optionsPageError = async err => {
@@ -77,8 +85,11 @@ const optionsPageError = async err => {
   return TwoFasNotification.showWithoutTimeout(config.Texts.Error.UndefinedError);
 };
 
-window.onload = () => {
-  loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt', 'autoSubmitExcludedDomains'])
-    .then(data => init(data))
-    .catch(err => optionsPageError(err));
+window.onload = async () => {
+  try {
+    const data = await loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt', 'autoSubmitExcludedDomains']);
+    await init(data);
+  } catch (err) {
+    await optionsPageError(err);
+  }
 };

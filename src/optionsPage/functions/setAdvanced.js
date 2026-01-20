@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleAdvancedHeaderClick = require('./handleAdvancedHeaderClick');
-const handleLoggingChange = require('./handleLoggingChange');
-const handleContextMenuChange = require('./handleContextMenuChange');
-const handlePushChange = require('./handlePushChange');
-const handleSafariReset = require('./handleSafariReset');
-const sendTestNotification = require('./sendTestNotification');
+import S from '@/selectors.js';
+import handleAdvancedHeaderClick from '@optionsPage/functions/handleAdvancedHeaderClick.js';
+import handleLoggingChange from '@optionsPage/functions/handleLoggingChange.js';
+import handleContextMenuChange from '@optionsPage/functions/handleContextMenuChange.js';
+import handlePushChange from '@optionsPage/functions/handlePushChange.js';
+import handleSafariReset from '@optionsPage/functions/handleSafariReset.js';
+import sendTestNotification from '@optionsPage/functions/sendTestNotification.js';
 
+/**
+ * Sets up event listeners for all advanced settings controls on the options page.
+ *
+ * @returns {void}
+ */
 const setAdvanced = () => {
   const advancedHeader = document.querySelector(S.optionsPage.advanced.header);
   advancedHeader.addEventListener('click', handleAdvancedHeaderClick);
@@ -56,4 +61,4 @@ const setAdvanced = () => {
   }
 };
 
-module.exports = setAdvanced;
+export default setAdvanced;

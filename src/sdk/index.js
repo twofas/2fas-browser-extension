@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,18 @@
 //
 
 /* global fetch */
+
+/**
+ * SDK class for communicating with the 2FAS REST API.
+ */
 class SDK {
   REST_API_URL = process.env.API_URL;
 
+  /**
+   * Handles successful API responses.
+   * @param {Response} res - The fetch response object
+   * @returns {Promise<Object>} Parsed JSON response or rejection
+   */
   onSuccess (res) {
     if (res.status >= 200 && res.status < 400) {
       try {
@@ -34,6 +43,11 @@ class SDK {
     return Promise.reject(res);
   }
 
+  /**
+   * Handles API errors and formats error objects.
+   * @param {Response} err - The error response object
+   * @returns {Promise<never>} Rejected promise with formatted error
+   */
   async onError (err) {
     const errObj = {};
     errObj.status = err.status;
@@ -52,10 +66,19 @@ class SDK {
     return Promise.reject(errObj);
   }
 
+  /**
+   * Ignores errors and resolves the promise.
+   * @returns {Promise<void>} Resolved promise
+   */
   ignoreError () {
     return Promise.resolve();
   }
 
+  /**
+   * Creates a new browser extension instance on the server.
+   * @param {Object} browserInfo - Browser information object
+   * @returns {Promise<Object>} Promise resolving to the created extension data
+   */
   createExtensionInstance (browserInfo) {
     return fetch(`${this.REST_API_URL}/browser_extensions`, {
       headers: {
@@ -67,6 +90,12 @@ class SDK {
     }).then(this.onSuccess).catch(this.onError);
   }
 
+  /**
+   * Updates an existing browser extension instance.
+   * @param {string} extID - The extension ID
+   * @param {Object} browserInfo - Updated browser information
+   * @returns {Promise<Object>} Promise resolving to the updated extension data
+   */
   updateBrowserExtension (extID, browserInfo) {
     return fetch(`${this.REST_API_URL}/browser_extensions/${extID}`, {
       headers: {
@@ -78,6 +107,11 @@ class SDK {
     }).then(this.onSuccess).catch(this.onError);
   }
 
+  /**
+   * Retrieves all paired mobile devices for an extension.
+   * @param {string} extID - The extension ID
+   * @returns {Promise<Object[]>} Promise resolving to array of paired devices
+   */
   getAllPairedDevices (extID) {
     return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/devices`, {
       headers: {
@@ -88,6 +122,12 @@ class SDK {
     }).then(this.onSuccess).catch(this.onError);
   }
 
+  /**
+   * Removes a paired device from the extension.
+   * @param {string} extID - The extension ID
+   * @param {string} deviceID - The device ID to remove
+   * @returns {Promise<Object>} Promise resolving when device is removed
+   */
   removePairedDevice (extID, deviceID) {
     return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/devices/${deviceID}`, {
       headers: {
@@ -98,6 +138,12 @@ class SDK {
     }).then(this.onSuccess).catch(this.onError);
   }
 
+  /**
+   * Requests a 2FA token from paired devices.
+   * @param {string} extID - The extension ID
+   * @param {string} domain - The domain requesting the token
+   * @returns {Promise<Object>} Promise resolving to the request data
+   */
   request2FAToken (extID, domain) {
     return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/commands/request_2fa_token`, {
       headers: {
@@ -109,6 +155,13 @@ class SDK {
     }).then(this.onSuccess).catch(this.onError);
   }
 
+  /**
+   * Closes a 2FA token request.
+   * @param {string} extID - The extension ID
+   * @param {string} requestID - The request ID to close
+   * @param {boolean} [status=true] - True for completed, false for terminated
+   * @returns {Promise<Object>} Promise resolving when request is closed
+   */
   close2FARequest (extID, requestID, status = true) {
     const data = { status: status ? 'completed' : 'terminated' };
 
@@ -122,6 +175,14 @@ class SDK {
     }).then(this.onSuccess).catch(this.ignoreError);
   }
 
+  /**
+   * Stores a log entry on the server.
+   * @param {string} extID - The extension ID
+   * @param {string} level - Log level (info, warning, error, debug)
+   * @param {string} message - The log message
+   * @param {Object} context - Additional context data
+   * @returns {Promise<Object>} Promise resolving when log is stored
+   */
   storeLog (extID, level, message, context) {
     const levels = ['info', 'warning', 'error', 'debug'];
 
@@ -139,9 +200,14 @@ class SDK {
     }).then(this.onSuccess).catch(this.ignoreError);
   }
 
+  /**
+   * Generates a QR code link for device pairing.
+   * @param {string} browserExtID - The browser extension ID
+   * @returns {string} The QR code link URL
+   */
   generateQRLink (browserExtID) {
     return `twofas_c://${browserExtID}`;
   }
 }
 
-module.exports = SDK;
+export default SDK;

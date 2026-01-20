@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,12 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Assigns sequential data-twofas-element-number attributes to form elements.
+ *
+ * @param {HTMLElement[]} elements - Array of form elements to number
+ * @returns {boolean|void} False if elements array is empty or invalid, otherwise undefined
+ */
 const addFormElementsNumber = elements => {
   let i = 0;
 
@@ -24,15 +30,14 @@ const addFormElementsNumber = elements => {
     return false;
   }
 
-  elements.map(element => {
-    if (element?.dataset?.twofasElementNumber) {
-      return false;
+  elements.forEach(element => {
+    if (element?.getAttribute('data-twofas-element-number')) {
+      return;
     }
 
-    element.dataset.twofasElementNumber = i;
+    element.setAttribute('data-twofas-element-number', i.toString());
     i++;
-    return element;
   });
 };
 
-module.exports = addFormElementsNumber;
+export default addFormElementsNumber;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,25 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
+import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Sends a front-end notification message to a specific browser tab.
+ *
+ * @param {Object} notificationObject - Object containing Title and Message properties
+ * @param {number} tabID - The ID of the target browser tab
+ * @param {number} timeout - Duration in milliseconds before the notification auto-dismisses
+ * @returns {Promise<void>} A promise that resolves when the message is sent
+ */
 const sendFrontEndPushAction = (notificationObject, tabID, timeout) => {
   return browser.tabs.sendMessage(tabID, {
     action: 'notification',
     title: notificationObject.Title,
     message: notificationObject.Message,
-    timeout
+    timeout,
+    uuid: uuidv4()
   });
 };
 
-module.exports = sendFrontEndPushAction;
+export default sendFrontEndPushAction;

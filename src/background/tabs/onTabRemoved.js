@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,45 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, removeFromLocalStorage } = require('../../localStorage');
-const storeLog = require('../../partials/storeLog');
-const SDK = require('../../sdk');
+import { loadFromLocalStorage } from '@localStorage/index.js';
+import { loadFromSessionStorage, removeFromSessionStorage } from '@sessionStorage/index.js';
+import storeLog from '@partials/storeLog.js';
+import SDK from '@sdk/index.js';
 
+/**
+ * Handles tab removal events. Cleans up tab data and closes pending 2FA requests.
+ * @async
+ * @param {number} tabID - The ID of the removed tab.
+ * @return {Promise<void>}
+ */
 const onTabRemoved = async tabID => {
-  let storage;
+  let storage = null;
+  let sessionData = null;
 
   try {
-    storage = await loadFromLocalStorage([`tabData-${tabID}`, 'extensionID']);
+    storage = await loadFromLocalStorage(['extensionID']);
+    sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    return storeLog('error', 2, err, storage[`tabData-${tabID}`]?.url);
+    await storeLog('error', 2, err, sessionData?.[`tabData-${tabID}`]?.url);
+    storage = null;
+    sessionData = null;
+    return;
   }
 
-  if (storage[`tabData-${tabID}`] && storage[`tabData-${tabID}`]?.requestID) {
-    await new SDK().close2FARequest(storage.extensionID, storage[`tabData-${tabID}`].requestID, false);
+  if (sessionData?.[`tabData-${tabID}`]?.requestID) {
+    await new SDK().close2FARequest(storage.extensionID, sessionData[`tabData-${tabID}`].requestID, false);
   }
 
-  if (storage[`tabData-${tabID}`]) {
-    return removeFromLocalStorage(`tabData-${tabID}`)
-      .then(() => { storage = null; })
-      .catch(err => storeLog('error', 2, err, storage[`tabData-${tabID}`]?.url));
+  if (sessionData?.[`tabData-${tabID}`]) {
+    try {
+      await removeFromSessionStorage(`tabData-${tabID}`);
+    } catch (err) {
+      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.url);
+    }
   }
+
+  storage = null;
+  sessionData = null;
 };
 
-module.exports = onTabRemoved;
+export default onTabRemoved;

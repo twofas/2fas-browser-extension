@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const storeLog = require('../../partials/storeLog');
-const { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } = require('./update');
+import storeLog from '@partials/storeLog.js';
+import { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } from '@background/functions/update/index.js';
 
+/**
+ * Updates browser information by verifying storage, updating extension data, and checking incognito access.
+ *
+ * @param {Object} browserInfo - The browser information object
+ * @returns {Promise<void>} A promise that resolves when all updates are complete
+ */
 const updateBrowserInfo = browserInfo => {
   return verifyStorageIntegrity(browserInfo)
     .then(() => updateBrowserExtension(browserInfo))
@@ -27,4 +33,4 @@ const updateBrowserInfo = browserInfo => {
     .catch(err => storeLog('error', 6, err, 'updateBrowserInfo'));
 };
 
-module.exports = updateBrowserInfo;
+export default updateBrowserInfo;

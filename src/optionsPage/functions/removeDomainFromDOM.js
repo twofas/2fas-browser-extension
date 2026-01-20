@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const generateEmptyDomainRow = require('./generateEmptyDomainRow');
-const S = require('../../selectors');
+import generateEmptyDomainRow from '@optionsPage/functions/generateEmptyDomainRow.js';
+import S from '@/selectors.js';
 
+/**
+ * Removes a domain row from the DOM and shows empty state if no domains remain.
+ *
+ * @param {string} domain - The domain name to remove from the list
+ * @returns {boolean} Always returns true after removal
+ */
 const removeDomainFromDOM = domain => {
   const tr = document.querySelector(`tr[data-domain="${domain}"]`);
 
@@ -36,4 +42,4 @@ const removeDomainFromDOM = domain => {
   return true;
 };
 
-module.exports = removeDomainFromDOM;
+export default removeDomainFromDOM;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,13 @@
 //
 
 /* global navigator */
-const browser = require('webextension-polyfill');
+import browser from 'webextension-polyfill';
 
+/**
+ * Detects and returns the operating system name from the user agent.
+ *
+ * @returns {string} The detected operating system name
+ */
 const getOSName = () => {
   let osName = browser.i18n.getMessage('unknownOS');
 
@@ -46,4 +51,4 @@ const getOSName = () => {
   return osName;
 };
 
-module.exports = getOSName;
+export default getOSName;

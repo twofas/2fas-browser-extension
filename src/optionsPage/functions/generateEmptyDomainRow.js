@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { createElement, createTextElement } = require('../../partials/DOMElements');
+import browser from 'webextension-polyfill';
+import { createElement, createTextElement } from '@partials/DOMElements';
 
+/**
+ * Generates and appends an empty state row when no domains are excluded.
+ *
+ * @param {HTMLTableSectionElement} tbody - The table body element to append the row to
+ * @returns {void}
+ */
 const generateEmptyDomainRow = tbody => {
   let t = {
     tr: null,
@@ -40,4 +46,4 @@ const generateEmptyDomainRow = tbody => {
   t = null;
 };
 
-module.exports = generateEmptyDomainRow;
+export default generateEmptyDomainRow;

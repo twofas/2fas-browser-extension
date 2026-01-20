@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/**
+ * Creates an SVG element from an SVG string.
+ * @param {string} data - The SVG markup string
+ * @returns {Element} The first child element of the parsed SVG
+ */
 const createSVGElement = data => {
   const svg = document.createElement('svg');
   svg.innerHTML = data.trim();
@@ -24,4 +29,4 @@ const createSVGElement = data => {
   return svg.firstChild;
 };
 
-module.exports = createSVGElement;
+export default createSVGElement;

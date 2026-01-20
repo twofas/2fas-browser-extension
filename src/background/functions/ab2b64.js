@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,21 @@
 //
 
 /* global btoa */
-const ab2b64 = arrayBuffer => {
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+
+/**
+ * Converts an ArrayBuffer to a Base64 string.
+* @param {ArrayBuffer} ab - The ArrayBuffer to convert to Base64.
+* @return {string} The Base64 encoded string.
+*
+**/
+const ab2b64 = ab => {
+  if (!(ab instanceof ArrayBuffer) && ab[Symbol?.toStringTag] !== 'ArrayBuffer') {
+    throw new TypeError('ArrayBufferToBase64: Expected input to be an ArrayBuffer');
+  }
+
+  return btoa(new Uint8Array(ab).reduce((data, byte) => {
+    return data + String.fromCharCode(byte);
+  }, ''));
 };
 
-module.exports = ab2b64;
+export default ab2b64;

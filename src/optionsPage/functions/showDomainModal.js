@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,18 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Shows the domain exclusion modal dialog and focuses the input field.
+ *
+ * @param {Event} e - The click event that triggered the modal
+ * @returns {void}
+ */
 const showDomainModal = e => {
   e.preventDefault();
   e.stopPropagation();
-  
+
   const modalEl = document.querySelector(S.optionsPage.domainModal.element);
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
   const inputEl = document.querySelector(S.optionsPage.domainModal.input);
@@ -35,4 +41,4 @@ const showDomainModal = e => {
   }, 200);
 };
 
-module.exports = showDomainModal;
+export default showDomainModal;

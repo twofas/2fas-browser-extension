@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
+import S from '@/selectors.js';
 
+/**
+ * Generates and sets the platform-specific shortcut settings link on the edit button.
+ *
+ * @returns {void}
+ */
 const generateShortcutLink = () => {
   const editBtn = document.querySelector(S.optionsPage.shortcut.edit);
   let link;
@@ -50,4 +55,4 @@ const generateShortcutLink = () => {
   editBtn.setAttribute('data-shortcut-link', link);
 };
 
-module.exports = generateShortcutLink;
+export default generateShortcutLink;

@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,36 +17,30 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.ab2b64 = require('./ab2b64');
-exports.b642ab = require('./b642ab');
-exports.browserAction = require('./browserAction');
-exports.browserActionConfigured = require('./browserActionConfigured');
-exports.checkIconTitleText = require('./checkIconTitleText');
-exports.checkSafariStorage = require('./checkSafariStorage');
-exports.checkTabCS = require('./checkTabCS');
-exports.closeRequest = require('./closeRequest');
-exports.closeWSChannel = require('./closeWSChannel');
-exports.createContextMenus = require('./createContextMenus');
-exports.createFirefoxOptionsMenu = require('./createFirefoxOptionsMenu');
-exports.Crypt = require('./Crypt');
-exports.dummyGetLocalStorage = require('./dummyGetLocalStorage');
-exports.generateDefaultStorage = require('./generateDefaultStorage');
-exports.getBrowserInfo = require('./getBrowserInfo');
-exports.getOSName = require('./getOSName');
-exports.handleFrontElement = require('./handleFrontElement');
-exports.initBEAction = require('./initBEAction');
-exports.onCommand = require('./onCommand');
-exports.onConnect = require('./onConnect');
-exports.onContextMenuClick = require('./onContextMenuClick');
-exports.onInstalled = require('./onInstalled');
-exports.onMessage = require('./onMessage');
-exports.onStartup = require('./onStartup');
-exports.openBrowserPage = require('./openBrowserPage');
-exports.openInstallPage = require('./openInstallPage');
-exports.sendMessageToAllFrames = require('./sendMessageToAllFrames');
-exports.sendNotificationInfo = require('./sendNotificationInfo');
-exports.setIcon = require('./setIcon');
-exports.subscribeChannel = require('./subscribeChannel');
-exports.updateBrowserInfo = require('./updateBrowserInfo');
-exports.wsTabChanged = require('./wsTabChanged');
-exports.wsTabClosed = require('./wsTabClosed');
+export { default as ab2b64 } from './ab2b64.js';
+export { default as b642ab } from './b642ab.js';
+export { default as browserAction } from './browserAction.js';
+export { default as browserActionConfigured } from './browserActionConfigured.js';
+export { default as checkIconTitleText } from './checkIconTitleText.js';
+export { default as checkSafariStorage } from './checkSafariStorage.js';
+export { default as checkTabCS } from './checkTabCS.js';
+export { default as closeRequest } from './closeRequest.js';
+export { default as closeWSChannel } from './closeWSChannel.js';
+export { default as Crypt } from './Crypt.js';
+export { default as dummyGetLocalStorage } from './dummyGetLocalStorage.js';
+export { default as generateDefaultStorage } from './generateDefaultStorage.js';
+export { default as getBrowserInfo } from './getBrowserInfo.js';
+export { default as getBrowserVersion } from './getBrowserVersion.js';
+export { default as getOSName } from './getOSName.js';
+export { default as isBrave } from './isBrave.js';
+export { default as handleFrontElement } from './handleFrontElement.js';
+export { default as initBEAction } from './initBEAction.js';
+export { default as openBrowserPage } from './openBrowserPage.js';
+export { default as openInstallPage } from './openInstallPage.js';
+export { default as sendMessageToAllFrames } from './sendMessageToAllFrames.js';
+export { default as setIcon } from './setIcon.js';
+export { default as subscribeChannel } from './subscribeChannel.js';
+export { default as syncDevicesWithAPI } from './syncDevicesWithAPI.js';
+export { default as updateBrowserInfo } from './updateBrowserInfo.js';
+export { default as wsTabChanged } from './wsTabChanged.js';
+export { default as wsTabClosed } from './wsTabClosed.js';

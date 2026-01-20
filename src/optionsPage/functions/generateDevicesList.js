@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,20 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const { createElement, createSVGElement, createTextElement } = require('../../partials/DOMElements');
-const removeDevice = require('./removeDevice');
-const generateEmptyDeviceRow = require('./generateEmptyDeviceRow');
-const S = require('../../selectors');
-const months = require('../../partials/months');
-const disconnectSVG = require('../../images/page-icons/disconnect.svg');
+import browser from 'webextension-polyfill';
+import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
+import removeDevice from '@optionsPage/functions/removeDevice.js';
+import generateEmptyDeviceRow from '@optionsPage/functions/generateEmptyDeviceRow.js';
+import S from '@/selectors.js';
+import months from '@partials/months.js';
+import disconnectSVG from '@images/page-icons/disconnect.svg';
 
+/**
+ * Generates and renders the list of paired devices in the options page table.
+ *
+ * @param {Array} list - Array of paired device objects to display
+ * @returns {void}
+ */
 const generateDevicesList = list => {
   const tbody = document.querySelector(S.optionsPage.devicesList);
 
@@ -34,7 +40,7 @@ const generateDevicesList = list => {
 
   const sortedList = list.sort((a, b) => Number(new Date(b.paired_at)) - Number(new Date(a.paired_at)));
 
-  sortedList.map(device => {
+  sortedList.forEach(device => {
     let t = {
       tr: null,
       td: [null, null, null, null],
@@ -88,9 +94,7 @@ const generateDevicesList = list => {
 
     tbody.appendChild(t.tr);
     t = null;
-
-    return device;
   });
 };
 
-module.exports = generateDevicesList;
+export default generateDevicesList;

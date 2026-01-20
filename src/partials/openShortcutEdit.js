@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const browser = require('webextension-polyfill');
-const storeLog = require('./storeLog');
-const TwoFasNotification = require('../notification');
+import config from '../config.js';
+import browser from 'webextension-polyfill';
+import storeLog from './storeLog.js';
+import TwoFasNotification from '../notification/index.js';
 
+/**
+ * Opens the browser's keyboard shortcut edit page.
+ * @param {Event} e - The click event
+ * @returns {Promise<void>|void}
+ */
 const openShortcutEdit = function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -44,4 +49,4 @@ const openShortcutEdit = function (e) {
   port.disconnect();
 };
 
-module.exports = openShortcutEdit;
+export default openShortcutEdit;

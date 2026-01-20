@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const handleImportDefaultExcludedDomains = require('./handleImportDefaultExcludedDomains');
+import S from '@/selectors.js';
+import handleImportDefaultExcludedDomains from '@optionsPage/functions/handleImportDefaultExcludedDomains.js';
 
+/**
+ * Attaches click event listener to the import default excluded domains button.
+ *
+ * @returns {void}
+ */
 const setImportDefaultExcludedDomains = () => {
   const importDefaultListBtn = document.querySelector(S.optionsPage.autoSubmit.importDefault);
   importDefaultListBtn.addEventListener('click', handleImportDefaultExcludedDomains);
 };
 
-module.exports = setImportDefaultExcludedDomains;
+export default setImportDefaultExcludedDomains;

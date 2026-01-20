@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,31 +17,42 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const openBrowserPage = require('./openBrowserPage');
+import openBrowserPage from '@background/functions/openBrowserPage.js';
 
+/**
+ * Handles port connection events from content scripts.
+ * @param {Object} port - The port object for communication.
+ * @return {boolean|undefined}
+ */
 const onConnect = port => {
   if (port.name !== '2FAS') {
     return false;
   }
 
+  port._connected = true;
+
   const forceReconnect = p => {
+    p._connected = false;
     p.onDisconnect.removeListener(onPortDisconnect);
     p.onMessage.removeListener(onPortMessage);
-    
+
     if (p._timer) {
       clearTimeout(p._timer);
+      p._timer = null;
     }
-    
+
     p.disconnect();
     p = undefined;
   };
 
   const onPortDisconnect = p => {
+    p._connected = false;
     p.onMessage.removeListener(onPortMessage);
     p.onDisconnect.removeListener(onPortDisconnect);
-    
+
     if (p._timer) {
       clearTimeout(p._timer);
+      p._timer = null;
     }
 
     p = undefined;
@@ -53,9 +64,11 @@ const onConnect = port => {
     }
 
     return setTimeout(() => {
-      try {
-        return p.postMessage({ msg: 'pong' });
-      } catch (e) {}
+      if (p._connected) {
+        try {
+          p.postMessage({ msg: 'pong' });
+        } catch (e) {}
+      }
     }, 10000);
   };
 
@@ -64,4 +77,4 @@ const onConnect = port => {
   port._timer = setTimeout(forceReconnect, 250e3, port);
 };
 
-module.exports = onConnect;
+export default onConnect;

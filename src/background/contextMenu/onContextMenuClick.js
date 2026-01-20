@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,24 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const closeNotificationInfo = n => {
-  n.notification.classList.remove('visible');
+import browser from 'webextension-polyfill';
+import browserAction from '@background/functions/browserAction.js';
+import openBrowserPage from '@background/functions/openBrowserPage.js';
 
-  setTimeout(() => {
-    n.notification.classList.add('hidden');
-    n = null;
-  }, 300);
+/**
+ * Handles context menu click events.
+ * @param {Object} info - Menu click information.
+ * @param {Object} tab - Tab where the click occurred.
+ * @return {Promise|undefined}
+ */
+const onContextMenuClick = (info, tab) => {
+  if (info?.menuItemId === 'twofas-firefox-options-menu') {
+    return openBrowserPage(browser.runtime.getURL('/optionsPage/optionsPage.html'));
+  }
+
+  if (info?.menuItemId === 'twofas-context-menu') {
+    return browserAction(tab);
+  }
 };
 
-module.exports = closeNotificationInfo;
+export default onContextMenuClick;

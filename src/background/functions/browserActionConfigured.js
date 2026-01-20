@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,54 +17,83 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const browser = require('webextension-polyfill');
-const TwoFasNotification = require('../../notification');
-const initBEAction = require('./initBEAction');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const sendNotificationInfo = require('./sendNotificationInfo');
-const checkIconTitleText = require('./checkIconTitleText');
+import config from '@/config.js';
+import browser from 'webextension-polyfill';
+import TwoFasNotification from '@notification/index.js';
+import initBEAction from '@background/functions/initBEAction.js';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import checkIconTitleText from '@background/functions/checkIconTitleText.js';
 
-const browserActionConfigured = async (tab, data) => {
-  const url = new URL(tab?.url);
-  const now = new Date().getTime();
-  let storage = data;
-  let diff, go;
+const DEBOUNCE_THRESHOLD_SECONDS = 1;
+const SUPPORTED_PROTOCOLS = ['https:', 'http:'];
 
-  if (!storage.globalLastAction) {
-    go = true;
-  } else {
-    diff = (now - storage.globalLastAction) / 1000;
-    go = Math.round(diff) > 1;
+/**
+ * Checks if enough time has passed since the last action to proceed.
+ *
+ * @param {number|undefined} lastActionTime - Timestamp of the last action
+ * @param {number} currentTime - Current timestamp
+ * @returns {boolean} True if action should proceed, false if debounced
+ */
+const shouldProceedWithAction = (lastActionTime, currentTime) => {
+  if (!lastActionTime) {
+    return true;
   }
 
-  storage = await saveToLocalStorage({ globalLastAction: now }, storage);
+  const elapsedSeconds = (currentTime - lastActionTime) / 1000;
 
-  if (!go) {
-    return false;
+  return Math.round(elapsedSeconds) > DEBOUNCE_THRESHOLD_SECONDS;
+};
+
+/**
+ * Validates that the URL protocol is supported by the extension.
+ *
+ * @param {URL} url - The URL object to validate
+ * @param {number} tabId - The tab ID for notification display
+ * @returns {boolean} True if protocol is supported, false otherwise
+ */
+const isProtocolSupported = (url, tabId) => {
+  if (SUPPORTED_PROTOCOLS.includes(url.protocol)) {
+    return true;
   }
 
-  go = await checkIconTitleText(tab?.id);
-
-  if (!go) {
-    return false;
-  }
-
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-    console.warn(`${url.protocol} ${browser.i18n.getMessage('isNotSupportedByExt')}`);
-    TwoFasNotification.show(config.Texts.Info.UnsupportedProtocol, tab?.id);
-    go = false;
-  }
-
-  if (go) {
-    if (!('notifications' in storage) || !storage.notifications) {
-      sendNotificationInfo(tab);
-    }
-
-    return initBEAction(url.origin, tab, storage);
-  }
+  console.warn(`${url.protocol} ${browser.i18n.getMessage('isNotSupportedByExt')}`);
+  TwoFasNotification.show(config.Texts.Info.UnsupportedProtocol, tabId);
 
   return false;
 };
 
-module.exports = browserActionConfigured;
+/**
+ * Handles browser action for a configured extension, validating the tab and initiating the 2FA flow.
+ *
+ * @param {Object} tab - The browser tab object
+ * @param {Object} data - The extension storage data
+ * @returns {Promise<boolean>} A promise that resolves to false if action was skipped, otherwise initiates 2FA
+ */
+const browserActionConfigured = async (tab, data) => {
+  if (!tab?.url) {
+    return false;
+  }
+
+  const url = new URL(tab.url);
+  const now = Date.now();
+
+  if (!shouldProceedWithAction(data.globalLastAction, now)) {
+    await saveToLocalStorage({ globalLastAction: now }, data);
+    return false;
+  }
+
+  const storage = await saveToLocalStorage({ globalLastAction: now }, data);
+  const isIconActive = await checkIconTitleText(tab.id);
+
+  if (!isIconActive) {
+    return false;
+  }
+
+  if (!isProtocolSupported(url, tab.id)) {
+    return false;
+  }
+
+  return initBEAction(url.origin, tab, storage);
+};
+
+export default browserActionConfigured;

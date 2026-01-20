@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,18 +17,23 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const browserAction = require('./browserAction');
-const openBrowserPage = require('./openBrowserPage');
+import browser from 'webextension-polyfill';
 
-const onContextMenuClick = (info, tab) => {
-  if (info?.menuItemId === 'twofas-firefox-options-menu') {
-    return openBrowserPage(browser.runtime.getURL('/optionsPage/optionsPage.html'));
-  }
-
-  if (info?.menuItemId === 'twofas-context-menu') {
-    return browserAction(tab);
+/**
+ * Creates Firefox-specific options menu in the action context.
+ * @return {void}
+ */
+const createFirefoxOptionsMenu = () => {
+  if (process.env.EXT_PLATFORM === 'Firefox') {
+    browser.contextMenus.create({
+      title: browser.i18n.getMessage('options'),
+      id: 'twofas-firefox-options-menu',
+      contexts: ['action'],
+      enabled: true,
+      type: 'normal',
+      visible: true
+    });
   }
 };
 
-module.exports = onContextMenuClick;
+export default createFirefoxOptionsMenu;

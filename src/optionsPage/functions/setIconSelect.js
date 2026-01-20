@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const SlimSelect = require('slim-select');
-const browser = require('webextension-polyfill');
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
-const setIcon = require('../../background/functions/setIcon');
+import SlimSelect from 'slim-select';
+import browser from 'webextension-polyfill';
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import setIcon from '@/background/functions/setIcon.js';
 
+/**
+ * Initializes the icon select dropdown with available icon options and handles icon changes.
+ *
+ * @returns {Promise<void>} A promise that resolves when the dropdown is initialized
+ */
 const setIconSelect = async () => {
   const { extIcon } = await loadFromLocalStorage(['extIcon']);
 
@@ -64,4 +69,4 @@ const setIconSelect = async () => {
   });
 };
 
-module.exports = setIconSelect;
+export default setIconSelect;

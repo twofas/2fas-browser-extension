@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,25 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const S = require('../../selectors');
-const qrTimeout = require('./qrTimeout');
+import S from '@/selectors.js';
+import qrTimeout from '@installPage/functions/qrTimeout.js';
 
+/**
+ * Sets QR code image and manual extension ID, then initializes the QR timeout handler.
+ *
+ * @param {string} imageURL - The QR code image data URL
+ * @param {Object} channel - WebSocket channel object with connect method
+ * @param {string} extensionID - The extension ID to display for manual pairing
+ * @returns {Function} Cleanup function to clear timeout and remove event listeners
+ */
 const setQRCode = (imageURL, channel, extensionID) => {
-  return new Promise(() => {
-    const QRImgs = document.querySelectorAll(S.installPage.qr.imgs);
-    const QRManuals = document.querySelectorAll(S.installPage.qr.manual);
+  const QRImgs = document.querySelectorAll(S.installPage.qr.imgs);
+  const QRManuals = document.querySelectorAll(S.installPage.qr.manual);
 
-    if (QRImgs) {
-      QRImgs.forEach(img => {
-        img.src = imageURL;
-      });
-    }
+  QRImgs.forEach(img => { img.src = imageURL; });
+  QRManuals.forEach(manual => { manual.innerText = extensionID; });
 
-    if (QRManuals) {
-      QRManuals.forEach(manual => {
-        manual.innerText = extensionID;
-      });
-    }
-  
-    return qrTimeout(QRImgs, channel);
-  });
+  return qrTimeout(QRImgs, channel);
 };
 
-module.exports = setQRCode;
+export default setQRCode;

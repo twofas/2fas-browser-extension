@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const browser = require('webextension-polyfill');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const createContextMenus = require('../../background/functions/createContextMenus');
+import browser from 'webextension-polyfill';
+import saveToLocalStorage from '@localStorage/saveToLocalStorage.js';
+import createContextMenus from '@background/contextMenu/createContextMenus.js';
 
+/**
+ * Handles change of the context menu toggle and updates browser context menus accordingly.
+ *
+ * @param {Event} e - The change event from the checkbox input
+ * @returns {Promise<void>} A promise that resolves when the context menu is updated
+ */
 const handleContextMenuChange = e => {
   return saveToLocalStorage({ contextMenu: e.currentTarget.checked })
     .then(async storage => {
@@ -35,4 +41,4 @@ const handleContextMenuChange = e => {
     });
 };
 
-module.exports = handleContextMenuChange;
+export default handleContextMenuChange;

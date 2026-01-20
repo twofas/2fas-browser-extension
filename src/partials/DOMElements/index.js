@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.createElement = require('./createElement');
-exports.createImageElement = require('./createImageElement');
-exports.createSVGElement = require('./createSVGElement');
-exports.createTextElement = require('./createTextElement');
+export { default as createElement } from './createElement.js';
+export { default as createImageElement } from './createImageElement.js';
+export { default as createSVGElement } from './createSVGElement.js';
+export { default as createTextElement } from './createTextElement.js';

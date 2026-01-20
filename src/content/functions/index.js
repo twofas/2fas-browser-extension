@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,22 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.addFormElementsNumber = require('./addFormElementsNumber');
-exports.clearAfterInputToken = require('./clearAfterInputToken');
-exports.clearFormElementsNumber = require('./clearFormElementsNumber');
-exports.clickSubmit = require('./clickSubmit');
-exports.closeNotificationInfo = require('./closeNotificationInfo');
-exports.getActiveElement = require('./getActiveElement');
-exports.getFormElements = require('./getFormElements');
-exports.getFormSubmitElements = require('./getFormSubmitElements');
-exports.getTabData = require('./getTabData');
-exports.getTokenInput = require('./getTokenInput');
-exports.inputToken = require('./inputToken');
-exports.isInFrame = require('./isInFrame');
-exports.loadFonts = require('./loadFonts');
-exports.neverShowNotificationInfo = require('./neverShowNotificationInfo');
-exports.notification = require('./notification');
-exports.openOptionsPage = require('./openOptionsPage');
-exports.portSetup = require('./portSetup');
-exports.showNotificationInfo = require('./showNotificationInfo');
-exports.tokenNotification = require('./tokenNotification');
+export { default as addFormElementsNumber } from './addFormElementsNumber.js';
+export { default as checkCrossDomain } from './checkCrossDomain.js';
+export { default as clearAfterInputToken } from './clearAfterInputToken.js';
+export { default as clearFormElementsNumber } from './clearFormElementsNumber.js';
+export { default as clickSubmit } from './clickSubmit.js';
+export { default as getActiveElement } from './getActiveElement.js';
+export { default as getFormElements } from './getFormElements.js';
+export { default as getFormSubmitElements } from './getFormSubmitElements.js';
+export { default as getTabData } from './getTabData.js';
+export { default as getTokenInput } from './getTokenInput.js';
+export { default as inputToken } from './inputToken.js';
+export { default as isInFrame } from './isInFrame.js';
+export { default as loadFonts } from './loadFonts.js';
+export { default as notification } from './notification.js';
+export { default as openOptionsPage } from './openOptionsPage.js';
+export { default as portSetup } from './portSetup.js';
+export * from './shadowDomUtils.js';
+export { default as tokenNotification } from './tokenNotification.js';

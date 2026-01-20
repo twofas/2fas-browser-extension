@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const { loadFromLocalStorage, saveToLocalStorage } = require('../../localStorage');
+import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 
+/**
+ * Initializes push notification radio buttons with stored preference (disabled on Safari).
+ *
+ * @returns {Promise<void>|void} A promise that resolves when radios are initialized, or void for Safari
+ */
 const setPushRadio = () => {
   if (process.env.EXT_PLATFORM === 'Safari') {
     const pushRadios = document.querySelectorAll('input[name="pushConfig"]');
@@ -62,4 +67,4 @@ const setPushRadio = () => {
     .catch(() => {});
 };
 
-module.exports = setPushRadio;
+export default setPushRadio;

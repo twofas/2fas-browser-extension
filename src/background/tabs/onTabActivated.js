@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,17 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const checkTabCS = require('../functions/checkTabCS');
+import checkTabCS from '@background/functions/checkTabCS.js';
 
+/**
+ * Handles browser tab activation events by checking content script status.
+ *
+ * @param {Object} activeInfo - Object containing tab activation details
+ * @param {number} activeInfo.tabId - The ID of the activated tab
+ * @returns {Promise<void>} A promise that resolves when the content script check is complete
+ */
 const onTabActivated = ({ tabId }) => {
   return checkTabCS(tabId);
 };
 
-module.exports = onTabActivated;
+export default onTabActivated;

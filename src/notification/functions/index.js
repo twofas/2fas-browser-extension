@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-exports.sendFrontEndPushAction = require('./sendFrontEndPushAction');
-exports.showFrontEndPush = require('./showFrontEndPush');
-exports.showNativePush = require('./showNativePush');
-exports.showNativePushWithoutTimeout = require('./showNativePushWithoutTimeout');
+export { default as sendFrontEndPushAction } from './sendFrontEndPushAction.js';
+export { default as showFrontEndPush } from './showFrontEndPush.js';
+export { default as showNativePush } from './showNativePush.js';
+export { default as showNativePushWithoutTimeout } from './showNativePushWithoutTimeout.js';

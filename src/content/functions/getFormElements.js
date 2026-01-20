@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,65 +17,60 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const buttonsTexts = require('../../partials/buttonsTexts');
-const ignoreButtonTexts = require('../../partials/ignoreButtonTexts');
+import inputsSelectors from '@partials/inputsSelectors.js';
+import formSubmitSelectors from '@partials/formSubmitSelectors.js';
+import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
+import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
+import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
 
+/**
+ * Finds and returns all form input elements and submit buttons in the document.
+ * Searches both the main document and any shadowRoots.
+ *
+ * @returns {HTMLElement[]} Array of input and submit elements
+ */
 const getFormElements = () => {
-  const inputsSelector = require('../../partials/inputsSelectors')();
-  let submits = require('../../partials/formSubmitSelectors')();
-  let submitTextCheck = false;
+  const inputsSelector = inputsSelectors();
+  let submitsSelector = formSubmitSelectors();
+  let requiresTextCheck = false;
 
-  let submitsLength = document.querySelectorAll(submits).length;
-  if (submitsLength <= 0) {
-    submits = require('../../partials/formSubmitSecondSelectors')();
+  if (querySelectorAllDeep(submitsSelector).length === 0) {
+    submitsSelector = formSubmitSecondSelectors();
   }
 
-  submitsLength = document.querySelectorAll(submits).length;
-  if (submitsLength <= 0) {
-    submits = 'button';
-    submitTextCheck = true;
+  if (querySelectorAllDeep(submitsSelector).length === 0) {
+    submitsSelector = 'button';
+    requiresTextCheck = true;
   }
 
-  const query = inputsSelector.concat(',', submits);
-  let elements = Array.from(document.querySelectorAll(query));
+  const query = `${inputsSelector},${submitsSelector}`;
+  let elements = querySelectorAllDeep(query);
 
-  if (submitTextCheck) {
+  if (requiresTextCheck) {
     elements = elements.filter(element => {
-      if (element.nodeName.toLowerCase() === 'input') {
+      const nodeName = element.nodeName.toLowerCase();
+
+      if (nodeName === 'input') {
         return true;
       }
 
-      if (element.nodeName.toLowerCase() === 'button') {
-        const elementText = element?.innerText;
-
-        if (
-          elementText &&
-          typeof elementText.trim === 'function' &&
-          typeof elementText.toLowerCase === 'function'
-        ) {
-          return buttonsTexts.includes(elementText.trim().toLowerCase())
-        } else {
-          return true;
-        }
+      if (nodeName === 'button') {
+        return isSubmitButtonText(element);
       }
 
       return false;
-    })
+    });
   }
 
   return elements.filter(element => {
-    const elementText = element?.innerText;
+    const nodeName = element.nodeName.toLowerCase();
 
-    if (
-      elementText &&
-      typeof elementText.trim === 'function' &&
-      typeof elementText.toLowerCase === 'function'
-    ) {
-      return !ignoreButtonTexts().includes(elementText.trim().toLowerCase());
-    } else {
+    if (nodeName !== 'button') {
       return true;
     }
+
+    return isValidButtonText(element);
   });
 };
 
-module.exports = getFormElements;
+export default getFormElements;

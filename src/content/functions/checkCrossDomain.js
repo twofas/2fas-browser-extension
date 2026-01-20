@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,19 +17,36 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../../config');
-const closeNotificationInfo = require('./closeNotificationInfo');
-const saveToLocalStorage = require('../../localStorage/saveToLocalStorage');
-const storeLog = require('../../partials/storeLog');
-const TwoFasNotification = require('../../notification');
+/**
+ * Checks if the current frame is a cross-domain iframe.
+ * @returns {Object} Object with isCrossDomain flag and domain info.
+ */
+const checkCrossDomain = () => {
+  const result = {
+    isCrossDomain: false,
+    currentHostname: '',
+    topHostname: ''
+  };
 
-const neverShowNotificationInfo = n => {
-  return saveToLocalStorage({ notifications: true })
-    .then(() => closeNotificationInfo(n))
-    .catch(async err => {
-      await storeLog('error', 18, err);
-      return TwoFasNotification.show(config.Texts.Error.UndefinedError);
-    });
+  try {
+    result.currentHostname = new URL(window.location.href).hostname;
+  } catch {
+    return result;
+  }
+
+  if (window.self === window.top) {
+    return result;
+  }
+
+  result.isCrossDomain = true;
+
+  try {
+    result.topHostname = new URL(window.top.location.href).hostname;
+  } catch {
+    // Cannot access top.location due to cross-domain security
+  }
+
+  return result;
 };
 
-module.exports = neverShowNotificationInfo;
+export default checkCrossDomain;

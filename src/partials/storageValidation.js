@@ -1,6 +1,6 @@
 //
 //  This file is part of the 2FAS Browser Extension (https://github.com/twofas/2fas-browser-extension)
-//  Copyright © 2023 Two Factor Authentication Service, Inc.
+//  Copyright © 2026 Two Factor Authentication Service, Inc.
 //  Contributed by Grzegorz Zając. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,58 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const config = require('../config');
-const TwoFasNotification = require('../notification');
+import config from '../config.js';
+import TwoFasNotification from '../notification/index.js';
+import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
 
-const storageValidation = storage => {
-  return new Promise((resolve, reject) => {
-    if (
-      !storage.keys ||
-      !storage?.keys?.publicKey ||
-      !storage?.keys?.privateKey ||
-      !storage?.extensionID
-    ) {
-      if (storage?.attempt && storage?.attempt > 5) {
-        TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
-        return reject(new TypeError('Too many attempts'));
-      }
+/**
+ * Checks if storage is completely empty (no meaningful data)
+ * @param {Object} storage - Storage object to check
+ * @returns {boolean} True if storage is empty or contains only attempt counter
+ */
+const isStorageEmpty = storage => {
+  if (!storage || typeof storage !== 'object') {
+    return true;
+  }
 
-      TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
-      return reject(new TypeError('Storage corrupted'));
-    }
+  const storageKeys = Object.keys(storage);
 
-    // @TODO: Future reset attempts?
-    return resolve();
-  });
+  if (storageKeys.length === 0) {
+    return true;
+  }
+
+  if (storageKeys.length === 1 && storageKeys[0] === 'attempt') {
+    return true;
+  }
+
+  return false;
 };
 
-module.exports = storageValidation;
+/**
+ * Validates that storage contains required keys and extension ID
+ * @param {Object} storage - Storage object to validate
+ * @returns {Promise<void>} Resolves if valid, rejects with TypeError if invalid
+ */
+const storageValidation = async storage => {
+  const hasValidKeys = storage?.keys?.publicKey && storage?.keys?.privateKey;
+  const hasExtensionID = Boolean(storage?.extensionID);
+
+  if (!hasValidKeys || !hasExtensionID) {
+    if (storage?.attempt > 5) {
+      TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+      throw new TypeError('Too many attempts');
+    }
+
+    if (!isStorageEmpty(storage)) {
+      TwoFasNotification.show(config.Texts.Error.StorageCorrupted);
+    }
+
+    throw new TypeError('Storage corrupted');
+  }
+
+  if (storage?.attempt > 0) {
+    await saveToLocalStorage({ attempt: 0 });
+  }
+};
+
+export default storageValidation;
