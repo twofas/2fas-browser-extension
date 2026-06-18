@@ -17,13 +17,37 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global fetch */
+/* global fetch, AbortController, setTimeout, clearTimeout */
 
 /**
  * SDK class for communicating with the 2FAS REST API.
  */
 class SDK {
   REST_API_URL = process.env.API_URL;
+
+  /**
+   * Performs a fetch with an optional hard timeout.
+   * When `timeoutMs` is falsy the call behaves exactly like a bare fetch (no
+   * AbortController), preserving the original behaviour for user-initiated calls.
+   * When set, a hung connection is aborted so the promise rejects deterministically
+   * (surfaced as an AbortError, classified as a transient network failure).
+   *
+   * @param {string} url - The request URL.
+   * @param {Object} options - fetch() options.
+   * @param {number} [timeoutMs] - Abort the request after this many milliseconds.
+   * @returns {Promise<Response>}
+   */
+  fetchWithTimeout (url, options, timeoutMs) {
+    if (!timeoutMs) {
+      return fetch(url, options);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    return fetch(url, { ...options, signal: controller.signal })
+      .finally(() => clearTimeout(timer));
+  }
 
   /**
    * Handles successful API responses.
@@ -113,17 +137,19 @@ class SDK {
   /**
    * Creates a new browser extension instance on the server.
    * @param {Object} browserInfo - Browser information object
+   * @param {Object} [options] - Optional settings.
+   * @param {number} [options.timeoutMs] - Abort the request after this many milliseconds.
    * @returns {Promise<Object>} Promise resolving to the created extension data
    */
-  createExtensionInstance (browserInfo) {
-    return fetch(`${this.REST_API_URL}/browser_extensions`, {
+  createExtensionInstance (browserInfo, { timeoutMs } = {}) {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify(browserInfo)
-    }).then(this.onSuccess).catch(this.onError);
+    }, timeoutMs).then(this.onSuccess).catch(this.onError);
   }
 
   /**
@@ -131,9 +157,11 @@ class SDK {
    * Server requires extension_id to be a valid UUID4 and name to be non-blank.
    * @param {string} extID - The extension ID (must be a UUID4)
    * @param {Object} browserInfo - Updated browser information ({ name, browser_name, browser_version })
+   * @param {Object} [options] - Optional settings.
+   * @param {number} [options.timeoutMs] - Abort the request after this many milliseconds.
    * @returns {Promise<Object>} Promise resolving to the updated extension data
    */
-  updateBrowserExtension (extID, browserInfo) {
+  updateBrowserExtension (extID, browserInfo, { timeoutMs } = {}) {
     if (!extID || typeof extID !== 'string') {
       return Promise.reject(new Error('updateBrowserExtension: missing or invalid extID'));
     }
@@ -146,14 +174,14 @@ class SDK {
       return Promise.reject(new Error('updateBrowserExtension: name is required and must be non-blank'));
     }
 
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'PUT',
       body: JSON.stringify(browserInfo)
-    }).then(this.onSuccess).catch(this.onError);
+    }, timeoutMs).then(this.onSuccess).catch(this.onError);
   }
 
   /**

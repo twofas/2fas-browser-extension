@@ -71,7 +71,8 @@
     "storage",
     "notifications",
     "contextMenus",
-    "webNavigation"
+    "webNavigation",
+    "alarms"
   ],
   "host_permissions": [
     "*://*.2fas.com/*"

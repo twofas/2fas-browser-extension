@@ -24,6 +24,8 @@ import SDK from '@sdk/index.js';
 import Crypt from '@background/functions/Crypt.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
+import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
+import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -74,7 +76,7 @@ const generateDefaultStorage = browserInfo => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
 
-      return new SDK().createExtensionInstance(extensionInstanceBody);
+      return new SDK().createExtensionInstance(extensionInstanceBody, { timeoutMs: REGISTRATION_TIMEOUT_MS });
     })
     .then(data => saveToLocalStorage({ extensionID: data.id }))
     .then(storage => {
@@ -84,7 +86,26 @@ const generateDefaultStorage = browserInfo => {
 
       return browser.runtime.setUninstallURL(`https://2fas.com/auth/byebye/${storage.extensionID}/`);
     })
-    .catch(err => storeLog('error', 28, err, 'generateDefaultStorage'));
+    .catch(async err => {
+      // If local storage was initialised (keys present) but server registration didn't go
+      // through because of a transient/offline network failure, defer to the durable retry
+      // instead of logging now — otherwise the install-time flood (error 28) reappears and the
+      // extension is left permanently without an extensionID. Non-network failures still log.
+      let s = null;
+
+      try {
+        s = await loadFromLocalStorage(['keys', 'extensionID', 'browserInfo']);
+      } catch (e) {}
+
+      const hasKeys = Boolean(s?.keys?.publicKey);
+      const hasExtID = Boolean(s?.extensionID);
+
+      if (hasKeys && !hasExtID && isRetryable(classifyError(err))) {
+        return enqueueBrowserRegistration({ op: 'create', payload: s.browserInfo || browserInfo });
+      }
+
+      return storeLog('error', 28, err, 'generateDefaultStorage');
+    });
 };
 
 export default generateDefaultStorage;

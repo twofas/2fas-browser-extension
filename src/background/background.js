@@ -21,6 +21,7 @@ import browser from 'webextension-polyfill';
 import { onConnect, onCommand, onInstalled, onMessage, onStartup } from '@background/events/index.js';
 import { createContextMenus, onContextMenuClick } from '@background/contextMenu/index.js';
 import { browserAction, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
+import { flushBrowserRegistration, REGISTRATION_ALARM_NAME } from '@background/functions/update/index.js';
 import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 createContextMenus();
@@ -39,7 +40,21 @@ browser.tabs.onRemoved.addListener(onTabRemoved);
 browser.tabs.onUpdated.addListener(onTabUpdated);
 browser.tabs.onActivated.addListener(onTabActivated);
 
+// Durable browser-extension registration retry: an alarm wakes a terminated service
+// worker when a delivery is due, and the 'online' event recovers the moment
+// connectivity returns (captive portal / VPN / wake-from-sleep).
+if (browser.alarms?.onAlarm) {
+  browser.alarms.onAlarm.addListener(alarm => {
+    if (alarm?.name === REGISTRATION_ALARM_NAME) {
+      flushBrowserRegistration();
+    }
+  });
+}
+
+self.addEventListener('online', () => flushBrowserRegistration());
+
 setInterval(() => {
+  flushBrowserRegistration({ force: false });
   return dummyGetLocalStorage();
 }, 25 * 1000);
 

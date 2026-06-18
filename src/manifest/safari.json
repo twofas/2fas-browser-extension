@@ -85,7 +85,8 @@
     "storage",
     "notifications",
     "contextMenus",
-    "webNavigation"
+    "webNavigation",
+    "alarms"
   ],
   "web_accessible_resources": [
     "/fonts/*"

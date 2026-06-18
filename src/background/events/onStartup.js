@@ -18,11 +18,15 @@
 //
 
 import { initContextMenu } from '@background/contextMenu/index.js';
+import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
  * Handles browser startup event.
  * Recreates context menus which don't persist between sessions in Firefox.
+ * Also retries any pending browser-extension registration that didn't get delivered
+ * (e.g. an update that happened while offline) — the portable recovery path on
+ * platforms without service-worker-waking alarms.
  * Note: tabData cleanup is no longer needed since we use session storage.
  * @async
  * @return {Promise<void>}
@@ -33,6 +37,8 @@ const onStartup = async () => {
   } catch (err) {
     await storeLog('error', 1, err, 'onStartup');
   }
+
+  flushBrowserRegistration();
 };
 
 export default onStartup;

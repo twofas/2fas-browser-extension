@@ -171,6 +171,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   c.extensionVersion = config.ExtensionVersion;
   c.browserInfo = storage.browserInfo;
   c.url = logURL(url);
+  c.online = (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') ? navigator.onLine : null;
 
   if (!url.includes('http')) {
     if (typeof window !== 'undefined' && window?.location?.href) {

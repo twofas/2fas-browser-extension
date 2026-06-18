@@ -35,12 +35,13 @@
 12 - subscribeChannel - browser_extensions.pairing.failure
 13 - subscribeChannel - subscribeChannel event default
 26 - updateIncognitoAccess
-27 - updateBrowserExtension
-28 - generateDefaultStorage
+27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]
+28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST)
 29 - verifyStorageIntegrity
 30 - closeRequest
 35 - checkSafariStorage
 37 - storageReset
+48 - updateBrowserExtension - storage load / enqueue
 
 // CONTENT
 33 - content_script
