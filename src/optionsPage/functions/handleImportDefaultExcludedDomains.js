@@ -37,7 +37,7 @@ const handleImportDefaultExcludedDomains = e => {
 
   return loadFromLocalStorage(['autoSubmitExcludedDomains'])
     .then(data => {
-      const currentExcludedDomains = data.autoSubmitExcludedDomains;
+      const currentExcludedDomains = data.autoSubmitExcludedDomains ?? [];
       let newExcludedDomains = [...currentExcludedDomains, ...defaultAutoSubmitExcludedDomains];
       newExcludedDomains = newExcludedDomains.filter(uniqueOnly);
 
