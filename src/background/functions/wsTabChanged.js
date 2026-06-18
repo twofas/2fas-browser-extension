@@ -30,7 +30,7 @@ import closeWSChannel from '@background/functions/closeWSChannel.js';
  * @returns {boolean|void} Returns false if change is not relevant
  */
 const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID) => {
-  if (!changeInfo.url || !changeInfo.status === 'complete' || !changeInfo.status === 'loading') {
+  if (!changeInfo.url || (changeInfo.status !== 'complete' && changeInfo.status !== 'loading')) {
     return false;
   }
 
