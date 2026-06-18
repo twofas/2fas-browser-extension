@@ -23,15 +23,17 @@ import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/in
 import storeLog from '@partials/storeLog.js';
 import SDK from '@sdk/index.js';
 import checkTabCS from '@background/functions/checkTabCS.js';
+import shouldInvalidateTabRequest from '@background/functions/shouldInvalidateTabRequest.js';
 
 /**
  * Handles tab update events.
  * @async
  * @param {number} tabID - The tab ID.
  * @param {Object} changeInfo - Information about the tab change.
+ * @param {Object} [tab] - The updated tab object (provided by the onUpdated listener).
  * @return {Promise<boolean|void>}
  */
-const onTabUpdated = async (tabID, changeInfo) => {
+const onTabUpdated = async (tabID, changeInfo, tab) => {
   if (!changeInfo) {
     return false;
   }
@@ -57,15 +59,26 @@ const onTabUpdated = async (tabID, changeInfo) => {
     return false;
   }
 
-  if (sessionData?.[`tabData-${tabID}`]?.requestID) {
-    await new SDK().close2FARequest(storage.extensionID, sessionData[`tabData-${tabID}`].requestID, false);
-  }
+  const tabData = sessionData?.[`tabData-${tabID}`];
+  const currentURL = changeInfo?.url || tab?.url || null;
 
-  if (sessionData?.[`tabData-${tabID}`]) {
+  // An in-flight request must survive same-origin "complete" events (the login
+  // page finishing load, in-page redirects, reloads, …). Only a genuine
+  // navigation to a different origin invalidates it (B3).
+  if (tabData?.requestID && shouldInvalidateTabRequest(tabData, currentURL, Date.now())) {
+    await new SDK().close2FARequest(storage.extensionID, tabData.requestID, false);
+
     try {
       await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, sessionData[`tabData-${tabID}`]?.url);
+      await storeLog('error', 3, err, tabData?.url);
+    }
+  } else if (tabData && !tabData?.requestID) {
+    // No request in flight: reset any stale tab data on a real page load.
+    try {
+      await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
+    } catch (err) {
+      await storeLog('error', 3, err, tabData?.url);
     }
   }
 

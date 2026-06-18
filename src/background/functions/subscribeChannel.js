@@ -42,6 +42,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     timeout = true,
     login = true,
     requestID = null,
+    origin = null,
     notifications = {
       timeout: config.Texts.Error.Timeout,
       error: config.Texts.Error.General
@@ -52,7 +53,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   let handled = false;
   const channel = { ws: null };
 
-  const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
+  const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID, origin);
   const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
 
   const cleanupListeners = () => {

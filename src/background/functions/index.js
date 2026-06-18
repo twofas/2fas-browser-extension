@@ -39,6 +39,7 @@ export { default as openBrowserPage } from './openBrowserPage.js';
 export { default as openInstallPage } from './openInstallPage.js';
 export { default as sendMessageToAllFrames } from './sendMessageToAllFrames.js';
 export { default as setIcon } from './setIcon.js';
+export { default as shouldInvalidateTabRequest } from './shouldInvalidateTabRequest.js';
 export { default as subscribeChannel } from './subscribeChannel.js';
 export { default as syncDevicesWithAPI } from './syncDevicesWithAPI.js';
 export { default as updateBrowserInfo } from './updateBrowserInfo.js';

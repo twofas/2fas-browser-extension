@@ -67,6 +67,7 @@ const initBEAction = async (url, tab, storageData) => {
 
   if (condition) {
     tabData.lastAction = now;
+    tabData.url = url;
 
     try {
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });
@@ -81,6 +82,7 @@ const initBEAction = async (url, tab, storageData) => {
         timeout: true,
         login: true,
         requestID: tabData.requestID,
+        origin: url,
         notifications: {
           timeout: config.Texts.Error.PushExpired(url),
           error: config.Texts.Error.General
