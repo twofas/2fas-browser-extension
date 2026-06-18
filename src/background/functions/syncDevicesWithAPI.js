@@ -20,6 +20,13 @@
 import SDK from '@sdk/index.js';
 import { saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import createAsyncThrottle from '@partials/createAsyncThrottle.js';
+
+// Collapse bursts of sync requests (rapid action triggers, duplicate WebSocket
+// responses, concurrent callers) into a single backend request. Without this a
+// flaky network turns every retry into another getAllPairedDevices call and
+// another error-39 log, which is how a single user can flood the backend.
+const SYNC_THROTTLE_MS = 2000;
 
 /**
  * Syncs local devices storage with the API and returns updated storage.
@@ -29,7 +36,7 @@ import storeLog from '@partials/storeLog.js';
  *   apiError flag (true when the API request failed or returned an unexpected payload),
  *   and offline flag (true when no internet connection was detected before the request).
  */
-const syncDevicesWithAPI = async storage => {
+const performSyncDevicesWithAPI = async storage => {
   const result = {
     storage,
     hasDevices: false,
@@ -99,5 +106,10 @@ const syncDevicesWithAPI = async storage => {
     return result;
   }
 };
+
+const syncDevicesWithAPI = createAsyncThrottle(performSyncDevicesWithAPI, {
+  windowMs: SYNC_THROTTLE_MS,
+  keyFn: storage => storage?.extensionID || 'default'
+});
 
 export default syncDevicesWithAPI;

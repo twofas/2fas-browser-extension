@@ -49,6 +49,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   } = options;
 
   let timeoutID = null;
+  let handled = false;
   const channel = { ws: null };
 
   const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID);
@@ -99,6 +100,16 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       await storeLog('error', 13, parseError, 'subscribeChannel JSON parse error');
       return;
     }
+
+    // Every branch below is terminal (it closes the channel). The socket only
+    // enters the CLOSING state asynchronously, so buffered duplicate messages
+    // can still fire onmessage and re-run handleLoginRequest (re-syncing devices,
+    // re-injecting the token). Process the first valid message only.
+    if (handled) {
+      return;
+    }
+
+    handled = true;
 
     clearTimeout(timeoutID);
     timeoutID = null;
