@@ -28,17 +28,6 @@ import storeLog from '@partials/storeLog.js';
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 
 /**
- * Validates if the provided string is a valid URL format.
- *
- * @param {string} urlString - The URL string to validate
- * @returns {boolean} True if the URL is valid, false otherwise
- */
-const isValidUrl = urlString => {
-  const urlRegex = /^(((http|https):\/\/|)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}(:[0-9]{1,5})?(\/.*)?)$/;
-  return urlRegex.test(urlString);
-};
-
-/**
  * Handles the domain modal form submission, validates input, and saves the excluded domain.
  *
  * @param {Event} e - The form submit event
@@ -49,7 +38,7 @@ const domainModalFormSubmit = e => {
   e.stopPropagation();
 
   const data = new FormData(e.target);
-  const domain = data.get('domain').trim();
+  const domain = (data.get('domain') || '').trim();
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
 
   if (!domain || domain.length <= 0) {
@@ -62,16 +51,17 @@ const domainModalFormSubmit = e => {
     return false;
   }
 
-  if (!isValidUrl(domain)) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
-    return false;
-  }
-
   const urlTemp = domain.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
   let url;
 
   try {
     const urlObj = new URL(`https://${urlTemp}`);
+
+    if (!urlObj.hostname.includes('.')) {
+      validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
+      return false;
+    }
+
     url = urlObj.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
   } catch (err) {
     validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
