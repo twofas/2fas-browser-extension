@@ -22,7 +22,8 @@ import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
 import isVisible from '@partials/isVisible.js';
-import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
+import isDeniedField from '@partials/otpFieldHeuristics.js';
+import { querySelectorAllDeep, collectAllShadowRoots } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Finds and returns all visible form input elements and submit buttons in the document.
@@ -34,21 +35,25 @@ import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
  * @returns {HTMLElement[]} Array of visible input and submit elements (in DOM order)
  */
 const getFormElements = () => {
+  // Collect shadow roots once and reuse across every deep query in this pass,
+  // instead of re-walking the whole DOM on each querySelectorAllDeep call.
+  const shadowRoots = collectAllShadowRoots();
+
   const inputsSelector = inputsSelectors();
   let submitsSelector = formSubmitSelectors();
   let requiresTextCheck = false;
 
-  if (querySelectorAllDeep(submitsSelector).filter(isVisible).length === 0) {
+  if (querySelectorAllDeep(submitsSelector, shadowRoots).filter(isVisible).length === 0) {
     submitsSelector = formSubmitSecondSelectors();
   }
 
-  if (querySelectorAllDeep(submitsSelector).filter(isVisible).length === 0) {
+  if (querySelectorAllDeep(submitsSelector, shadowRoots).filter(isVisible).length === 0) {
     submitsSelector = 'button';
     requiresTextCheck = true;
   }
 
   const query = `${inputsSelector},${submitsSelector}`;
-  let elements = querySelectorAllDeep(query);
+  let elements = querySelectorAllDeep(query, shadowRoots);
 
   if (requiresTextCheck) {
     elements = elements.filter(element => {
@@ -76,6 +81,9 @@ const getFormElements = () => {
 
       return isValidButtonText(element);
     })
+    // Drop inputs that look like CVC/postal/coupon/recovery/etc. so they do not
+    // pollute the element numbering used for auto-submit proximity.
+    .filter(element => element.nodeName.toLowerCase() !== 'input' || !isDeniedField(element))
     .filter(isVisible);
 };
 

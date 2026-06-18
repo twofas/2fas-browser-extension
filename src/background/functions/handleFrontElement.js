@@ -33,11 +33,13 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
+    // getActiveElement only returns an id for a fillable target (input/textarea,
+    // contenteditable, ARIA textbox, or the one-time-code fallback), so the id
+    // presence is authoritative — no need to re-gate on nodeName here.
     properElements = activeElements.filter(el =>
       el?.id &&
       (typeof el?.id === 'string' || el?.id instanceof String) &&
-      el?.id?.length > 0 &&
-      (el?.nodeName === 'input' || el?.nodeName === 'textarea')
+      el?.id?.length > 0
     );
   }
 

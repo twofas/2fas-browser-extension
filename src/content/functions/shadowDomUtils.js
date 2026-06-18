@@ -57,16 +57,18 @@ const collectAllShadowRoots = (root = document, visited = new Set()) => {
 /**
  * Queries elements across the document and all shadowRoots.
  * @param {string} selector - CSS selector to match
+ * @param {ShadowRoot[]} [shadowRoots] - Pre-collected shadow roots to reuse
+ *   (avoids re-walking the whole DOM on every call within one operation)
  * @returns {Element[]} Array of all matching elements
  */
-const querySelectorAllDeep = selector => {
+const querySelectorAllDeep = (selector, shadowRoots = null) => {
   const results = [];
 
   results.push(...Array.from(document.querySelectorAll(selector)));
 
-  const shadowRoots = collectAllShadowRoots();
+  const roots = shadowRoots || collectAllShadowRoots();
 
-  for (const shadowRoot of shadowRoots) {
+  for (const shadowRoot of roots) {
     try {
       results.push(...Array.from(shadowRoot.querySelectorAll(selector)));
     } catch {
@@ -80,18 +82,19 @@ const querySelectorAllDeep = selector => {
 /**
  * Finds a single element across the document and all shadowRoots.
  * @param {string} selector - CSS selector to match
+ * @param {ShadowRoot[]} [shadowRoots] - Pre-collected shadow roots to reuse
  * @returns {Element|null} First matching element or null
  */
-const querySelectorDeep = selector => {
+const querySelectorDeep = (selector, shadowRoots = null) => {
   const result = document.querySelector(selector);
 
   if (result) {
     return result;
   }
 
-  const shadowRoots = collectAllShadowRoots();
+  const roots = shadowRoots || collectAllShadowRoots();
 
-  for (const shadowRoot of shadowRoots) {
+  for (const shadowRoot of roots) {
     try {
       const found = shadowRoot.querySelector(selector);
 

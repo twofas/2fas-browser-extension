@@ -17,11 +17,19 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+// Memoized result — the selector is deterministic (no inputs), so it only needs
+// to be built once per content-script context instead of on every call.
+let cachedSelectors = null;
+
 /**
  * Generates CSS selectors for detecting OTP/2FA input fields.
  * @returns {string} Comma-separated CSS selector string for OTP input fields
  */
 const inputsSelectors = () => {
+  if (cachedSelectors) {
+    return cachedSelectors;
+  }
+
   const generateExact = (attr, values) => values.map(v => `input[${attr}="${v}" i]`);
   const generateContains = (attr, values) => values.map(v => `input[${attr}*="${v}" i]`);
   const generateNotExact = (attr, values) => values.map(v => `:not([${attr}="${v}" i])`);
@@ -209,7 +217,9 @@ const inputsSelectors = () => {
 
   const baseSelectors = `input[type="text" i]${inputSelectors},input[type="number" i]${inputSelectors},input[type="tel" i]${inputSelectors},input:not([type])${inputSelectors},textarea${textAreaSelectors}`;
 
-  return `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${dataAttributeSelectors},${baseSelectors}`;
+  cachedSelectors = `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${dataAttributeSelectors},${baseSelectors}`;
+
+  return cachedSelectors;
 };
 
 export default inputsSelectors;

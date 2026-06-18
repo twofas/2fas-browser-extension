@@ -21,39 +21,68 @@ import { v4 as uuidv4 } from 'uuid';
 import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.js';
 import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
 import getFormElements from '@content/functions/getFormElements.js';
+import findFallbackOtpInput from '@content/functions/findFallbackOtpInput.js';
 import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
 /**
- * Gets the currently focused element and marks it with a unique identifier.
- * Traverses shadowRoots to find deeply nested focused elements.
+ * Checks whether an element can receive an autofilled token: a native
+ * input/textarea, or a contenteditable host (which covers ARIA textbox-style
+ * fields — they are contenteditable in practice). A non-input element that is
+ * not contenteditable has no reliable text-setting path, so it is rejected to
+ * avoid writing a phantom value and falsely passing the pre-submit check.
  *
- * @returns {Object} Status object with nodeName and input ID (null if not an input/textarea)
+ * @param {Element} element - Element to check
+ * @returns {boolean} True if the element is a fillable target
+ */
+const isFillableTarget = element => {
+  if (!element) {
+    return false;
+  }
+
+  const nodeName = element.nodeName?.toLowerCase();
+
+  if (nodeName === 'input' || nodeName === 'textarea') {
+    return true;
+  }
+
+  return element.isContentEditable === true;
+};
+
+/**
+ * Gets the currently focused element and marks it with a unique identifier.
+ * Traverses shadowRoots to find deeply nested focused elements. Accepts native
+ * inputs/textareas, contenteditable hosts and ARIA textbox roles. When nothing
+ * fillable is focused, falls back to a single unambiguous
+ * `autocomplete="one-time-code"` field so the token can still be autofilled.
+ *
+ * @returns {Object} Status object with nodeName and input ID (null if no target)
  */
 const getActiveElement = () => {
   const activeElement = getDeepActiveElement();
-  let nodeName;
+  let target = isFillableTarget(activeElement) ? activeElement : null;
 
-  if (activeElement) {
-    nodeName = activeElement.nodeName.toLowerCase();
+  // R3: no fillable element focused → try a spec-blessed one-time-code field.
+  if (!target) {
+    target = findFallbackOtpInput();
   }
 
-  if (!activeElement || (nodeName !== 'input' && nodeName !== 'textarea')) {
+  if (!target) {
     return {
       status: 'activeElement',
-      nodeName,
+      nodeName: activeElement ? activeElement.nodeName.toLowerCase() : undefined,
       id: null
     };
   }
 
   const inputUUID = uuidv4();
-  activeElement.setAttribute('data-twofas-input', inputUUID);
+  target.setAttribute('data-twofas-input', inputUUID);
 
   clearFormElementsNumber();
   addFormElementsNumber(getFormElements());
 
   return {
     status: 'activeElement',
-    nodeName,
+    nodeName: target.nodeName.toLowerCase(),
     id: inputUUID
   };
 };
