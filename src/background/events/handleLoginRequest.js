@@ -25,7 +25,7 @@ import Crypt from '@background/functions/Crypt.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
-import sendMessageToAllFrames from '@background/functions/sendMessageToAllFrames.js';
+import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFrame.js';
 
 /**
  * Checks if an error indicates a missing or invalid tab.
@@ -103,12 +103,32 @@ const handleLoginRequest = async (tabID, data) => {
     const token = await decryptToken(data.token, storage.keys.privateKey);
     const loginData = { ...data, token };
 
-    const responses = await sendMessageToAllFrames(tabID, { action: 'inputToken', ...loginData });
+    // Deliver the plaintext token only to the frame that held the focused input
+    // when the request was initiated (recorded in handleFrontElement) and only
+    // while that frame still hosts the same origin. This keeps the decrypted
+    // token out of every other frame — notably cross-origin iframes where the
+    // 2FAS content script also runs. resolveTokenTargetFrame falls back to the
+    // top frame (frameId 0) when no specific frame was recorded, it navigated,
+    // or the lookup fails.
+    const targetFrameId = await resolveTokenTargetFrame(tabID);
 
-    const anyCompleted = Array.isArray(responses) && responses.some(res => res?.status === 'completed');
+    const response = await browser.tabs
+      .sendMessage(tabID, { action: 'inputToken', ...loginData }, { frameId: targetFrameId })
+      .catch(async err => {
+        // A failure to reach the specific recorded subframe is worth surfacing
+        // (it went away between request and delivery); top-frame failures are the
+        // ordinary "no content script on this page" case, so leave those silent.
+        if (targetFrameId !== 0) {
+          await storeLog('warning', 50, err, 'handleLoginRequest - inputToken delivery to recorded frame failed');
+        }
 
-    if (!anyCompleted) {
-      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token }).catch(() => {});
+        return false;
+      });
+
+    const completed = response?.status === 'completed';
+
+    if (!completed) {
+      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token }, { frameId: 0 }).catch(() => {});
     }
 
     await closeRequest(tabID, data.token_request_id);

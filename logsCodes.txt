@@ -42,6 +42,9 @@
 35 - checkSafariStorage
 37 - storageReset
 48 - updateBrowserExtension - storage load / enqueue
+49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
+50 - handleLoginRequest - inputToken delivery to recorded frame failed [warning]
+51 - resolveTokenTargetFrame - target frame origin changed / lookup failed, fallback to top frame [warning]
 
 // CONTENT
 33 - content_script

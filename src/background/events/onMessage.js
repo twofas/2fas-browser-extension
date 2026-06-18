@@ -127,8 +127,10 @@ const onMessage = (request, sender, sendResponse) => {
           .then(sessionData => {
             const tabData = sessionData[`tabData-${tabId}`] || {};
 
-            if (tabData.lastFocusedInput) {
+            if (tabData.lastFocusedInput || typeof tabData.lastFocusedFrameId === 'number') {
               delete tabData.lastFocusedInput;
+              delete tabData.lastFocusedFrameId;
+              delete tabData.lastFocusedFrameOrigin;
               return saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
             }
 

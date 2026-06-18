@@ -37,6 +37,7 @@ export { default as handleFrontElement } from './handleFrontElement.js';
 export { default as initBEAction } from './initBEAction.js';
 export { default as openBrowserPage } from './openBrowserPage.js';
 export { default as openInstallPage } from './openInstallPage.js';
+export { default as resolveTokenTargetFrame } from './resolveTokenTargetFrame.js';
 export { default as sendMessageToAllFrames } from './sendMessageToAllFrames.js';
 export { default as setIcon } from './setIcon.js';
 export { default as shouldInvalidateTabRequest } from './shouldInvalidateTabRequest.js';
