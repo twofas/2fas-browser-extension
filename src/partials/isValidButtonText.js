@@ -21,44 +21,63 @@ import buttonsTexts from '@partials/buttonsTexts.js';
 import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 
 /**
- * Checks if a button has valid submit text (included in allowed texts and not in ignored texts).
+ * Resolves a button's effective label, falling back to value/aria-label/title when innerText is empty.
+ *
+ * @param {HTMLElement} element - The button element to read
+ * @returns {string} Normalized (trimmed, lowercased) label, or '' when none is found
+ */
+const getButtonText = element => {
+  if (!element) {
+    return '';
+  }
+
+  const candidates = [
+    element.innerText,
+    element.value,
+    element.getAttribute('aria-label'),
+    element.getAttribute('title')
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      const normalized = candidate.trim().toLowerCase();
+
+      if (normalized) {
+        return normalized;
+      }
+    }
+  }
+
+  return '';
+};
+
+/**
+ * Checks if a button has a resolvable label that is not in the ignored texts (icon-only buttons are rejected).
  *
  * @param {HTMLElement} element - The button element to check
  * @returns {boolean} True if the button text is valid for submission
  */
 const isValidButtonText = element => {
-  const text = element?.innerText;
-
-  if (!text || typeof text !== 'string') {
-    return true;
-  }
-
-  const normalizedText = text.trim().toLowerCase();
+  const normalizedText = getButtonText(element);
 
   if (!normalizedText) {
-    return true;
+    return false;
   }
 
   return !ignoreButtonTexts().includes(normalizedText);
 };
 
 /**
- * Checks if a button text matches the allowed submit button texts.
+ * Checks if a button's resolvable label matches the allowed submit button texts (icon-only buttons are rejected).
  *
  * @param {HTMLElement} element - The button element to check
  * @returns {boolean} True if the button text is in the allowed submit texts list
  */
 const isSubmitButtonText = element => {
-  const text = element?.innerText;
-
-  if (!text || typeof text !== 'string') {
-    return true;
-  }
-
-  const normalizedText = text.trim().toLowerCase();
+  const normalizedText = getButtonText(element);
 
   if (!normalizedText) {
-    return true;
+    return false;
   }
 
   return buttonsTexts.includes(normalizedText);
