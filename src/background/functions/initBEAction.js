@@ -66,6 +66,9 @@ const initBEAction = async (url, tab, storageData) => {
   }
 
   if (condition) {
+    const previousLastAction = tabData.lastAction;
+    let pushRequested = false;
+
     tabData.lastAction = now;
     tabData.url = url;
 
@@ -73,6 +76,7 @@ const initBEAction = async (url, tab, storageData) => {
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });
 
       const requestData = await new SDK().request2FAToken(storage.extensionID, url);
+      pushRequested = true;
       tabData.requestID = requestData.token_request_id;
 
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });
@@ -94,6 +98,16 @@ const initBEAction = async (url, tab, storageData) => {
       const elements = await sendMessageToAllFrames(tab.id, { action: 'getActiveElement' });
       await handleFrontElement(elements, tab.id, sessionData);
     } catch (err) {
+      if (!pushRequested) {
+        // The push request never reached the backend, so keeping `lastAction`
+        // would only block a legitimate retry as "TooSoon". Restore the previous
+        // timestamp so the next attempt is allowed straight away. When the POST
+        // did succeed (a later step failed), the throttle stays to avoid asking
+        // the backend for a duplicate token.
+        tabData.lastAction = previousLastAction;
+        await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData }).catch(() => {});
+      }
+
       await storeLog('error', 5, err, tabData.url);
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab.id);
     } finally {
