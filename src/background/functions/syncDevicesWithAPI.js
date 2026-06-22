@@ -81,7 +81,11 @@ const performSyncDevicesWithAPI = async storage => {
     const devicesToRemove = localDevices.filter(d => !apiDeviceIds.has(d.device_id));
     const hasRemovals = devicesToRemove.length > 0;
 
-    const newApiDevices = apiDevices.filter(d => !localDeviceIds.has(d.id));
+    // Skip new API devices without a usable public_key: an empty key produces a
+    // broken record (token encryption can't work, and pairing rejects it too —
+    // handleConfigurationRequest). The device stays absent from local storage, so a
+    // later sync re-adds it once the API returns a key.
+    const newApiDevices = apiDevices.filter(d => !localDeviceIds.has(d.id) && d.public_key);
     const hasNewDevices = newApiDevices.length > 0;
 
     if (hasRemovals || hasNewDevices) {
@@ -92,7 +96,7 @@ const performSyncDevicesWithAPI = async storage => {
       newApiDevices.forEach(apiDevice => {
         updatedDevices.push({
           device_id: apiDevice.id,
-          device_public_key: apiDevice.public_key || ''
+          device_public_key: apiDevice.public_key
         });
       });
 
