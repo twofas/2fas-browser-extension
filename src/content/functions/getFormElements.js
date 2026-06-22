@@ -48,7 +48,10 @@ const getFormElements = () => {
   }
 
   if (querySelectorAllDeep(submitsSelector, shadowRoots).filter(isVisible).length === 0) {
-    submitsSelector = 'button';
+    // Mirror getFormSubmitElements' 3rd-level selector so the same submit
+    // candidates clickClosestSubmit will consider also get numbered here;
+    // otherwise input[type=button] submits fall back to the -999 sentinel.
+    submitsSelector = 'input[type="button"],button';
     requiresTextCheck = true;
   }
 
@@ -60,7 +63,10 @@ const getFormElements = () => {
       const nodeName = element.nodeName.toLowerCase();
 
       if (nodeName === 'input') {
-        return true;
+        // input[type=button] is a submit candidate (same as in
+        // getFormSubmitElements) and must clear the same text check;
+        // token inputs pass through untouched.
+        return element.type !== 'button' || isSubmitButtonText(element);
       }
 
       if (nodeName === 'button') {

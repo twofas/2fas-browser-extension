@@ -93,14 +93,27 @@ const isExcludedDomain = (excludedDomains, hostname) => {
   return excludedDomains.includes(hostname);
 };
 
+// Sentinel returned when an element was never assigned a position by
+// addFormElementsNumber. Such candidates must be kept out of the proximity
+// metric instead of being compared as a real number.
+const NOT_NUMBERED = -999;
+
 /**
  * Gets the element number attribute value from an element.
  *
  * @param {HTMLElement} element - The element to get the number from
- * @returns {number} The element number or -999 if not found
+ * @returns {number} The element number, or NOT_NUMBERED if it has none
  */
 const getElementNumber = element => {
-  return parseInt(element?.getAttribute('data-twofas-element-number') || '-999', 10);
+  const raw = element?.getAttribute('data-twofas-element-number');
+
+  if (raw === null || raw === undefined) {
+    return NOT_NUMBERED;
+  }
+
+  const parsed = parseInt(raw, 10);
+
+  return Number.isNaN(parsed) ? NOT_NUMBERED : parsed;
 };
 
 /**
@@ -149,11 +162,28 @@ const clickClosestSubmit = (inputElement, submits) => {
   }
 
   const inputNumber = getElementNumber(inputElement);
-  const submitNumbers = submits.map(getElementNumber);
-  const closestIndex = findClosestIndex(submitNumbers, inputNumber);
 
-  if (closestIndex >= 0 && submits[closestIndex]) {
-    safeClick(submits[closestIndex]);
+  // Only candidates that share the input's numbering space can be compared by
+  // proximity. Unnumbered submits — from selector drift between the numbering
+  // pass (getFormElements) and the click candidates (getFormSubmitElements), or
+  // from DOM mutation in between — would otherwise enter the metric as -999 and
+  // skew the result, so they are dropped here.
+  const numbered = submits
+    .map(submit => ({ submit, number: getElementNumber(submit) }))
+    .filter(entry => entry.number !== NOT_NUMBERED);
+
+  // Without usable numbering the metric is meaningless; fall back to the first
+  // submit in DOM order (getFormSubmitElements returns elements in DOM order).
+  if (inputNumber === NOT_NUMBERED || numbered.length === 0) {
+    safeClick(submits[0]);
+
+    return;
+  }
+
+  const closestIndex = findClosestIndex(numbered.map(entry => entry.number), inputNumber);
+
+  if (closestIndex >= 0 && numbered[closestIndex]) {
+    safeClick(numbered[closestIndex].submit);
   }
 };
 
