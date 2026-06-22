@@ -29,6 +29,10 @@ import wsTabClosed from '@background/functions/wsTabClosed.js';
 import storeLog from '@partials/storeLog.js';
 
 const WS_TIMEOUT_MS = (1000 * 60 * config.WebSocketTimeout) - 5000;
+// Backoff delays for unexpected drops. Length doubles as the max consecutive
+// reconnect attempts; the whole sequence shares the single WS_TIMEOUT_MS budget.
+const RECONNECT_BACKOFF_MS = [1000, 2000, 4000];
+const MAX_RECONNECT_ATTEMPTS = RECONNECT_BACKOFF_MS.length;
 
 /**
  * Creates a WebSocket channel for communication with 2FAS backend.
@@ -50,19 +54,31 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   } = options;
 
   let timeoutID = null;
+  let reconnectTimerID = null;
+  let reconnectAttempts = 0;
+  let deadline = null;
   let handled = false;
-  const channel = { ws: null };
+  let listenersAttached = false;
+  const channel = { ws: null, closing: false };
 
   const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID, origin);
   const tabClosedFunc = tabIDChanged => wsTabClosed(tabIDChanged, tabID, channel, timeoutID);
 
   const cleanupListeners = () => {
-    browser.tabs.onRemoved.removeListener(tabClosedFunc);
-    browser.tabs.onUpdated.removeListener(tabChangedFunc);
+    if (listenersAttached) {
+      browser.tabs.onRemoved.removeListener(tabClosedFunc);
+      browser.tabs.onUpdated.removeListener(tabChangedFunc);
+      listenersAttached = false;
+    }
 
     if (timeoutID) {
       clearTimeout(timeoutID);
       timeoutID = null;
+    }
+
+    if (reconnectTimerID) {
+      clearTimeout(reconnectTimerID);
+      reconnectTimerID = null;
     }
   };
 
@@ -76,9 +92,16 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     return baseURL;
   };
 
-  const handleTimeout = () => {
+  // Terminal failure path: the budget elapsed or every reconnect attempt failed.
+  // Idempotent via channel.closing so a late onclose/race cannot double-notify.
+  const handleFailure = () => {
+    if (channel.closing) {
+      return;
+    }
+
     closeWSChannel(channel);
-    console.warn('WebSocket Timeout');
+    cleanupListeners();
+    console.warn('WebSocket closed without a response');
 
     if (timeout) {
       TwoFasNotification.show(notifications.timeout, tabID);
@@ -89,6 +112,44 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     if (login) {
       closeRequest(tabID, requestID);
     }
+  };
+
+  // Called from onclose. Reconnects only when the drop was unexpected (no token
+  // handled, not a deliberate close) and the requestID is still within budget —
+  // so a transient blip while waiting for the user to approve on their phone no
+  // longer wastes the whole timeout. Deliberate closes route here too and just
+  // tear down. Backoff resets on a successful onopen.
+  const scheduleReconnect = () => {
+    if (handled || channel.closing) {
+      cleanupListeners();
+      return;
+    }
+
+    const remaining = deadline - Date.now();
+
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS || remaining <= 0) {
+      handleFailure();
+      return;
+    }
+
+    const delay = Math.min(RECONNECT_BACKOFF_MS[reconnectAttempts], remaining);
+    reconnectAttempts += 1;
+
+    reconnectTimerID = setTimeout(() => {
+      reconnectTimerID = null;
+
+      if (handled || channel.closing) {
+        cleanupListeners();
+        return;
+      }
+
+      if (deadline - Date.now() <= 0) {
+        handleFailure();
+        return;
+      }
+
+      channel.connect();
+    }, delay);
   };
 
   const handleMessage = async messageEvent => {
@@ -147,22 +208,45 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   };
 
   channel.connect = () => {
+    // Set once on the first connect so reconnects share the same overall budget
+    // instead of restarting the timeout from scratch on every onopen.
+    if (deadline === null) {
+      deadline = Date.now() + WS_TIMEOUT_MS;
+    }
+
     const wsURL = buildWebSocketURL();
     channel.ws = new WebSocket(wsURL);
 
     channel.ws.onopen = () => {
-      timeoutID = setTimeout(handleTimeout, WS_TIMEOUT_MS);
-      browser.tabs.onRemoved.addListener(tabClosedFunc);
-      browser.tabs.onUpdated.addListener(tabChangedFunc);
+      reconnectAttempts = 0;
+
+      const remaining = deadline - Date.now();
+
+      if (remaining <= 0) {
+        handleFailure();
+        return;
+      }
+
+      if (timeoutID) {
+        clearTimeout(timeoutID);
+      }
+      timeoutID = setTimeout(handleFailure, remaining);
+
+      if (!listenersAttached) {
+        browser.tabs.onRemoved.addListener(tabClosedFunc);
+        browser.tabs.onUpdated.addListener(tabChangedFunc);
+        listenersAttached = true;
+      }
     };
 
+    // onerror always precedes onclose, so reconnect is driven from onclose only
+    // (a single entry point) to avoid double-scheduling; here we just log.
     channel.ws.onerror = async err => {
-      cleanupListeners();
       await storeLog('error', 11, err, 'WebSocket channel error');
     };
 
     channel.ws.onclose = () => {
-      cleanupListeners();
+      scheduleReconnect();
     };
 
     channel.ws.onmessage = handleMessage;
