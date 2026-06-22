@@ -105,7 +105,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
           }
 
           if (!lastFocusedInput) {
-            tokenNotification(request.token);
+            tokenNotification(request.token, request.token_request_id);
           }
 
           sendResponse({ status: 'ok' });
@@ -161,7 +161,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
 
     case 'showTokenNotification': {
       loadFonts();
-      tokenNotification(request.token);
+      tokenNotification(request.token, request.token_request_id);
       sendResponse({ status: 'ok' });
       break;
     }

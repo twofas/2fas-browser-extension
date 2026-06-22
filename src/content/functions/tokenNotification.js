@@ -25,24 +25,28 @@ import copySrc from '@images/copy-icon.svg';
 import closeSrc from '@images/notification-close.svg';
 import S from '@/selectors.js';
 
-let lastTokenNotificationToken = null;
+let lastTokenNotificationRequestId = null;
 
 /**
  * Displays a notification with the 2FA token and a copy button.
  *
  * @param {string} token - The 2FA token to display
+ * @param {string} [tokenRequestId] - The unique request ID, used to deduplicate
+ *   the notification within a single request. TOTP values are time-based and
+ *   repeat across requests, so deduplicating by token value would suppress
+ *   legitimate re-requests of the same code.
  * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
  */
-const tokenNotification = token => {
+const tokenNotification = (token, tokenRequestId) => {
   if (isInFrame()) {
     return false;
   }
 
-  if (token === lastTokenNotificationToken) {
+  if (tokenRequestId && tokenRequestId === lastTokenNotificationRequestId) {
     return false;
   }
 
-  lastTokenNotificationToken = token;
+  lastTokenNotificationRequestId = tokenRequestId;
 
   let n = {
     container: document.querySelector(S.notification.container),

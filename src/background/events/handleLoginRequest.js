@@ -128,7 +128,7 @@ const handleLoginRequest = async (tabID, data) => {
     const completed = response?.status === 'completed';
 
     if (!completed) {
-      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token }, { frameId: 0 }).catch(() => {});
+      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token, token_request_id: data.token_request_id }, { frameId: 0 }).catch(() => {});
     }
 
     await closeRequest(tabID, data.token_request_id);
