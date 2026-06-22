@@ -65,16 +65,24 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
           return;
         }
 
-        if (!sessionTabData || !sessionTabData[`tabData-${tabData?.id}`] || sessionTabData[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
+        const tabRecord = sessionTabData?.[`tabData-${tabData?.id}`];
+        const hasTabContext = Boolean(tabData?.id) && Boolean(sessionTabData);
+        const isValidRequest = hasTabContext && tabRecord?.requestID === request.token_request_id;
+
+        if (!isValidRequest) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
             return;
           }
 
+          // Missing tab context (e.g. getTabData failed transiently) is not a genuinely
+          // outdated request — tell the user to refresh instead of showing "OldRequest".
+          const errorText = hasTabContext ? config.Texts.Error.OldRequest : config.Texts.Error.General;
+
           sendResponse({
             status: 'notification',
-            title: config.Texts.Error.OldRequest.Title,
-            message: config.Texts.Error.OldRequest.Message
+            title: errorText.Title,
+            message: errorText.Message
           });
           return;
         }
