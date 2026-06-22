@@ -89,6 +89,9 @@
     "alarms"
   ],
   "web_accessible_resources": [
-    "/fonts/*"
+    {
+      "resources": ["/fonts/*"],
+      "matches": ["https://*/*", "http://*/*"]
+    }
   ]
 }

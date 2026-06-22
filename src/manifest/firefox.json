@@ -79,5 +79,11 @@
     "contextMenus",
     "webNavigation",
     "alarms"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["/fonts/*"],
+      "matches": ["https://*/*", "http://*/*"]
+    }
   ]
 }
