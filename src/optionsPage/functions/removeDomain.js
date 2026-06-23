@@ -60,7 +60,7 @@ const removeDomain = function (e) {
         .then(() => removeDomainFromDOM(domain))
         .then(() => TwoFasNotification.show(config.Texts.Success.DomainExcludedRemoved))
         .catch(async err => {
-          await storeLog('error', 22, err, 'removeDomain');
+          await storeLog('error', 52, err, 'removeDomain');
           return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
         });
     }

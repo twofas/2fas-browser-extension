@@ -74,6 +74,7 @@
 38 - storageValidationReload
 45 - domainModalFormSubmit
 47 - handleImportDefaultExcludedDomains
+52 - removeDomain
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]
