@@ -53,7 +53,10 @@ const onTabUpdated = async (tabID, changeInfo, tab) => {
     storage = await loadFromLocalStorage(['extensionID']);
     sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    await storeLog('error', 3, err, sessionData?.[`tabData-${tabID}`]?.url);
+    // `sessionData` is always null here (the load above threw), so the tab's
+    // stored URL is unreachable. Fall back to the navigation URL from the event
+    // itself, which is the only URL context available at this point.
+    await storeLog('error', 3, err, changeInfo?.url || tab?.url);
     storage = null;
     sessionData = null;
     return false;

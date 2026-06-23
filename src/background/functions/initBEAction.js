@@ -108,7 +108,7 @@ const initBEAction = async (url, tab, storageData) => {
         await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData }).catch(() => {});
       }
 
-      await storeLog('error', 5, err, tabData.url);
+      await storeLog('error', 5, err, url);
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab.id);
     } finally {
       storage = null;
