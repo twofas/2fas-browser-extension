@@ -40,7 +40,7 @@ const removeDomain = function (e) {
 
   if (!domain) {
     return storeLog('error', 31, new Error('Wrong domain'), 'removeDomain')
-      .then(() => TwoFasNotification.show(config.Texts.Error.RemoveDeviceBadData, null, true))
+      .then(() => TwoFasNotification.show(config.Texts.Error.RemoveDomainBadData, null, true))
       .catch(() => {});
   }
 
@@ -60,7 +60,7 @@ const removeDomain = function (e) {
         .then(() => removeDomainFromDOM(domain))
         .then(() => TwoFasNotification.show(config.Texts.Success.DomainExcludedRemoved))
         .catch(async err => {
-          await storeLog('error', 22, err, 'removeDevice');
+          await storeLog('error', 22, err, 'removeDomain');
           return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
         });
     }
