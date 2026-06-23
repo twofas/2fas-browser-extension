@@ -28,7 +28,7 @@ const loadFromLocalStorage = key => {
   return browser.storage.local.get(key)
     .catch(err => {
       console.error({ err });
-      throw new Error(err);
+      throw err;
     });
 };
 
