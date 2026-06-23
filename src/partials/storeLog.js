@@ -205,9 +205,6 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   if (
-    (storage?.browserInfo?.browser_name === 'Firefox' && storage?.browserInfo?.browser_version === '105.0' && logID === 14) ||
-    (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107' && logID === 14) ||
-    (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107.0.0.0' && logID === 14) ||
     (c?.errorInfo?.message?.includes('FILE_ERROR_NO_SPACE')) ||
     (c?.errorInfo?.status === 407) ||
     (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
