@@ -88,8 +88,7 @@ const initBEAction = async (url, tab, storageData) => {
         requestID: tabData.requestID,
         origin: url,
         notifications: {
-          timeout: config.Texts.Error.PushExpired(url),
-          error: config.Texts.Error.General
+          timeout: config.Texts.Error.PushExpired(url)
         }
       });
 

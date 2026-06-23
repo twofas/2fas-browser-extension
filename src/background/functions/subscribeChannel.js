@@ -48,8 +48,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     requestID = null,
     origin = null,
     notifications = {
-      timeout: config.Texts.Error.Timeout,
-      error: config.Texts.Error.General
+      timeout: config.Texts.Error.Timeout
     }
   } = options;
 

@@ -57,8 +57,7 @@ const init = async storage => {
     login: false,
     requestID: null,
     notifications: {
-      timeout: config.Texts.Error.Timeout,
-      error: config.Texts.Error.General
+      timeout: config.Texts.Error.Timeout
     }
   });
 
