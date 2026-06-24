@@ -6,6 +6,8 @@
     "node": "24.12.0"
   },
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "npx -y rimraf --glob ./public/*",
     "chrome-dev": "yon clean && yon generate-locales && npx -y cross-env EXT_PLATFORM=Chrome node_modules/.bin/webpack --mode development --progress --config webpack/development.config.js && npx -y rimraf ./public/.gitkeep && yon check-build-directory && npx -y cross-env PLATFORM=chrome MODE=development yon copy-build && npx -y cross-env PLATFORM=chrome MODE=development yon zip-build",
     "chrome-prod": "yon clean && yon generate-locales && yon browserlist-update && npx -y cross-env EXT_PLATFORM=Chrome NODE_ENV=production node_modules/.bin/webpack --mode production --progress --config webpack/production.config.js",
@@ -78,6 +80,7 @@
     "eslint-plugin-promise": "^7.3.0",
     "eslint-webpack-plugin": "^5.0.3",
     "exports-loader": "^5.0.0",
+    "fake-indexeddb": "^6.2.5",
     "file-loader": "^6.0.0",
     "html-loader": "^5.0.0",
     "html-webpack-plugin": "^5.6.6",
@@ -103,6 +106,7 @@
     "svg-inline-loader": "^0.8.2",
     "terser-webpack-plugin": "^5.6.0",
     "url-loader": "^4.1.0",
+    "vitest": "^4.1.9",
     "webextension-polyfill": "^0.12.0",
     "webpack": "^5.98.0",
     "webpack-cli": "^7.0.2",

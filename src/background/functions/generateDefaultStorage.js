@@ -22,6 +22,7 @@ import browser from 'webextension-polyfill';
 import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
 import Crypt from '@background/functions/Crypt.js';
+import { savePrivateKey, deletePrivateKey } from '@background/functions/privateKeyStore.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
@@ -43,17 +44,18 @@ const generateDefaultStorage = browserInfo => {
         attempt = res.attempt;
       }
 
-      return clearLocalStorage();
+      // Reset clears storage.local; the private key now lives in IndexedDB, so
+      // wipe it too to keep a regeneration fully clean.
+      return Promise.all([clearLocalStorage(), deletePrivateKey()]);
     })
     .then(() => crypt.generateKeys())
     .then(keys => Promise.all([
       crypt.exportKey('spki', keys.publicKey),
-      crypt.exportKey('pkcs8', keys.privateKey)
+      savePrivateKey(keys.privateKey)
     ]))
     .then(data => {
       const keys = {
-        publicKey: crypt.ArrayBufferToString(data[0]),
-        privateKey: crypt.ArrayBufferToString(data[1])
+        publicKey: crypt.ArrayBufferToString(data[0])
       };
 
       return saveToLocalStorage({

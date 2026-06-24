@@ -26,6 +26,7 @@ import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
 import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFrame.js';
+import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 
 /**
  * Checks if an error indicates a missing or invalid tab.
@@ -40,14 +41,12 @@ const isTabError = err => {
 /**
  * Decrypts an encrypted 2FA token using the extension's private key.
  * @param {string} encryptedToken - The encrypted token from the mobile app.
- * @param {string} privateKeyString - The private key as a base64 string.
+ * @param {CryptoKey} privateKey - The non-extractable RSA-OAEP private key from IndexedDB.
  * @returns {Promise<string>} The decrypted token.
  */
-const decryptToken = async (encryptedToken, privateKeyString) => {
+const decryptToken = async (encryptedToken, privateKey) => {
   const crypt = new Crypt();
-  const privateKey = crypt.stringToArrayBuffer(privateKeyString);
-  const key = await crypt.importKey(privateKey, 'pkcs8', ['decrypt']);
-  const decrypted = await crypt.decrypt(key, crypt.stringToArrayBuffer(encryptedToken));
+  const decrypted = await crypt.decrypt(privateKey, crypt.stringToArrayBuffer(encryptedToken));
 
   return crypt.decodeText(decrypted);
 };
@@ -96,11 +95,13 @@ const handleLoginRequest = async (tabID, data) => {
       }
     }
 
-    if (!storage?.keys?.privateKey) {
+    const privateKey = await getOrMigratePrivateKey(storage);
+
+    if (!privateKey) {
       throw new Error('Private key not found in storage');
     }
 
-    const token = await decryptToken(data.token, storage.keys.privateKey);
+    const token = await decryptToken(data.token, privateKey);
     const loginData = { ...data, token };
 
     // Deliver the plaintext token only to the frame that held the focused input

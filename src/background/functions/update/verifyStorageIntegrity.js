@@ -19,22 +19,26 @@
 
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
- * Checks if the storage contains valid encryption keys and extension ID.
+ * Checks if the storage contains a valid public key, extension ID and a private
+ * key. The private key lives in IndexedDB; for users upgrading from a build that
+ * stored it as base64 in storage.local this call also migrates it on first run.
  *
+ * @async
  * @param {Object} storage - The storage object to validate
- * @returns {boolean} True if storage has valid keys and extension ID
+ * @returns {Promise<boolean>} True if storage has valid keys and extension ID
  */
-const isStorageValid = storage => {
-  if (!storage?.keys || !storage?.extensionID) {
+const isStorageValid = async storage => {
+  if (!storage?.keys?.publicKey || !storage?.extensionID) {
     return false;
   }
 
-  const { publicKey, privateKey } = storage.keys;
+  const privateKey = await getOrMigratePrivateKey(storage);
 
-  return Boolean(publicKey && privateKey);
+  return Boolean(privateKey);
 };
 
 /**
@@ -49,7 +53,7 @@ const verifyStorageIntegrity = async browserInfo => {
   try {
     let storage = await loadFromLocalStorage(['keys', 'extensionID']);
 
-    if (isStorageValid(storage)) {
+    if (await isStorageValid(storage)) {
       return true;
     }
 
@@ -57,7 +61,7 @@ const verifyStorageIntegrity = async browserInfo => {
 
     storage = await loadFromLocalStorage(['keys', 'extensionID']);
 
-    return isStorageValid(storage);
+    return await isStorageValid(storage);
   } catch (err) {
     storeLog('error', 29, err, 'verifyStorageIntegrity');
 
