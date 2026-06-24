@@ -98,6 +98,13 @@ const isExcludedDomain = (excludedDomains, hostname) => {
 // metric instead of being compared as a real number.
 const NOT_NUMBERED = -999;
 
+// Pause after the token is verified-filled before clicking submit (U3). Kept
+// short so the whole autofill no longer feels like a ~1.4s "ghost"; the value is
+// already in the field with input/change events dispatched, so synchronous
+// validators have run. Domains with debounced/async validation that need longer
+// can be left out of auto-submit via the excluded-domains list.
+const SUBMIT_SETTLE_DELAY_MS = 50;
+
 /**
  * Gets the element number attribute value from an element.
  *
@@ -195,7 +202,7 @@ const clickClosestSubmit = (inputElement, submits) => {
  * @returns {Promise<boolean>} Promise that resolves to true if submit was clicked, false otherwise
  */
 const clickSubmit = (inputElement, siteURL) => {
-  return delay(() => {}, 500)
+  return delay(() => {}, SUBMIT_SETTLE_DELAY_MS)
     .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']))
     .then(storage => {
       if (!storage?.autoSubmitEnabled) {

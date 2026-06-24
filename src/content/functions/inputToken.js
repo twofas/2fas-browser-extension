@@ -18,7 +18,6 @@
 //
 
 /* global Event, KeyboardEvent, InputEvent, DataTransfer, ClipboardEvent */
-import runTasksWithDelay from '@partials/runTasksWithDelay.js';
 import wait from '@partials/wait.js';
 import getTabData from '@content/functions/getTabData.js';
 import clickSubmit from '@content/functions/clickSubmit.js';
@@ -27,7 +26,12 @@ import setNativeValue from '@content/functions/setNativeValue.js';
 import detectOtpInputs, { isContentEditableTarget } from '@content/functions/detectOtpInputs.js';
 import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
-const KEYSTROKE_DELAY_MS = 150;
+// Base cadence between keystrokes — fast enough to feel instant, still slow
+// enough for per-character validators (U3). The rise below is the exception.
+const KEYSTROKE_DELAY_MS = 40;
+// Applied only to segmented OTP widgets (the "6 boxes" pattern), where focus
+// moves box-to-box between digits and the widget may need time to re-render.
+const SEGMENTED_ADVANCE_DELAY_MS = 150;
 const PASTE_SETTLE_MS = 120;
 
 /**
@@ -39,6 +43,15 @@ const isFillableInput = element => {
   const nodeName = element?.nodeName?.toLowerCase();
   return nodeName === 'input' || nodeName === 'textarea';
 };
+
+/**
+ * Picks the pause before the next keystroke. Fast by default; rises only for
+ * segmented OTP widgets, where focus moves box-to-box and the widget may need
+ * time to re-render between digits (U3 adaptive rhythm).
+ * @param {boolean} isSegmented - Whether the fill target is a segmented OTP group
+ * @returns {number} Delay in milliseconds before the next keystroke
+ */
+const keystrokeDelay = isSegmented => (isSegmented ? SEGMENTED_ADVANCE_DELAY_MS : KEYSTROKE_DELAY_MS);
 
 /**
  * Reads the current text of a fill target (value or, for contenteditable, textContent).
@@ -268,40 +281,48 @@ const simulateTyping = async (inputElement, group, token) => {
   inputElement.focus();
 
   const isAllowedTarget = element => element === inputElement || group.boxes.includes(element);
+  // Adaptive rhythm (U3): a segmented group moves focus box-to-box and may
+  // re-render between digits, so it keeps the longer cadence; a single field
+  // types fast. Keyed off the detected mode, so there is no focus-timing race.
+  const isSegmented = group.mode === 'segmented';
   let accumulated = '';
-  const tasks = [];
+
+  // Writes one digit into the current (allowed) target, skipping the keystroke if
+  // focus escaped to an element we must not touch (R10 abort guard).
+  const typeDigit = digit => {
+    const keyCode = 48 + Number(digit);
+    let activeElement = getDeepActiveElement();
+
+    if (!isFillableInput(activeElement) || !isAllowedTarget(activeElement)) {
+      if (isFillableInput(inputElement)) {
+        inputElement.focus();
+        activeElement = inputElement;
+      } else {
+        return;
+      }
+    }
+
+    let valueForElement;
+
+    if (activeElement === inputElement) {
+      accumulated += digit;
+      valueForElement = accumulated;
+    } else {
+      // Focus auto-advanced to another box (segmented) — it holds one digit.
+      valueForElement = digit;
+    }
+
+    dispatchKeystrokeEvents(activeElement, digit, keyCode, valueForElement);
+  };
 
   for (let i = 0; i < token.length; i++) {
-    tasks.push(() => {
-      const digit = token[i];
-      const keyCode = 48 + Number(digit);
-      let activeElement = getDeepActiveElement();
+    typeDigit(token[i]);
 
-      // R10 abort guard: keep the fill on the intended target(s).
-      if (!isFillableInput(activeElement) || !isAllowedTarget(activeElement)) {
-        if (isFillableInput(inputElement)) {
-          inputElement.focus();
-          activeElement = inputElement;
-        } else {
-          return;
-        }
-      }
-
-      let valueForElement;
-
-      if (activeElement === inputElement) {
-        accumulated += digit;
-        valueForElement = accumulated;
-      } else {
-        // Focus auto-advanced to another box (segmented) — it holds one digit.
-        valueForElement = digit;
-      }
-
-      dispatchKeystrokeEvents(activeElement, digit, keyCode, valueForElement);
-    });
+    // The final keystroke needs no trailing wait.
+    if (i < token.length - 1) {
+      await wait(keystrokeDelay(isSegmented));
+    }
   }
-
-  await runTasksWithDelay(tasks, KEYSTROKE_DELAY_MS);
 };
 
 /**
@@ -368,4 +389,5 @@ const inputToken = async (request, inputElement, siteURL) => {
   return { status: 'completed', url: siteURL };
 };
 
+export { keystrokeDelay };
 export default inputToken;
