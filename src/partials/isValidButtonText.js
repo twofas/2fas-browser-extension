@@ -20,6 +20,27 @@
 import buttonsTexts from '@partials/buttonsTexts.js';
 import ignoreButtonTexts from '@partials/ignoreButtonTexts.js';
 
+// Build the lookup tables once as Sets so each candidate button is an O(1)
+// membership test instead of a linear scan over the large multilingual arrays
+// (ignoreButtonTexts ~1175 entries, buttonsTexts ~342); getFormElements,
+// getFormSubmitElements and clickSubmit call these per element.
+const buttonsTextsSet = new Set(buttonsTexts);
+let ignoreButtonTextsSet = null;
+
+/**
+ * Lazily builds and memoizes the ignored-texts Set (ignoreButtonTexts builds a
+ * fresh array on every call, so it is only materialized once here).
+ *
+ * @returns {Set<string>} Set of normalized button labels to ignore
+ */
+const getIgnoreButtonTextsSet = () => {
+  if (!ignoreButtonTextsSet) {
+    ignoreButtonTextsSet = new Set(ignoreButtonTexts());
+  }
+
+  return ignoreButtonTextsSet;
+};
+
 /**
  * Resolves a button's effective label, falling back to value/aria-label/title when innerText is empty.
  *
@@ -64,7 +85,7 @@ const isValidButtonText = element => {
     return false;
   }
 
-  return !ignoreButtonTexts().includes(normalizedText);
+  return !getIgnoreButtonTextsSet().has(normalizedText);
 };
 
 /**
@@ -80,7 +101,7 @@ const isSubmitButtonText = element => {
     return false;
   }
 
-  return buttonsTexts.includes(normalizedText);
+  return buttonsTextsSet.has(normalizedText);
 };
 
 export { isValidButtonText, isSubmitButtonText };

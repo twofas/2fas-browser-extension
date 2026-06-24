@@ -32,12 +32,14 @@ import { querySelectorAllDeep, collectAllShadowRoots } from '@content/functions/
  * hidden elements are stripped from the final result so they don't pollute
  * data-twofas-element-number numbering used by clickClosestSubmit.
  *
+ * @param {ShadowRoot[]} [providedShadowRoots] - Pre-collected shadow roots to reuse
+ *   (lets a caller that already walked the DOM avoid a second full traversal)
  * @returns {HTMLElement[]} Array of visible input and submit elements (in DOM order)
  */
-const getFormElements = () => {
+const getFormElements = (providedShadowRoots = null) => {
   // Collect shadow roots once and reuse across every deep query in this pass,
   // instead of re-walking the whole DOM on each querySelectorAllDeep call.
-  const shadowRoots = collectAllShadowRoots();
+  const shadowRoots = providedShadowRoots || collectAllShadowRoots();
 
   const inputsSelector = inputsSelectors();
   let submitsSelector = formSubmitSelectors();

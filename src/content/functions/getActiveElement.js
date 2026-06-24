@@ -22,7 +22,7 @@ import clearFormElementsNumber from '@content/functions/clearFormElementsNumber.
 import addFormElementsNumber from '@content/functions/addFormElementsNumber.js';
 import getFormElements from '@content/functions/getFormElements.js';
 import findFallbackOtpInput from '@content/functions/findFallbackOtpInput.js';
-import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
+import { getDeepActiveElement, collectAllShadowRoots } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Checks whether an element can receive an autofilled token: a native
@@ -61,9 +61,13 @@ const getActiveElement = () => {
   const activeElement = getDeepActiveElement();
   let target = isFillableTarget(activeElement) ? activeElement : null;
 
+  // Walk the DOM for shadow roots once and reuse it for both the fallback
+  // lookup and the form-element numbering below, instead of collecting twice.
+  const shadowRoots = collectAllShadowRoots();
+
   // R3: no fillable element focused → try a spec-blessed one-time-code field.
   if (!target) {
-    target = findFallbackOtpInput();
+    target = findFallbackOtpInput(shadowRoots);
   }
 
   if (!target) {
@@ -78,7 +82,7 @@ const getActiveElement = () => {
   target.setAttribute('data-twofas-input', inputUUID);
 
   clearFormElementsNumber();
-  addFormElementsNumber(getFormElements());
+  addFormElementsNumber(getFormElements(shadowRoots));
 
   return {
     status: 'activeElement',
