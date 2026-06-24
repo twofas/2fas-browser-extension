@@ -20,7 +20,7 @@
 /* global Event, KeyboardEvent, InputEvent, DataTransfer, ClipboardEvent */
 import wait from '@partials/wait.js';
 import getTabData from '@content/functions/getTabData.js';
-import clickSubmit from '@content/functions/clickSubmit.js';
+import { setPendingSubmit, resumePendingSubmit, clearPendingSubmit } from '@content/functions/pendingSubmit.js';
 import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
 import setNativeValue from '@content/functions/setNativeValue.js';
 import detectOtpInputs, { isContentEditableTarget } from '@content/functions/detectOtpInputs.js';
@@ -326,6 +326,44 @@ const simulateTyping = async (inputElement, group, token) => {
 };
 
 /**
+ * Decides what to do with auto-submit once the token has landed (U5 deferred
+ * auto-submit). The submit is queued BEFORE the getTabData() round-trip, because
+ * that await is a real interleaving point: if the page reaches 'complete' during
+ * it, the background broadcasts 'pageLoadComplete' and the content script runs
+ * resumePendingSubmit() synchronously — so the queue must already be set, or the
+ * signal is consumed against an empty queue and the submit is lost. Once the
+ * status is known, a loaded page is replayed-and-cleared immediately (idempotent
+ * if 'pageLoadComplete' already did it during the await — the queue is then empty
+ * and resume is a no-op, so it never double-submits); a still-loading page is
+ * left queued for the pageLoadComplete handler.
+ * @param {HTMLElement} inputElement - The filled input element.
+ * @param {string} siteURL - URL of the current site.
+ * @param {boolean} verified - Whether the token was confirmed filled.
+ * @returns {Promise<void>}
+ */
+const scheduleAutoSubmit = async (inputElement, siteURL, verified) => {
+  if (verified) {
+    setPendingSubmit(inputElement, siteURL);
+  }
+
+  let status;
+
+  try {
+    const tab = await getTabData();
+    status = tab?.status;
+  } catch {
+    // Tab status is unknowable — drop the queued submit rather than auto-submit
+    // blind (preserves the prior "no auto-submit on getTabData failure" behavior).
+    clearPendingSubmit();
+    return;
+  }
+
+  if (status === 'complete') {
+    resumePendingSubmit();
+  }
+};
+
+/**
  * Inputs a 2FA token into the resolved target. Tries a paste-based fill first
  * for managed widgets, falls back to keystroke simulation, verifies the result,
  * and only then (and only when verified) triggers auto-submit.
@@ -342,6 +380,11 @@ const inputToken = async (request, inputElement, siteURL) => {
   if (!inputElement) {
     return { status: 'emptyInput' };
   }
+
+  // A new fill supersedes any auto-submit still queued from a previous request in
+  // this frame, so a stale fill can never replay — including if 'pageLoadComplete'
+  // arrives while this new fill is still typing (U5).
+  clearPendingSubmit();
 
   const token = String(request.token);
   const group = detectOtpInputs(inputElement);
@@ -371,23 +414,12 @@ const inputToken = async (request, inputElement, siteURL) => {
   // R10: confirm the token landed before auto-submitting (handles 1 and 6 fields).
   const verified = isTokenFilled(group, token);
 
-  let tab = {};
-
-  try {
-    tab = await getTabData();
-  } catch {
-    clearAfterInputToken(inputElement);
-    return { status: 'completed', url: siteURL };
-  }
-
-  if (verified && tab?.status === 'complete') {
-    clickSubmit(inputElement, siteURL);
-  }
+  await scheduleAutoSubmit(inputElement, siteURL, verified);
 
   clearAfterInputToken(inputElement);
 
   return { status: 'completed', url: siteURL };
 };
 
-export { keystrokeDelay };
+export { keystrokeDelay, scheduleAutoSubmit };
 export default inputToken;

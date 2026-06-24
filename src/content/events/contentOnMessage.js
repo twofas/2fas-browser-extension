@@ -19,7 +19,7 @@
 
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain } from '@content/functions';
+import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain, resumePendingSubmit } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -143,6 +143,9 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
     }
 
     case 'pageLoadComplete': {
+      // The page finished loading after a token was filled mid-load: replay the
+      // auto-submit that inputToken deferred (U5 deferred auto-submit).
+      resumePendingSubmit();
       sendResponse({ status: 'ok' });
       break;
     }

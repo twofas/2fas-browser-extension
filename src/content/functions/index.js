@@ -35,5 +35,6 @@ export { default as isInFrame } from './isInFrame.js';
 export { default as loadFonts } from './loadFonts.js';
 export { default as notification } from './notification.js';
 export { default as openOptionsPage } from './openOptionsPage.js';
+export * from './pendingSubmit.js';
 export * from './shadowDomUtils.js';
 export { default as tokenNotification } from './tokenNotification.js';
