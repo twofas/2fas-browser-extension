@@ -19,56 +19,94 @@
 
 // In-memory test double for the `browser` object from webextension-polyfill.
 // Vitest aliases 'webextension-polyfill' to this file, so all extension code
-// under test talks to this faithful-enough fake of browser.storage.local.
+// under test talks to this faithful-enough fake of browser.storage.{local,session}
+// and browser.alarms.
 
 const clone = value => (value === undefined ? undefined : JSON.parse(JSON.stringify(value)));
 
-let store = {};
+// Builds an independent storage area (used for both `local` and `session`) so the
+// two never share state, mirroring the real browser.
+const createStorageArea = () => {
+  let store = {};
 
-const local = {
-  get: async keys => {
-    if (keys === null || keys === undefined) {
-      return clone(store);
-    }
+  const area = {
+    get: async keys => {
+      if (keys === null || keys === undefined) {
+        return clone(store);
+      }
 
-    if (typeof keys === 'string') {
-      return store[keys] === undefined ? {} : { [keys]: clone(store[keys]) };
-    }
+      if (typeof keys === 'string') {
+        return store[keys] === undefined ? {} : { [keys]: clone(store[keys]) };
+      }
 
-    if (Array.isArray(keys)) {
+      if (Array.isArray(keys)) {
+        const out = {};
+        keys.forEach(key => {
+          if (store[key] !== undefined) {
+            out[key] = clone(store[key]);
+          }
+        });
+        return out;
+      }
+
+      // Object form: keys are defaults, returned when not present in storage.
       const out = {};
-      keys.forEach(key => {
-        if (store[key] !== undefined) {
-          out[key] = clone(store[key]);
-        }
+      Object.keys(keys).forEach(key => {
+        out[key] = store[key] === undefined ? keys[key] : clone(store[key]);
       });
       return out;
+    },
+    set: async data => {
+      Object.keys(data).forEach(key => {
+        store[key] = clone(data[key]);
+      });
+    },
+    remove: async keys => {
+      (Array.isArray(keys) ? keys : [keys]).forEach(key => {
+        delete store[key];
+      });
+    },
+    clear: async () => {
+      store = {};
     }
+  };
 
-    // Object form: keys are defaults, returned when not present in storage.
-    const out = {};
-    Object.keys(keys).forEach(key => {
-      out[key] = store[key] === undefined ? keys[key] : clone(store[key]);
-    });
-    return out;
+  area.__reset = () => { store = {}; };
+
+  return area;
+};
+
+const local = createStorageArea();
+const session = createStorageArea();
+
+// Minimal browser.alarms double: records created alarms by name so tests can assert
+// create/clear without a real scheduler (the onAlarm event itself is not simulated).
+let alarmStore = {};
+
+const alarms = {
+  create: async (name, info = {}) => {
+    alarmStore[name] = info;
   },
-  set: async data => {
-    Object.keys(data).forEach(key => {
-      store[key] = clone(data[key]);
-    });
+  clear: async name => {
+    const existed = Object.prototype.hasOwnProperty.call(alarmStore, name);
+    delete alarmStore[name];
+    return existed;
   },
-  remove: async keys => {
-    (Array.isArray(keys) ? keys : [keys]).forEach(key => {
-      delete store[key];
-    });
+  clearAll: async () => {
+    alarmStore = {};
+    return true;
   },
-  clear: async () => {
-    store = {};
+  get: async name => (alarmStore[name] ? { name, ...alarmStore[name] } : null),
+  getAll: async () => Object.entries(alarmStore).map(([name, info]) => ({ name, ...info })),
+  onAlarm: {
+    addListener: () => {},
+    removeListener: () => {}
   }
 };
 
 const browser = {
-  storage: { local },
+  storage: { local, session },
+  alarms,
   runtime: {
     lastError: null,
     getManifest: () => ({ version: '0.0.0-test' }),
@@ -83,7 +121,11 @@ const browser = {
   i18n: { getMessage: () => '' }
 };
 
-const resetStorage = () => { store = {}; };
+const resetStorage = () => {
+  local.__reset();
+  session.__reset();
+  alarmStore = {};
+};
 
 export { resetStorage as __resetStorage };
 export default browser;

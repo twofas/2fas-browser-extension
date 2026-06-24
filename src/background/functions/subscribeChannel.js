@@ -24,6 +24,7 @@ import { handleConfigurationRequest, handleLoginRequest } from '@background/even
 import TwoFasNotification from '@notification/index.js';
 import closeRequest from '@background/functions/closeRequest.js';
 import closeWSChannel from '@background/functions/closeWSChannel.js';
+import { startKeepAlive, stopKeepAlive } from '@background/functions/keepAlive.js';
 import wsTabChanged from '@background/functions/wsTabChanged.js';
 import wsTabClosed from '@background/functions/wsTabClosed.js';
 import storeLog from '@partials/storeLog.js';
@@ -79,6 +80,12 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       clearTimeout(reconnectTimerID);
       reconnectTimerID = null;
     }
+
+    // Single teardown point for every terminal path (token handled, failure,
+    // deliberate close) — release the keep-alive so the worker can suspend.
+    // Reconnect backoff does NOT route through here, so the keep-alive correctly
+    // persists across transient drops.
+    stopKeepAlive();
   };
 
   const buildWebSocketURL = () => {
@@ -211,6 +218,9 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     // instead of restarting the timeout from scratch on every onopen.
     if (deadline === null) {
       deadline = Date.now() + WS_TIMEOUT_MS;
+      // Hold the MV3 worker warm for the whole pending-request window. Bounded to
+      // the WS budget so a hard SW eviction can't leave the keep-alive running.
+      startKeepAlive(WS_TIMEOUT_MS);
     }
 
     const wsURL = buildWebSocketURL();
