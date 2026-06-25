@@ -44,7 +44,6 @@ export { default as hideConfirmModal } from './hideConfirmModal.js';
 export { default as removeDevice } from './removeDevice.js';
 export { default as removeDeviceFromDOM } from './removeDeviceFromDOM.js';
 export { default as removeDomain } from './removeDomain.js';
-export { default as removeDomainFromDOM } from './removeDomainFromDOM.js';
 export { default as sendTestNotification } from './sendTestNotification.js';
 export { default as setAdvanced } from './setAdvanced.js';
 export { default as setAutoSubmitSwitch } from './setAutoSubmitSwitch.js';

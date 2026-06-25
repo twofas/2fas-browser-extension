@@ -418,7 +418,11 @@ const inputToken = async (request, inputElement, siteURL) => {
 
   clearAfterInputToken(inputElement);
 
-  return { status: 'completed', url: siteURL };
+  // Report the verification outcome, not just "did not throw": handleLoginRequest
+  // only shows the copy-to-clipboard fallback notification when the status is not
+  // 'completed', so a silently-failed fill must NOT claim success — otherwise the
+  // user gets neither a filled field nor a way to read the token.
+  return { status: verified ? 'completed' : 'unverified', url: siteURL };
 };
 
 export { keystrokeDelay, scheduleAutoSubmit };

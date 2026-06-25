@@ -52,7 +52,7 @@ const onTabRemoved = async tabID => {
     try {
       await removeFromSessionStorage(`tabData-${tabID}`);
     } catch (err) {
-      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.url);
+      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.origin);
     }
   }
 

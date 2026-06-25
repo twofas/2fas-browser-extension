@@ -42,6 +42,26 @@ const getIgnoreButtonTextsSet = () => {
 };
 
 /**
+ * Whether the element is a control whose submit intent is declared by its type
+ * (`<button type="submit">` / `<input type="submit">`). Such controls are valid
+ * targets even without a text label — a UA-default-labelled `<input type="submit">`
+ * (its `.value` is empty) or an icon-only `<button type="submit">` must not be
+ * dropped, or auto-submit silently fails on forms whose only submit is unlabelled.
+ *
+ * @param {HTMLElement} element - The element to test
+ * @returns {boolean} True for a submit-typed input/button
+ */
+const isSubmitTypedControl = element => {
+  const nodeName = element?.nodeName?.toLowerCase();
+
+  if (nodeName !== 'input' && nodeName !== 'button') {
+    return false;
+  }
+
+  return (element.getAttribute?.('type') || '').toLowerCase() === 'submit';
+};
+
+/**
  * Resolves a button's effective label, falling back to value/aria-label/title when innerText is empty.
  *
  * @param {HTMLElement} element - The button element to read
@@ -82,7 +102,9 @@ const isValidButtonText = element => {
   const normalizedText = getButtonText(element);
 
   if (!normalizedText) {
-    return false;
+    // No resolvable label: keep submit-typed controls (their type proves intent),
+    // reject everything else (e.g. icon-only generic buttons).
+    return isSubmitTypedControl(element);
   }
 
   return !getIgnoreButtonTextsSet().has(normalizedText);

@@ -37,6 +37,7 @@ import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
 const findFallbackOtpInput = (shadowRoots = null) => {
   const candidates = querySelectorAllDeep('input[autocomplete="one-time-code" i]', shadowRoots)
     .filter(isVisible)
+    .filter(el => !el.disabled && !el.readOnly)
     .filter(el => !isDeniedField(el));
 
   if (candidates.length === 0) {

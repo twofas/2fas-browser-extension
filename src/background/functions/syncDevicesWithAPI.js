@@ -64,8 +64,6 @@ const performSyncDevicesWithAPI = async storage => {
       return result;
     }
 
-    result.hasDevices = apiDevices.length > 0;
-
     // Reconcile inside the devices lock: mutateDevices re-reads the cache and
     // derives `configured` so a concurrent pairing or an options-page removal
     // can't be clobbered by this sync's write. reconcileDevices returns null when
@@ -78,6 +76,10 @@ const performSyncDevicesWithAPI = async storage => {
       return reconciled;
     });
 
+    // Base hasDevices on the devices actually stored after reconciliation, not on
+    // the raw API count: a list of only empty-public_key devices reconciles to none
+    // usable, and must route to the install page rather than a configured action.
+    result.hasDevices = devices.length > 0;
     result.devicesChanged = changed;
     result.storage = { ...storage, devices, configured: devices.length > 0 };
 

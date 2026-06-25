@@ -78,6 +78,13 @@ class SDK {
       return status === 408 || status === 425 || status === 429 || status >= 500;
     }
 
+    // A malformed-body parse failure (SyntaxError from onSuccess) is deterministic —
+    // the same bad body will fail identically on retry, so fail fast instead of
+    // burning the backoff window. Genuine network/abort errors fall through to retry.
+    if (err instanceof SyntaxError) {
+      return false;
+    }
+
     return true;
   }
 

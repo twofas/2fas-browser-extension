@@ -64,6 +64,14 @@ const KEEP_ALIVE_PERIOD_MIN = 0.5;
 // Live only inside the (single) service-worker context; reset to null on every stop.
 let heartbeatID = null;
 
+// How many requests currently need the keep-alive. Concurrent 2FA/pairing
+// requests (e.g. two tabs each awaiting phone approval) share one keep-alive, so
+// the first request to finish must NOT tear down the heartbeat/alarm the others
+// still depend on — only the last one out does. In-memory, so a hard SW eviction
+// resets it to 0, which is correct: an evicted worker has lost its sockets and the
+// backstop alarm tears the keep-alive down by deadline.
+let activeRequests = 0;
+
 /**
  * Stops the heartbeat interval. Idempotent.
  * @returns {void}
@@ -99,15 +107,41 @@ const startHeartbeat = () => {
 export const shouldStopKeepAlive = (deadline, now) => typeof deadline !== 'number' || now >= deadline;
 
 /**
- * Starts the keep-alive: kicks off the heartbeat immediately, records a self-terminating
- * deadline and (re)creates the backstop alarm. Safe to call repeatedly — the heartbeat is
- * replaced and the fixed alarm name replaces any pending one, so concurrent requests share
- * one keep-alive rather than stacking.
+ * Unconditionally tears the keep-alive down: clears the heartbeat, the backstop alarm,
+ * the deadline and the active-request count. Used by the last request out and by the
+ * backstop alarm once the window has elapsed (where the in-memory count may be stale
+ * after an eviction).
+ *
+ * @returns {Promise<void>}
+ */
+const teardownKeepAlive = async () => {
+  activeRequests = 0;
+  stopHeartbeat();
+
+  try {
+    if (browser?.alarms?.clear) {
+      await browser.alarms.clear(KEEP_ALIVE_ALARM_NAME);
+    }
+
+    await removeFromSessionStorage(KEEP_ALIVE_DEADLINE_KEY);
+  } catch (err) {
+    console.error('keepAlive - stop', err);
+  }
+};
+
+/**
+ * Starts the keep-alive for one request: registers the request, kicks off the heartbeat,
+ * records a self-terminating deadline and (re)creates the backstop alarm. Safe to call
+ * once per request — the heartbeat is replaced and the fixed alarm name replaces any
+ * pending one, so concurrent requests share one keep-alive rather than stacking. Each
+ * start pushes the deadline to its own window; the latest (furthest) deadline wins and
+ * covers every still-active request.
  *
  * @param {number} durationMs - How long to keep the worker warm (the request's time budget).
  * @returns {Promise<void>}
  */
 export const startKeepAlive = async durationMs => {
+  activeRequests += 1;
   startHeartbeat();
 
   try {
@@ -122,24 +156,24 @@ export const startKeepAlive = async durationMs => {
 };
 
 /**
- * Stops the keep-alive: clears the heartbeat, the backstop alarm and the deadline.
- * Idempotent — clearing absent timers / keys is a no-op — so every WS teardown path can
- * call it unconditionally.
+ * Releases one request's hold on the keep-alive. Reference-counted: only the last
+ * request out actually tears the heartbeat/alarm/deadline down, so a request that
+ * finishes while another is still pending no longer kills the survivor's keep-alive.
+ * Idempotent past zero (extra releases are a no-op) so every WS teardown path can call
+ * it unconditionally.
  *
  * @returns {Promise<void>}
  */
 export const stopKeepAlive = async () => {
-  stopHeartbeat();
-
-  try {
-    if (browser?.alarms?.clear) {
-      await browser.alarms.clear(KEEP_ALIVE_ALARM_NAME);
-    }
-
-    await removeFromSessionStorage(KEEP_ALIVE_DEADLINE_KEY);
-  } catch (err) {
-    console.error('keepAlive - stop', err);
+  if (activeRequests > 0) {
+    activeRequests -= 1;
   }
+
+  if (activeRequests > 0) {
+    return;
+  }
+
+  await teardownKeepAlive();
 };
 
 /**
@@ -164,7 +198,9 @@ export const handleKeepAliveAlarm = async () => {
   }
 
   if (shouldStopKeepAlive(deadline, Date.now())) {
-    return stopKeepAlive();
+    // Force a full teardown regardless of the in-memory count: the window has
+    // elapsed (the request budget is up, or a hard eviction left the count stale).
+    return teardownKeepAlive();
   }
 
   return dummyGetLocalStorage();

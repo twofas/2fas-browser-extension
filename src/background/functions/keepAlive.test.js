@@ -36,6 +36,14 @@ const getDeadline = async () => {
 };
 
 describe('keepAlive', () => {
+  // Zero the in-memory active-request count between tests: an elapsed deadline
+  // makes the alarm handler force a full teardown (which resets the count), so
+  // each test starts from a clean, balanced state regardless of prior starts.
+  beforeEach(async () => {
+    await saveToSessionStorage({ [DEADLINE_KEY]: Date.now() - 1 });
+    await handleKeepAliveAlarm();
+  });
+
   describe('shouldStopKeepAlive (pure boundary)', () => {
     it('stops when no deadline is recorded', () => {
       expect(shouldStopKeepAlive(null, 1000)).toBe(true);
@@ -79,6 +87,23 @@ describe('keepAlive', () => {
 
       // Idempotent — a second teardown (e.g. token handled then tab closed) must not throw.
       await expect(stopKeepAlive()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('reference counting (concurrent requests)', () => {
+    it('keeps the keep-alive running until the LAST concurrent request releases it', async () => {
+      await startKeepAlive(60_000); // request A
+      await startKeepAlive(60_000); // request B (e.g. a second tab awaiting approval)
+
+      // A finishes first — B is still pending, so the keep-alive must survive.
+      await stopKeepAlive();
+      expect(await browser.alarms.get(KEEP_ALIVE_ALARM_NAME)).not.toBeNull();
+      expect(await getDeadline()).not.toBeNull();
+
+      // B finishes — now (and only now) the keep-alive tears down.
+      await stopKeepAlive();
+      expect(await browser.alarms.get(KEEP_ALIVE_ALARM_NAME)).toBeNull();
+      expect(await getDeadline()).toBeNull();
     });
   });
 

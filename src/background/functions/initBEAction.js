@@ -70,7 +70,9 @@ const initBEAction = async (url, tab, storageData) => {
     let pushRequested = false;
 
     tabData.lastAction = now;
-    tabData.url = url;
+    // `url` here is already an origin (the caller passes url.origin); store it under
+    // an honest name so same-origin comparisons downstream are unambiguous.
+    tabData.origin = url;
 
     try {
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });

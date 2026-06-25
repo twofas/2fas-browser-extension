@@ -59,6 +59,11 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   let deadline = null;
   let handled = false;
   let listenersAttached = false;
+  // This channel's hold on the (ref-counted) keep-alive. cleanupListeners can run
+  // more than once per channel (e.g. message handled, then a late onclose), so the
+  // release is gated to exactly one stopKeepAlive() call — otherwise a single
+  // channel would decrement the shared count twice and starve a concurrent request.
+  let keepAliveActive = false;
   const channel = { ws: null, closing: false };
 
   const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID, origin);
@@ -82,10 +87,14 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     }
 
     // Single teardown point for every terminal path (token handled, failure,
-    // deliberate close) — release the keep-alive so the worker can suspend.
-    // Reconnect backoff does NOT route through here, so the keep-alive correctly
-    // persists across transient drops.
-    stopKeepAlive();
+    // deliberate close) — release this channel's hold on the keep-alive so the
+    // worker can suspend. Exactly once per channel (see keepAliveActive), and
+    // never on the reconnect backoff path, so the keep-alive correctly persists
+    // across transient drops and across other concurrent requests.
+    if (keepAliveActive) {
+      keepAliveActive = false;
+      stopKeepAlive();
+    }
   };
 
   const buildWebSocketURL = () => {
@@ -220,7 +229,18 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       deadline = Date.now() + WS_TIMEOUT_MS;
       // Hold the MV3 worker warm for the whole pending-request window. Bounded to
       // the WS budget so a hard SW eviction can't leave the keep-alive running.
+      keepAliveActive = true;
       startKeepAlive(WS_TIMEOUT_MS);
+    }
+
+    // Detach the previous socket's handlers before replacing it on reconnect, so a
+    // late onclose/onerror from the discarded socket can't fire stale closures
+    // (scheduleReconnect/storeLog) against this channel.
+    if (channel.ws) {
+      channel.ws.onopen = null;
+      channel.ws.onerror = null;
+      channel.ws.onclose = null;
+      channel.ws.onmessage = null;
     }
 
     const wsURL = buildWebSocketURL();

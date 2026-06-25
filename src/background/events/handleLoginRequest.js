@@ -108,10 +108,19 @@ const handleLoginRequest = async (tabID, data) => {
     // when the request was initiated (recorded in handleFrontElement) and only
     // while that frame still hosts the same origin. This keeps the decrypted
     // token out of every other frame — notably cross-origin iframes where the
-    // 2FAS content script also runs. resolveTokenTargetFrame falls back to the
-    // top frame (frameId 0) when no specific frame was recorded, it navigated,
-    // or the lookup fails.
+    // 2FAS content script also runs. resolveTokenTargetFrame returns frameId 0
+    // (top frame) for a focus-less / legacy request, or null when no frame can be
+    // verified to still host the request's origin (the page navigated away).
     const targetFrameId = await resolveTokenTargetFrame(tabID);
+
+    if (targetFrameId === null) {
+      // No frame still hosts the origin that initiated the request — the page
+      // navigated away. Deliver the plaintext token nowhere (neither inputToken
+      // nor the fallback notification, both of which would expose it) and just
+      // close the stale backend request.
+      await storeLog('warning', 51, new Error('No safe target frame for token delivery'), 'handleLoginRequest');
+      return closeRequest(tabID, data.token_request_id);
+    }
 
     const response = await browser.tabs
       .sendMessage(tabID, { action: 'inputToken', ...loginData }, { frameId: targetFrameId })

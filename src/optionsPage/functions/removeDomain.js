@@ -37,7 +37,7 @@ const removeDomain = function (e) {
   const domain = el?.dataset?.domain;
 
   if (!domain) {
-    return storeLog('error', 31, new Error('Wrong domain'), 'removeDomain')
+    return storeLog('error', 55, new Error('Wrong domain'), 'removeDomain')
       .then(() => TwoFasNotification.show(config.Texts.Error.RemoveDomainBadData, null, true))
       .catch(() => {});
   }

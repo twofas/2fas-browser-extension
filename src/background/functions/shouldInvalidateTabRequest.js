@@ -31,13 +31,13 @@ import getOrigin from '@partials/getOrigin.js';
  * to `tabData.lastAction`: a load that completes within `ResendPushTimeout` of
  * the request almost always means the originating page is still settling.
  *
- * @param {Object} tabData - The stored tab data (`url`, `lastAction`, …).
+ * @param {Object} tabData - The stored tab data (`origin`, `lastAction`, …).
  * @param {string|null} currentURL - The URL of the just-completed load.
  * @param {number} now - Current timestamp in milliseconds.
  * @return {boolean} True when the in-flight request should be invalidated.
  */
 const shouldInvalidateTabRequest = (tabData, currentURL, now) => {
-  const requestOrigin = getOrigin(tabData?.url);
+  const requestOrigin = getOrigin(tabData?.origin);
   const currentOrigin = getOrigin(currentURL);
 
   // Both origins known: invalidate only on a real cross-origin navigation.

@@ -74,14 +74,14 @@ const onTabUpdated = async (tabID, changeInfo, tab) => {
     try {
       await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, tabData?.url);
+      await storeLog('error', 3, err, tabData?.origin);
     }
   } else if (tabData && !tabData?.requestID) {
     // No request in flight: reset any stale tab data on a real page load.
     try {
       await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, tabData?.url);
+      await storeLog('error', 3, err, tabData?.origin);
     }
   }
 
