@@ -261,3 +261,4 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
 };
 
 export default storeLog;
+export { logURL, sanitizeLogValue, shouldDebounce };

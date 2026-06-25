@@ -84,6 +84,7 @@
     "file-loader": "^6.0.0",
     "html-loader": "^5.0.0",
     "html-webpack-plugin": "^5.6.6",
+    "jsdom": "^29.1.1",
     "mini-css-extract-plugin": "^2.10.0",
     "neostandard": "^0.13.0",
     "noop-loader": "^1.0.0",

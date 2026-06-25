@@ -238,3 +238,4 @@ const clickSubmit = (inputElement, siteURL) => {
 };
 
 export default clickSubmit;
+export { findClosestIndex, extractHostname, isExcludedDomain };

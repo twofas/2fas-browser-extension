@@ -24,6 +24,7 @@ import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
+import validateExcludedDomain from '@optionsPage/functions/validateExcludedDomain.js';
 
 /**
  * Handles the domain modal form submission, validates input, and saves the excluded domain.
@@ -36,35 +37,15 @@ const domainModalFormSubmit = e => {
   e.stopPropagation();
 
   const data = new FormData(e.target);
-  const domain = (data.get('domain') || '').trim();
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
+  const result = validateExcludedDomain(data.get('domain'));
 
-  if (!domain || domain.length <= 0) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainRequired') || 'Domain is required';
+  if (!result.valid) {
+    validation.innerText = browser.i18n.getMessage(result.messageKey) || result.messageFallback;
     return false;
   }
 
-  if (domain.length > 256) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainTooLong') || 'Domain is too long';
-    return false;
-  }
-
-  const urlTemp = domain.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-  let url;
-
-  try {
-    const urlObj = new URL(`https://${urlTemp}`);
-
-    if (!urlObj.hostname.includes('.')) {
-      validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
-      return false;
-    }
-
-    url = urlObj.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
-  } catch (err) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
-    return false;
-  }
+  const url = result.domain;
 
   // The background owns the write and de-duplicates authoritatively; it reports
   // `added:false` when the domain was already excluded. The list re-renders from
