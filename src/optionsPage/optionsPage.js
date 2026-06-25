@@ -26,7 +26,7 @@ import SDK from '@sdk';
 import extPageOnMessage from '@partials/extPageOnMessage.js';
 import { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } from '@partials';
 import S from '@/selectors.js';
-import { generateDevicesList, generateDevicesErrorRow, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect } from '@optionsPage/functions';
+import { generateDevicesList, generateDevicesErrorRow, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, showIntegrityError, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect, handleStorageChange } from '@optionsPage/functions';
 
 const init = async storage => {
   i18n();
@@ -108,6 +108,7 @@ const init = async storage => {
   handleTargetBlank();
 
   browser.runtime.onMessage.addListener(extPageOnMessage);
+  browser.storage.onChanged.addListener(handleStorageChange);
   hidePreloader();
 };
 

@@ -20,6 +20,7 @@
 /* global URL */
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import handleUpdateList from '@background/functions/updateListAction.js';
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@notification/index.js';
 import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
@@ -90,6 +91,26 @@ const onMessage = (request, sender, sendResponse) => {
           })
           .catch(err => {
             storeLog('error', 37, err, 'storageReset')
+              .finally(() => {
+                sendResponse({ status: 'error' });
+              });
+          });
+
+        break;
+      }
+
+      case 'updateList': {
+        if (!request?.list || !request?.op) {
+          sendResponse({ status: 'error', message: 'Invalid updateList request' });
+          return true;
+        }
+
+        handleUpdateList(request)
+          .then(result => {
+            sendResponse({ status: 'ok', ...result });
+          })
+          .catch(err => {
+            storeLog('error', 53, err, 'updateList')
               .finally(() => {
                 sendResponse({ status: 'error' });
               });

@@ -27,6 +27,7 @@ import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
+import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -71,7 +72,8 @@ const generateDefaultStorage = browserInfo => {
         autoSubmitEnabled: false,
         autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
         attempt: attempt + 1,
-        extIcon: 0 // 0 - default
+        extIcon: 0, // 0 - default
+        storageSchemaVersion: CURRENT_SCHEMA_VERSION
       });
     })
     .then(storage => {

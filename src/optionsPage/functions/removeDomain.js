@@ -19,11 +19,9 @@
 
 import config from '@/config.js';
 import browser from 'webextension-polyfill';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 import storeLog from '@partials/storeLog.js';
 import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
 import TwoFasNotification from '@notification';
-import removeDomainFromDOM from '@optionsPage/functions/removeDomainFromDOM.js';
 
 /**
  * Handles the domain removal process from excluded list with confirmation modal.
@@ -48,17 +46,16 @@ const removeDomain = function (e) {
     browser.i18n.getMessage('modalExcludeDomainHeader'),
     browser.i18n.getMessage('modalExcludeDomainText').replace('DOMAIN', domain),
     () => {
-      return loadFromLocalStorage(['autoSubmitExcludedDomains'])
-        .then(data => {
-          if (!data.autoSubmitExcludedDomains) {
-            data.autoSubmitExcludedDomains = [];
+      // The background owns the write (single serialized mutation point); the
+      // list re-renders from the storage.onChanged listener, not from here.
+      return browser.runtime.sendMessage({ action: 'updateList', list: 'domains', op: 'remove', value: domain })
+        .then(res => {
+          if (!res || res.status !== 'ok') {
+            throw new Error('updateList remove domain failed');
           }
 
-          const newExcludedList = data.autoSubmitExcludedDomains.filter(d => d !== domain);
-          return saveToLocalStorage({ autoSubmitExcludedDomains: newExcludedList }, {});
+          return TwoFasNotification.show(config.Texts.Success.DomainExcludedRemoved);
         })
-        .then(() => removeDomainFromDOM(domain))
-        .then(() => TwoFasNotification.show(config.Texts.Success.DomainExcludedRemoved))
         .catch(async err => {
           await storeLog('error', 52, err, 'removeDomain');
           return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);

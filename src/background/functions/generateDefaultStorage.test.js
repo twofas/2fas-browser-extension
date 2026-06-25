@@ -33,6 +33,7 @@ import generateDefaultStorage from './generateDefaultStorage.js';
 import { getPrivateKey } from './privateKeyStore.js';
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import Crypt from './Crypt.js';
+import { CURRENT_SCHEMA_VERSION } from './storageMigrations.js';
 
 const BROWSER_INFO = { name: 'Chrome', browser_name: 'Chrome', browser_version: '120' };
 
@@ -59,5 +60,13 @@ describe('generateDefaultStorage', () => {
     const privateKey = await getPrivateKey();
 
     expect(crypt.decodeText(await crypt.decrypt(privateKey, ciphertext))).toBe('987654');
+  });
+
+  it('stamps the current storage schema version so fresh installs need no migration', async () => {
+    await generateDefaultStorage(BROWSER_INFO);
+
+    const storage = await loadFromLocalStorage(['storageSchemaVersion']);
+
+    expect(storage.storageSchemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   });
 });

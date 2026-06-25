@@ -30,6 +30,7 @@ export { default as generateShortcutLink } from './generateShortcutLink.js';
 export { default as handleAdvancedHeaderClick } from './handleAdvancedHeaderClick.js';
 export { default as handleAutoSubmitChange } from './handleAutoSubmitChange.js';
 export { default as handleContextMenuChange } from './handleContextMenuChange.js';
+export { default as handleStorageChange } from './handleStorageChange.js';
 export { default as handleHamburgerClick } from './handleHamburgerClick.js';
 export { default as handleImportDefaultExcludedDomains } from './handleImportDefaultExcludedDomains.js';
 export { default as handleLoggingChange } from './handleLoggingChange.js';

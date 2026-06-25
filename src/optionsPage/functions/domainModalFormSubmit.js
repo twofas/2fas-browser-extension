@@ -20,8 +20,6 @@
 /* global FormData */
 import browser from 'webextension-polyfill';
 import S from '@/selectors.js';
-import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
@@ -68,29 +66,22 @@ const domainModalFormSubmit = e => {
     return false;
   }
 
-  return loadFromLocalStorage('autoSubmitExcludedDomains')
-    .then(storage => {
-      let autoSubmitExcludedDomains = storage?.autoSubmitExcludedDomains;
-
-      if (!autoSubmitExcludedDomains) {
-        autoSubmitExcludedDomains = [];
+  // The background owns the write and de-duplicates authoritatively; it reports
+  // `added:false` when the domain was already excluded. The list re-renders from
+  // the storage.onChanged listener.
+  return browser.runtime.sendMessage({ action: 'updateList', list: 'domains', op: 'add', value: url })
+    .then(res => {
+      if (!res || res.status !== 'ok') {
+        throw new Error('updateList add domain failed');
       }
 
-      if (autoSubmitExcludedDomains.includes(url)) {
+      if (!res.added) {
         validation.innerText = browser.i18n.getMessage('optionsDomainExists') || 'Domain exists on excluded list';
         return false;
       }
 
-      autoSubmitExcludedDomains.push(url);
-
-      return saveToLocalStorage({ autoSubmitExcludedDomains }, storage);
-    })
-    .then(res => {
-      if (res) {
-        generateDomainsList(res.autoSubmitExcludedDomains);
-        hideDomainModal();
-        TwoFasNotification.show(config.Texts.Success.DomainExcluded);
-      }
+      hideDomainModal();
+      return TwoFasNotification.show(config.Texts.Success.DomainExcluded);
     })
     .catch(async err => {
       await storeLog('error', 45, err, 'domainModalFormSubmit');

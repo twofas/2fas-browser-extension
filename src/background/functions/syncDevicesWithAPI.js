@@ -18,9 +18,10 @@
 //
 
 import SDK from '@sdk/index.js';
-import { saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
 import createAsyncThrottle from '@partials/createAsyncThrottle.js';
+import { mutateDevices } from '@background/functions/listStore.js';
+import reconcileDevices from '@background/functions/reconcileDevices.js';
 
 // Collapse bursts of sync requests (rapid action triggers, duplicate WebSocket
 // responses, concurrent callers) into a single backend request. Without this a
@@ -65,43 +66,20 @@ const performSyncDevicesWithAPI = async storage => {
 
     result.hasDevices = apiDevices.length > 0;
 
-    if (!result.hasDevices) {
-      if (storage.devices && storage.devices.length > 0) {
-        result.devicesChanged = true;
-        result.storage = await saveToLocalStorage({ devices: [], configured: false }, storage);
-      }
+    // Reconcile inside the devices lock: mutateDevices re-reads the cache and
+    // derives `configured` so a concurrent pairing or an options-page removal
+    // can't be clobbered by this sync's write. reconcileDevices returns null when
+    // nothing changed, which mutateDevices treats as a no-op (no write).
+    let changed = false;
 
-      return result;
-    }
+    const devices = await mutateDevices(localDevices => {
+      const reconciled = reconcileDevices(localDevices, apiDevices);
+      changed = reconciled !== null;
+      return reconciled;
+    });
 
-    const apiDeviceIds = new Set(apiDevices.map(d => d.id));
-    const localDevices = storage.devices || [];
-    const localDeviceIds = new Set(localDevices.map(d => d.device_id));
-
-    const devicesToRemove = localDevices.filter(d => !apiDeviceIds.has(d.device_id));
-    const hasRemovals = devicesToRemove.length > 0;
-
-    // Skip new API devices without a usable public_key: an empty key produces a
-    // broken record (token encryption can't work, and pairing rejects it too —
-    // handleConfigurationRequest). The device stays absent from local storage, so a
-    // later sync re-adds it once the API returns a key.
-    const newApiDevices = apiDevices.filter(d => !localDeviceIds.has(d.id) && d.public_key);
-    const hasNewDevices = newApiDevices.length > 0;
-
-    if (hasRemovals || hasNewDevices) {
-      result.devicesChanged = true;
-
-      const updatedDevices = localDevices.filter(d => apiDeviceIds.has(d.device_id));
-
-      newApiDevices.forEach(apiDevice => {
-        updatedDevices.push({
-          device_id: apiDevice.id,
-          device_public_key: apiDevice.public_key
-        });
-      });
-
-      result.storage = await saveToLocalStorage({ devices: updatedDevices }, storage);
-    }
+    result.devicesChanged = changed;
+    result.storage = { ...storage, devices, configured: devices.length > 0 };
 
     return result;
   } catch (err) {

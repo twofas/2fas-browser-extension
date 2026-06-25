@@ -24,6 +24,7 @@ import { initContextMenu } from '@background/contextMenu/index.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
+import runStorageMigrations from '@background/functions/storageMigrations.js';
 
 /**
  * Handles extension installation and update events.
@@ -41,6 +42,10 @@ const onInstalled = async details => {
   }
 
   if (details?.reason !== 'install') {
+    // Bring existing installs up to the current storage schema before touching
+    // browser info / registration. Offline-only and a no-op once up to date.
+    await runStorageMigrations();
+
     const browserInfo = await getBrowserInfo();
     return updateBrowserInfo(browserInfo);
   }

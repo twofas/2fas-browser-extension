@@ -20,8 +20,8 @@
 import config from '@/config.js';
 import configurationComplete from '@/installPage/functions/configurationComplete.js';
 import TwoFasNotification from '@notification/index.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import { mutateDevices } from '@background/functions/listStore.js';
 
 /**
  * Checks if a device with the given ID already exists in the devices array.
@@ -49,28 +49,21 @@ const handleConfigurationRequest = async (tabID, data) => {
     return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
   }
 
-  let storage = null;
-
   try {
-    storage = await loadFromLocalStorage(['configured', 'devices']);
-
-    if (!storage.configured) {
-      storage = await saveToLocalStorage({ configured: true }, storage);
-    }
-
-    const devices = storage.devices || [];
-
-    if (!deviceExists(devices, device_id)) {
-      devices.push({ device_id, device_public_key }); // eslint-disable-line camelcase
-      await saveToLocalStorage({ devices }, storage);
-    }
+    // Add the device through the shared devices lock so a concurrent device sync
+    // can't clobber the pairing. mutateDevices derives `configured` from the
+    // resulting length; returning the list unchanged when the device already
+    // exists still re-asserts configured=true.
+    await mutateDevices(devices => (
+      deviceExists(devices, device_id)
+        ? devices
+        : [...devices, { device_id, device_public_key }] // eslint-disable-line camelcase
+    ));
 
     configurationComplete();
   } catch (err) {
     await storeLog('error', 7, err, 'configurationRequest');
     return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
-  } finally {
-    storage = null;
   }
 };
 
