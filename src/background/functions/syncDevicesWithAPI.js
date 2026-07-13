@@ -30,16 +30,20 @@ import reconcileDevices from '@background/functions/reconcileDevices.js';
 const SYNC_THROTTLE_MS = 2000;
 
 /**
- * Syncs local devices storage with the API and returns updated storage.
+ * Fetches the API device list and reconciles it into the cache. Returns ONLY the
+ * API/reconcile-derived facts — deliberately storage-shape-independent (it bakes in
+ * no caller storage), so the throttle can cache one result per extensionID and hand
+ * it to callers passing different storage shapes without leaking one caller's shape
+ * to another (that was the throttle-cache bug). `devices === null` marks "no
+ * reconcile happened" (no extensionID / offline / API error) so the composer keeps
+ * the caller's storage untouched.
  *
- * @param {Object} storage - The current local storage data containing extensionID and devices
- * @returns {Promise<Object>} Object with updated storage, hasDevices flag, devicesChanged flag,
- *   apiError flag (true when the API request failed or returned an unexpected payload),
- *   and offline flag (true when no internet connection was detected before the request).
+ * @param {Object} storage - Current local storage; only `extensionID` is read here.
+ * @returns {Promise<Object>} { devices, hasDevices, devicesChanged, apiError, offline }
  */
-const performSyncDevicesWithAPI = async storage => {
+const fetchAndReconcileDevices = async storage => {
   const result = {
-    storage,
+    devices: null,
     hasDevices: false,
     devicesChanged: false,
     apiError: false,
@@ -79,9 +83,9 @@ const performSyncDevicesWithAPI = async storage => {
     // Base hasDevices on the devices actually stored after reconciliation, not on
     // the raw API count: a list of only empty-public_key devices reconciles to none
     // usable, and must route to the install page rather than a configured action.
+    result.devices = devices;
     result.hasDevices = devices.length > 0;
     result.devicesChanged = changed;
-    result.storage = { ...storage, devices, configured: devices.length > 0 };
 
     return result;
   } catch (err) {
@@ -91,9 +95,53 @@ const performSyncDevicesWithAPI = async storage => {
   }
 };
 
-const syncDevicesWithAPI = createAsyncThrottle(performSyncDevicesWithAPI, {
+const throttledFetchAndReconcile = createAsyncThrottle(fetchAndReconcileDevices, {
   windowMs: SYNC_THROTTLE_MS,
   keyFn: storage => storage?.extensionID || 'default'
 });
+
+/**
+ * Composes the caller-facing result, merging the API-derived facts onto the
+ * CALLER'S storage shape (never a cached one).
+ *
+ * @param {Object} storage - The caller's storage.
+ * @param {Object} sync - Output of fetchAndReconcileDevices.
+ * @returns {Object} { storage, hasDevices, devicesChanged, apiError, offline }
+ */
+const composeResult = (storage, sync) => {
+  const base = {
+    hasDevices: sync.hasDevices,
+    devicesChanged: sync.devicesChanged,
+    apiError: sync.apiError,
+    offline: sync.offline
+  };
+
+  if (sync.devices === null) {
+    // No reconcile ran (no extensionID / offline / API error): keep caller storage.
+    return { ...base, storage };
+  }
+
+  return { ...base, storage: { ...storage, devices: sync.devices, configured: sync.devices.length > 0 } };
+};
+
+/**
+ * Syncs local devices storage with the API and returns updated storage.
+ *
+ * @param {Object} storage - The current local storage data containing extensionID and devices
+ * @param {Object} [options]
+ * @param {boolean} [options.fresh=false] - Bypass the throttle and always hit the API.
+ *   Used by the token-delivery pairing check, where a ≤2s-stale cache could accept a
+ *   token from a device unpaired moments earlier — a security check must be fresh.
+ * @returns {Promise<Object>} Object with updated storage, hasDevices flag, devicesChanged flag,
+ *   apiError flag (true when the API request failed or returned an unexpected payload),
+ *   and offline flag (true when no internet connection was detected before the request).
+ */
+const syncDevicesWithAPI = async (storage, { fresh = false } = {}) => {
+  const sync = fresh
+    ? await fetchAndReconcileDevices(storage)
+    : await throttledFetchAndReconcile(storage);
+
+  return composeResult(storage, sync);
+};
 
 export default syncDevicesWithAPI;

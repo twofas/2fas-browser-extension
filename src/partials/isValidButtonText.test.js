@@ -21,12 +21,14 @@ import { describe, it, expect } from 'vitest';
 import { isValidButtonText, isSubmitButtonText } from './isValidButtonText.js';
 
 // Lightweight stand-in for a button element: getButtonText only reads
-// innerText/value/aria-label/title and isSubmitTypedControl reads nodeName/type,
-// so a plain object is enough (no DOM).
+// innerText/value/aria-label/title and isSubmitTypedControl reads nodeName + the
+// IDL `.type` property, so a plain object is enough (no DOM). `.type` is exposed
+// directly (not via getAttribute) to mirror the IDL property the code now reads.
 const makeButton = ({ innerText, value, ariaLabel, title, nodeName, type } = {}) => ({
   innerText,
   value,
   nodeName,
+  type,
   getAttribute: name => {
     if (name === 'aria-label') {
       return ariaLabel ?? null;

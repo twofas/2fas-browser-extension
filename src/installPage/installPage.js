@@ -21,16 +21,13 @@ import config from '@/config.js';
 import browser from 'webextension-polyfill';
 import i18n from '@partials/i18n.js';
 import SDK from '@sdk';
-import TwoFasNotification from '@/notification';
+import pageError from '@partials/pageError.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import subscribeChannel from '@/background/functions/subscribeChannel.js';
 import { delay, extPageOnMessage, handleTargetBlank, hidePreloader, storageValidation, storeLog } from '@partials';
 import { generateQRCode, installContainerHandlers, showIntegrityError } from '@installPage/functions';
 
-const installPageError = async err => {
-  await storeLog('error', 20, err, 'installPage');
-  return TwoFasNotification.showWithoutTimeout(config.Texts.Error.OnInstallError);
-};
+const installPageError = pageError(20, 'installPage', config.Texts.Error.OnInstallError);
 
 const init = async storage => {
   i18n();

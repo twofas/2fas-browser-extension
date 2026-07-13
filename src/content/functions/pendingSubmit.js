@@ -31,6 +31,14 @@ export const MAX_PENDING_SUBMIT_AGE_MS = 15000;
 
 let pendingSubmit = null;
 
+// Latches a 'pageLoadComplete' that arrived while a fill was still in progress
+// (before setPendingSubmit armed the queue). Without this the signal races an
+// empty queue and the deferred auto-submit is lost: the page reached 'complete'
+// mid-typing, but nothing was queued yet to replay. scheduleAutoSubmit consumes
+// this the moment the verified fill arms the queue. Reset by clearPendingSubmit
+// so it is scoped to the current fill cycle.
+let loadCompleteSeenWhileFilling = false;
+
 /**
  * Queues an auto-submit to be replayed when the page finishes loading.
  * Only the most recent fill is kept.
@@ -43,11 +51,25 @@ export const setPendingSubmit = (inputElement, siteURL) => {
 };
 
 /**
- * Discards any queued auto-submit.
+ * Discards any queued auto-submit and resets the load-complete latch, scoping
+ * both to a single fill cycle (inputToken calls this at the start of every fill).
  * @returns {void}
  */
 export const clearPendingSubmit = () => {
   pendingSubmit = null;
+  loadCompleteSeenWhileFilling = false;
+};
+
+/**
+ * Reports (and clears) whether a 'pageLoadComplete' was latched during the fill.
+ * scheduleAutoSubmit calls this right after arming the queue so a signal that
+ * arrived mid-fill still triggers the deferred submit.
+ * @returns {boolean} True if a load-complete signal was latched.
+ */
+export const consumeLoadCompleteSignal = () => {
+  const seen = loadCompleteSeenWhileFilling;
+  loadCompleteSeenWhileFilling = false;
+  return seen;
 };
 
 /**
@@ -59,6 +81,9 @@ export const clearPendingSubmit = () => {
  */
 export const resumePendingSubmit = () => {
   if (!pendingSubmit) {
+    // Nothing queued yet — the fill may still be in progress. Latch the signal so
+    // the verified fill can honor it on arming, instead of losing it to the race.
+    loadCompleteSeenWhileFilling = true;
     return false;
   }
 

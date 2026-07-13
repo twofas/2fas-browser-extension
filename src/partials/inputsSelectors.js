@@ -17,9 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-// Memoized result — the selector is deterministic (no inputs), so it only needs
-// to be built once per content-script context instead of on every call.
+// Memoized results — the selectors are deterministic (no inputs), so they only
+// need to be built once per content-script context instead of on every call.
 let cachedSelectors = null;
+let cachedOtpSignalSelectors = null;
 
 /**
  * Generates CSS selectors for detecting OTP/2FA input fields.
@@ -217,9 +218,34 @@ const inputsSelectors = () => {
 
   const baseSelectors = `input[type="text" i]${inputSelectors},input[type="number" i]${inputSelectors},input[type="tel" i]${inputSelectors},input:not([type])${inputSelectors},textarea${textAreaSelectors}`;
 
-  cachedSelectors = `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${dataAttributeSelectors},${baseSelectors}`;
+  // OTP-SIGNAL selectors: only fields that carry a positive OTP marker
+  // (autocomplete=one-time-code, an OTP-named password, an OTP id/name, an OTP
+  // placeholder/aria-label keyword, or an OTP data-* attribute). This excludes the
+  // generic `baseSelectors` catch-all (every plain text/number/tel input), so it is
+  // the safe set for a confident focus-less fallback that must never target an
+  // unrelated field.
+  cachedOtpSignalSelectors = `${autocompleteSelectors},${passwordSelectors},${nameSelectors},${idSelectors},${placeholderSelectors},${ariaSelectors},${dataAttributeSelectors}`;
+
+  // Full selectors: OTP-signal + the generic catch-all. Used for element NUMBERING
+  // (auto-submit proximity), where matching broadly is acceptable.
+  cachedSelectors = `${cachedOtpSignalSelectors},${baseSelectors}`;
 
   return cachedSelectors;
 };
 
+/**
+ * Returns only the OTP-SIGNAL selectors (see above) — the subset requiring a
+ * positive OTP marker, with no generic text-input catch-all. Use this when a match
+ * must be a high-confidence OTP field, never any lone text input.
+ * @returns {string} Comma-separated CSS selector string for OTP-signal fields
+ */
+const otpSignalSelectors = () => {
+  if (!cachedOtpSignalSelectors) {
+    inputsSelectors();
+  }
+
+  return cachedOtpSignalSelectors;
+};
+
+export { otpSignalSelectors };
 export default inputsSelectors;

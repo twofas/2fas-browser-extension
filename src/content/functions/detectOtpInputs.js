@@ -18,6 +18,7 @@
 //
 
 import isVisible from '@partials/isVisible.js';
+import isDigitInput from '@content/functions/isDigitInput.js';
 
 const MIN_SEGMENTED_BOXES = 4;
 const MAX_SEGMENTED_BOXES = 12;
@@ -57,16 +58,6 @@ const isSingleCharInput = el => {
 };
 
 /**
- * Checks whether an input plausibly accepts a digit (text/tel/number/password/no-type).
- * @param {HTMLInputElement} el - Input to check
- * @returns {boolean} True if the input type can hold an OTP digit
- */
-const isDigitCapableInput = el => {
-  const type = (el.getAttribute('type') || 'text').toLowerCase();
-  return ['text', 'tel', 'number', 'password'].includes(type);
-};
-
-/**
  * Collects an ordered group of single-character sibling inputs around the
  * focused box, walking up a few ancestors until a plausible group is found.
  * @param {HTMLInputElement} focused - The focused single-char input
@@ -78,7 +69,7 @@ const collectSegmentedGroup = focused => {
   for (let level = 0; level < MAX_ANCESTOR_WALK && container; level++) {
     const boxes = Array.from(container.querySelectorAll('input'))
       .filter(isSingleCharInput)
-      .filter(isDigitCapableInput)
+      .filter(el => isDigitInput(el, { allowPassword: true }))
       .filter(isVisible);
 
     if (

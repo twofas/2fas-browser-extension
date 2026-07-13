@@ -99,4 +99,61 @@ describe('syncDevicesWithAPI', () => {
     expect(res.hasDevices).toBe(false);
     expect(getAllPairedDevices).not.toHaveBeenCalled();
   });
+
+  it('keeps caller storage unchanged on API error (no reconcile)', async () => {
+    getAllPairedDevices.mockResolvedValue(null);
+
+    const storage = { extensionID: 'ext-err', keys: { publicKey: 'p' }, devices: [{ device_id: 'd1', device_public_key: 'k1' }] };
+    const res = await syncDevicesWithAPI(storage);
+
+    expect(res.apiError).toBe(true);
+    // Storage is returned untouched — no reconciled devices baked in.
+    expect(res.storage).toBe(storage);
+  });
+
+  describe('throttle cache is storage-shape-independent (Z8)', () => {
+    it('composes each caller\'s OWN storage shape, not the first caller\'s cached one', async () => {
+      getAllPairedDevices.mockResolvedValue([{ id: 'd1', public_key: 'k1' }]);
+
+      // Same extensionID within the throttle window → one API call, shared devices.
+      const first = await syncDevicesWithAPI({ extensionID: 'ext-shape', keys: { publicKey: 'p' }, devices: [] });
+      const second = await syncDevicesWithAPI({ extensionID: 'ext-shape', browserInfo: { name: 'X' }, devices: [] });
+
+      expect(getAllPairedDevices).toHaveBeenCalledTimes(1); // throttled
+
+      // Each caller keeps its own extra keys; neither inherits the other's shape.
+      expect(first.storage.keys).toEqual({ publicKey: 'p' });
+      expect(first.storage.browserInfo).toBeUndefined();
+      expect(second.storage.browserInfo).toEqual({ name: 'X' });
+      expect(second.storage.keys).toBeUndefined();
+
+      // Both still carry the same reconciled devices.
+      expect(first.storage.devices).toEqual([{ device_id: 'd1', device_public_key: 'k1' }]);
+      expect(second.storage.devices).toEqual([{ device_id: 'd1', device_public_key: 'k1' }]);
+    });
+  });
+
+  describe('fresh bypass for the security check (Z8)', () => {
+    it('hits the API on every call when fresh:true, even within the throttle window', async () => {
+      getAllPairedDevices.mockResolvedValue([{ id: 'd1', public_key: 'k1' }]);
+
+      await syncDevicesWithAPI({ extensionID: 'ext-fresh', devices: [] }, { fresh: true });
+      await syncDevicesWithAPI({ extensionID: 'ext-fresh', devices: [] }, { fresh: true });
+
+      expect(getAllPairedDevices).toHaveBeenCalledTimes(2);
+    });
+
+    it('reflects an unpaired device immediately with fresh (no stale cache accept)', async () => {
+      // First: device present. Warm the throttle cache with a non-fresh call.
+      getAllPairedDevices.mockResolvedValueOnce([{ id: 'd1', public_key: 'k1' }]);
+      await syncDevicesWithAPI({ extensionID: 'ext-unpair', devices: [] });
+
+      // Device just got unpaired server-side. A fresh check must see the empty list
+      // even though the throttle window has not elapsed.
+      getAllPairedDevices.mockResolvedValueOnce([]);
+      const res = await syncDevicesWithAPI({ extensionID: 'ext-unpair', devices: [{ device_id: 'd1', device_public_key: 'k1' }] }, { fresh: true });
+
+      expect(res.storage.devices).toEqual([]);
+    });
+  });
 });

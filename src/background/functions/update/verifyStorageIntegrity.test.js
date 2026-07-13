@@ -23,8 +23,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/generateDefaultStorage.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 
+const notificationShow = vi.fn().mockResolvedValue(undefined);
+vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
+
 import verifyStorageIntegrity from './verifyStorageIntegrity.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import storeLog from '@partials/storeLog.js';
 import { savePrivateKey, getPrivateKey } from '@background/functions/privateKeyStore.js';
 import { saveToLocalStorage, loadFromLocalStorage } from '@localStorage/index.js';
 import Crypt from '@background/functions/Crypt.js';
@@ -62,5 +66,24 @@ describe('verifyStorageIntegrity', () => {
   it('regenerates default storage when storage is corrupt', async () => {
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT regenerate (orphaning devices) when registered but the private key is gone; prompts re-pair (Z3)', async () => {
+    // Public key + extensionID present (a fully registered install), but no private
+    // key in IndexedDB and no legacy key → the key was evicted, not a fresh install.
+    await saveToLocalStorage({ keys: { publicKey: 'pub' }, extensionID: 'id' });
+
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+
+    // Crucially: no silent regeneration (which would orphan every paired device).
+    expect(generateDefaultStorage).not.toHaveBeenCalled();
+    // A re-pair prompt is shown and the state is logged under its own ID.
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'verifyStorageIntegrity');
+
+    // Storage is left untouched — recovery is an explicit reset/re-pair.
+    const after = await loadFromLocalStorage(['keys', 'extensionID']);
+    expect(after.keys.publicKey).toBe('pub');
+    expect(after.extensionID).toBe('id');
   });
 });

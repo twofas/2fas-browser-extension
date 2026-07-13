@@ -21,11 +21,16 @@ import browser from 'webextension-polyfill';
 import { onConnect, onCommand, onInstalled, onMessage, onStartup } from '@background/events/index.js';
 import { createContextMenus, onContextMenuClick } from '@background/contextMenu/index.js';
 import { browserAction, setIcon } from '@background/functions/index.js';
-import { KEEP_ALIVE_ALARM_NAME, handleKeepAliveAlarm } from '@background/functions/keepAlive.js';
+import { KEEP_ALIVE_ALARM_NAME, handleKeepAliveAlarm, setKeepAliveAlarmOwner } from '@background/functions/keepAlive.js';
 import { flushBrowserRegistration, REGISTRATION_ALARM_NAME } from '@background/functions/update/index.js';
 import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 createContextMenus();
+
+// This is the keep-alive alarm owner: only the background creates/clears the
+// backstop alarm and writes the shared deadline key (the install page runs the
+// heartbeat only), so the two contexts never clear each other's backstop.
+setKeepAliveAlarmOwner();
 
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(onMessage);

@@ -152,6 +152,7 @@ const onMessage = (request, sender, sendResponse) => {
               delete tabData.lastFocusedInput;
               delete tabData.lastFocusedFrameId;
               delete tabData.lastFocusedFrameOrigin;
+              delete tabData.lastFocusedFrameUrl;
               return saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
             }
 

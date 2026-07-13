@@ -104,6 +104,8 @@ const alarms = {
   }
 };
 
+const makeEvent = () => ({ addListener: () => {}, removeListener: () => {} });
+
 const browser = {
   storage: { local, session },
   alarms,
@@ -116,7 +118,19 @@ const browser = {
   },
   tabs: {
     get: async () => ({}),
-    sendMessage: async () => ({})
+    sendMessage: async () => ({}),
+    onRemoved: makeEvent(),
+    onUpdated: makeEvent(),
+    onActivated: makeEvent()
+  },
+  // Frame lookups default to an empty result; tests spy on / override this.
+  webNavigation: {
+    getFrame: async () => ({}),
+    getAllFrames: async () => []
+  },
+  // Native notifications: record nothing by default; tests spy on this.
+  notifications: {
+    create: async () => 'notification-id'
   },
   i18n: { getMessage: () => '' }
 };

@@ -27,10 +27,12 @@ vi.mock('@content/functions/getTabData.js', () => ({ default: () => getTabDataMo
 const setPendingSubmitMock = vi.fn();
 const resumePendingSubmitMock = vi.fn();
 const clearPendingSubmitMock = vi.fn();
+const consumeLoadCompleteSignalMock = vi.fn(() => false);
 vi.mock('@content/functions/pendingSubmit.js', () => ({
   setPendingSubmit: (...args) => setPendingSubmitMock(...args),
   resumePendingSubmit: (...args) => resumePendingSubmitMock(...args),
   clearPendingSubmit: (...args) => clearPendingSubmitMock(...args),
+  consumeLoadCompleteSignal: (...args) => consumeLoadCompleteSignalMock(...args),
   MAX_PENDING_SUBMIT_AGE_MS: 15000
 }));
 
@@ -55,6 +57,8 @@ describe('scheduleAutoSubmit (U5 deferred auto-submit ordering)', () => {
     setPendingSubmitMock.mockReset();
     resumePendingSubmitMock.mockReset();
     clearPendingSubmitMock.mockReset();
+    consumeLoadCompleteSignalMock.mockReset();
+    consumeLoadCompleteSignalMock.mockReturnValue(false);
   });
 
   it('queues the submit BEFORE awaiting the tab status, so a pageLoadComplete during the await is not lost', async () => {
@@ -81,6 +85,21 @@ describe('scheduleAutoSubmit (U5 deferred auto-submit ordering)', () => {
 
     expect(setPendingSubmitMock).toHaveBeenCalledTimes(1);
     expect(resumePendingSubmitMock).toHaveBeenCalledTimes(1);
+    expect(clearPendingSubmitMock).not.toHaveBeenCalled();
+  });
+
+  it('replays immediately (without waiting on getTabData) when a pageLoadComplete was latched mid-fill', async () => {
+    // A 'pageLoadComplete' arrived while the fill was still typing; the queue was
+    // armed only after. The latch must trigger the submit without depending on
+    // the getTabData status read at all.
+    consumeLoadCompleteSignalMock.mockReturnValue(true);
+    getTabDataMock.mockRejectedValue(new Error('getTabData must not be needed'));
+
+    await scheduleAutoSubmit({ isConnected: true }, 'https://example.test', true);
+
+    expect(setPendingSubmitMock).toHaveBeenCalledTimes(1);
+    expect(resumePendingSubmitMock).toHaveBeenCalledTimes(1);
+    expect(getTabDataMock).not.toHaveBeenCalled();
     expect(clearPendingSubmitMock).not.toHaveBeenCalled();
   });
 

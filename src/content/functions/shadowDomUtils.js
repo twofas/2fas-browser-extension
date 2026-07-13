@@ -18,23 +18,48 @@
 //
 
 /* global ShadowRoot */
+import browser from 'webextension-polyfill';
 
 /**
- * Gets the deepest active element, traversing through shadowRoots.
+ * Resolves an element's shadow root, including CLOSED roots. `element.shadowRoot`
+ * is null for a closed root, hiding those subtrees; the WebExtensions
+ * `browser.dom.openOrClosedShadowRoot(element)` API pierces both (T6). Falls back
+ * to `element.shadowRoot` where the API is unavailable (older engines / tests).
+ * @param {Element} element - Element whose shadow root to read
+ * @returns {ShadowRoot|null} The open or closed shadow root, or null when none
+ */
+const getShadowRoot = element => {
+  if (!element) {
+    return null;
+  }
+
+  try {
+    if (browser?.dom?.openOrClosedShadowRoot) {
+      return browser.dom.openOrClosedShadowRoot(element) || null;
+    }
+  } catch {
+    // Element not shadow-hosting / API refused — fall through to the open root.
+  }
+
+  return element.shadowRoot || null;
+};
+
+/**
+ * Gets the deepest active element, traversing through shadowRoots (open or closed).
  * @returns {Element|null} The deepest focused element or null
  */
 const getDeepActiveElement = () => {
   let active = document.activeElement;
 
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
+  while (getShadowRoot(active)?.activeElement) {
+    active = getShadowRoot(active).activeElement;
   }
 
   return active;
 };
 
 /**
- * Recursively collects all shadowRoots in the document.
+ * Recursively collects all shadowRoots in the document, including CLOSED ones.
  * @param {Element|Document} root - Starting element to search from
  * @param {Set} visited - Set of visited shadowRoots to avoid duplicates
  * @returns {ShadowRoot[]} Array of all discovered shadowRoots
@@ -44,10 +69,12 @@ const collectAllShadowRoots = (root = document, visited = new Set()) => {
   const elements = root.querySelectorAll('*');
 
   for (const element of elements) {
-    if (element.shadowRoot && !visited.has(element.shadowRoot)) {
-      visited.add(element.shadowRoot);
-      shadowRoots.push(element.shadowRoot);
-      shadowRoots.push(...collectAllShadowRoots(element.shadowRoot, visited));
+    const shadowRoot = getShadowRoot(element);
+
+    if (shadowRoot && !visited.has(shadowRoot)) {
+      visited.add(shadowRoot);
+      shadowRoots.push(shadowRoot);
+      shadowRoots.push(...collectAllShadowRoots(shadowRoot, visited));
     }
   }
 
@@ -156,6 +183,7 @@ const isInShadowRoot = element => {
 };
 
 export {
+  getShadowRoot,
   getDeepActiveElement,
   collectAllShadowRoots,
   querySelectorAllDeep,

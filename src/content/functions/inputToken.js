@@ -20,7 +20,7 @@
 /* global Event, KeyboardEvent, InputEvent, DataTransfer, ClipboardEvent */
 import wait from '@partials/wait.js';
 import getTabData from '@content/functions/getTabData.js';
-import { setPendingSubmit, resumePendingSubmit, clearPendingSubmit } from '@content/functions/pendingSubmit.js';
+import { setPendingSubmit, resumePendingSubmit, clearPendingSubmit, consumeLoadCompleteSignal } from '@content/functions/pendingSubmit.js';
 import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
 import setNativeValue from '@content/functions/setNativeValue.js';
 import detectOtpInputs, { isContentEditableTarget } from '@content/functions/detectOtpInputs.js';
@@ -263,10 +263,43 @@ const writeContentEditable = (element, token) => {
 };
 
 /**
- * Fills the token by simulating keystrokes. Follows focus across segmented
- * boxes, but only ever writes into the anchor element or a detected group box —
- * if focus escapes to an unrelated/non-input element the digit is not written
- * there (prevents overwriting e.g. a password field the user clicked mid-fill).
+ * Fills a segmented OTP group by writing each digit DIRECTLY into its box
+ * (group.boxes[i]) rather than relying on the widget to auto-advance focus. This
+ * is the robust path for widgets that do not move focus on synthetic events, and
+ * it is inherently safe: it only ever touches a detected group box, so a digit can
+ * never spill into an unrelated field (T5's overriding constraint). Surplus digits
+ * (more than there are boxes) are dropped — isTokenFilled then reports the fill
+ * unverified and the copy fallback kicks in, which is the safe outcome.
+ * @param {{boxes: Element[]}} group - Detected segmented group
+ * @param {string} token - Token to type
+ * @returns {Promise<void>}
+ */
+const typeSegmentedByBox = async (group, token) => {
+  const { boxes } = group;
+
+  for (let i = 0; i < token.length; i++) {
+    const box = boxes[i];
+
+    if (!box || !isFillableInput(box)) {
+      continue;
+    }
+
+    box.focus();
+    const digit = token[i];
+    dispatchKeystrokeEvents(box, digit, 48 + Number(digit), digit);
+
+    if (i < token.length - 1) {
+      await wait(keystrokeDelay(true));
+    }
+  }
+};
+
+/**
+ * Fills the token by simulating keystrokes. Segmented groups are written box-by-box
+ * (see typeSegmentedByBox); a single field follows focus but only ever writes into
+ * the anchor element — if focus escapes to an unrelated/non-input element the digit
+ * is not written there (prevents overwriting e.g. a password field the user clicked
+ * mid-fill).
  * @param {HTMLElement} inputElement - The anchor (tagged) element
  * @param {{mode: string, boxes: Element[]}} group - Detected target group
  * @param {string} token - Token to type
@@ -278,22 +311,25 @@ const simulateTyping = async (inputElement, group, token) => {
     return;
   }
 
+  if (group.mode === 'segmented') {
+    await typeSegmentedByBox(group, token);
+    return;
+  }
+
+  // Single field (segmented is handled above by typeSegmentedByBox): type into the
+  // anchor only, at the fast single-field cadence (U3).
   inputElement.focus();
 
-  const isAllowedTarget = element => element === inputElement || group.boxes.includes(element);
-  // Adaptive rhythm (U3): a segmented group moves focus box-to-box and may
-  // re-render between digits, so it keeps the longer cadence; a single field
-  // types fast. Keyed off the detected mode, so there is no focus-timing race.
-  const isSegmented = group.mode === 'segmented';
   let accumulated = '';
 
-  // Writes one digit into the current (allowed) target, skipping the keystroke if
-  // focus escaped to an element we must not touch (R10 abort guard).
+  // Writes one digit into the anchor, skipping the keystroke if focus escaped to a
+  // different element we must not touch (R10 abort guard) and the anchor can't be
+  // refocused.
   const typeDigit = digit => {
     const keyCode = 48 + Number(digit);
     let activeElement = getDeepActiveElement();
 
-    if (!isFillableInput(activeElement) || !isAllowedTarget(activeElement)) {
+    if (activeElement !== inputElement) {
       if (isFillableInput(inputElement)) {
         inputElement.focus();
         activeElement = inputElement;
@@ -302,17 +338,8 @@ const simulateTyping = async (inputElement, group, token) => {
       }
     }
 
-    let valueForElement;
-
-    if (activeElement === inputElement) {
-      accumulated += digit;
-      valueForElement = accumulated;
-    } else {
-      // Focus auto-advanced to another box (segmented) — it holds one digit.
-      valueForElement = digit;
-    }
-
-    dispatchKeystrokeEvents(activeElement, digit, keyCode, valueForElement);
+    accumulated += digit;
+    dispatchKeystrokeEvents(activeElement, digit, keyCode, accumulated);
   };
 
   for (let i = 0; i < token.length; i++) {
@@ -320,7 +347,7 @@ const simulateTyping = async (inputElement, group, token) => {
 
     // The final keystroke needs no trailing wait.
     if (i < token.length - 1) {
-      await wait(keystrokeDelay(isSegmented));
+      await wait(keystrokeDelay(false));
     }
   }
 };
@@ -344,6 +371,13 @@ const simulateTyping = async (inputElement, group, token) => {
 const scheduleAutoSubmit = async (inputElement, siteURL, verified) => {
   if (verified) {
     setPendingSubmit(inputElement, siteURL);
+
+    // A 'pageLoadComplete' that fired mid-fill (before the queue was armed) is
+    // latched; honor it now so the deferred submit is not lost to that race.
+    if (consumeLoadCompleteSignal()) {
+      resumePendingSubmit();
+      return;
+    }
   }
 
   let status;
@@ -409,6 +443,15 @@ const inputToken = async (request, inputElement, siteURL) => {
       clearAfterInputToken(inputElement);
       return { status: 'error', url: siteURL };
     }
+  }
+
+  // Managed rich-text editors (Draft.js / Slate on contenteditable) reconcile
+  // asynchronously and may reject or replace a programmatically-set value AFTER it
+  // lands. Let that settle before verifying, so a value the editor discards is
+  // reported 'unverified' (→ copy-to-clipboard fallback) rather than a false
+  // 'completed' that leaves the user with an empty field and no token.
+  if (group.mode === 'contenteditable') {
+    await wait(PASTE_SETTLE_MS);
   }
 
   // R10: confirm the token landed before auto-submitting (handles 1 and 6 fields).

@@ -17,34 +17,56 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import config from '@/config.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
+import TwoFasNotification from '@notification/index.js';
 import storeLog from '@partials/storeLog.js';
 
+const STORAGE_VALID = 'valid';
+const STORAGE_INCOMPLETE = 'incomplete';
+const STORAGE_MISSING_PRIVATE_KEY = 'missingPrivateKey';
+
 /**
- * Checks if the storage contains a valid public key, extension ID and a private
- * key. The private key lives in IndexedDB; for users upgrading from a build that
- * stored it as base64 in storage.local this call also migrates it on first run.
+ * Classifies the current storage state for the integrity check. The private key
+ * lives in IndexedDB; for users upgrading from a build that stored it as base64 in
+ * storage.local this call also migrates it on first run.
+ *
+ *  - 'valid'             : public key + extensionID + a usable private key.
+ *  - 'incomplete'        : public key OR extensionID missing (fresh install or a
+ *                          partial/aborted first-run) — safe to (re)generate.
+ *  - 'missingPrivateKey' : public key AND extensionID present, but NO private key
+ *                          in IndexedDB — the extension was fully registered yet the
+ *                          key is gone (e.g. IndexedDB evicted while storage.local
+ *                          survived). Regenerating here would mint a new keypair +
+ *                          registration and, since the server public_key cannot be
+ *                          rotated, SILENTLY orphan every paired device.
+ *
+ * A transient IndexedDB error makes getOrMigratePrivateKey throw (not return null),
+ * so it propagates to the caller's catch and never masquerades as 'missingPrivateKey'.
  *
  * @async
- * @param {Object} storage - The storage object to validate
- * @returns {Promise<boolean>} True if storage has valid keys and extension ID
+ * @param {Object} storage - The storage object to classify
+ * @returns {Promise<'valid'|'incomplete'|'missingPrivateKey'>}
  */
-const isStorageValid = async storage => {
+const classifyStorage = async storage => {
   if (!storage?.keys?.publicKey || !storage?.extensionID) {
-    return false;
+    return STORAGE_INCOMPLETE;
   }
 
   const privateKey = await getOrMigratePrivateKey(storage);
 
-  return Boolean(privateKey);
+  return privateKey ? STORAGE_VALID : STORAGE_MISSING_PRIVATE_KEY;
 };
 
 /**
- * Verifies that required storage keys exist and regenerates default storage if corrupted.
- * After regeneration, re-checks that the storage is actually valid — generateDefaultStorage
- * swallows API errors internally, so a successful await does NOT guarantee a valid storage.
+ * Verifies that required storage keys exist and regenerates default storage when it
+ * is genuinely incomplete (fresh/partial install). A registered install whose private
+ * key vanished is NOT silently regenerated — that would orphan the paired devices —
+ * the user is told to re-pair instead. After regeneration, re-checks that the storage
+ * is actually valid — generateDefaultStorage swallows API errors internally, so a
+ * successful await does NOT guarantee a valid storage.
  *
  * @param {Object} browserInfo - Object containing browser name, version, and OS information
  * @returns {Promise<boolean>} A promise that resolves to true only if storage is currently valid
@@ -52,16 +74,27 @@ const isStorageValid = async storage => {
 const verifyStorageIntegrity = async browserInfo => {
   try {
     let storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    const state = await classifyStorage(storage);
 
-    if (await isStorageValid(storage)) {
+    if (state === STORAGE_VALID) {
       return true;
+    }
+
+    if (state === STORAGE_MISSING_PRIVATE_KEY) {
+      // Registered, but the private key is gone. Do NOT regenerate (it would orphan
+      // every paired device with no way to rotate the server key). Surface a re-pair
+      // prompt and leave storage untouched — recovery is an explicit reset/re-pair.
+      await storeLog('error', 57, new Error('Private key missing while registration valid; re-pairing required'), 'verifyStorageIntegrity');
+      await TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+
+      return false;
     }
 
     await generateDefaultStorage(browserInfo);
 
     storage = await loadFromLocalStorage(['keys', 'extensionID']);
 
-    return await isStorageValid(storage);
+    return (await classifyStorage(storage)) === STORAGE_VALID;
   } catch (err) {
     storeLog('error', 29, err, 'verifyStorageIntegrity');
 

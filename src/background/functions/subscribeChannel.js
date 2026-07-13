@@ -34,6 +34,11 @@ const WS_TIMEOUT_MS = (1000 * 60 * config.WebSocketTimeout) - 5000;
 // reconnect attempts; the whole sequence shares the single WS_TIMEOUT_MS budget.
 const RECONNECT_BACKOFF_MS = [1000, 2000, 4000];
 const MAX_RECONNECT_ATTEMPTS = RECONNECT_BACKOFF_MS.length;
+// A connection must stay open at least this long to count as "stable" and reset the
+// consecutive-attempt counter. Without this gate a server that accepts then instantly
+// drops the socket (accept-then-drop) would reset the counter on every onopen and
+// reconnect forever within the budget, never hitting MAX_RECONNECT_ATTEMPTS.
+const STABLE_CONNECTION_MS = 5000;
 
 /**
  * Creates a WebSocket channel for communication with 2FAS backend.
@@ -56,6 +61,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   let timeoutID = null;
   let reconnectTimerID = null;
   let reconnectAttempts = 0;
+  let connectionOpenedAt = null;
   let deadline = null;
   let handled = false;
   let listenersAttached = false;
@@ -140,6 +146,15 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       return;
     }
 
+    // Reset the consecutive-attempt counter only when the connection we just lost
+    // had been stable (open ≥ STABLE_CONNECTION_MS). An accept-then-drop server
+    // keeps connectionOpenedAt recent, so attempts keep accumulating toward the
+    // MAX cap instead of resetting every cycle.
+    if (connectionOpenedAt !== null && Date.now() - connectionOpenedAt >= STABLE_CONNECTION_MS) {
+      reconnectAttempts = 0;
+    }
+    connectionOpenedAt = null;
+
     const remaining = deadline - Date.now();
 
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS || remaining <= 0) {
@@ -173,7 +188,11 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     try {
       messageData = JSON.parse(messageEvent.data);
     } catch (parseError) {
-      cleanupListeners();
+      // A single malformed frame is not a terminal event. Previously this ran
+      // cleanupListeners() — releasing the keep-alive and clearing the timeout —
+      // while leaving the socket OPEN: an unmonitored, un-kept-alive channel. Just
+      // skip the bad frame; the socket, its timeout and the keep-alive stay intact
+      // so a subsequent valid frame is still handled within the request budget.
       await storeLog('error', 13, parseError, 'subscribeChannel JSON parse error');
       return;
     }
@@ -244,10 +263,26 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     }
 
     const wsURL = buildWebSocketURL();
-    channel.ws = new WebSocket(wsURL);
+
+    try {
+      channel.ws = new WebSocket(wsURL);
+    } catch (err) {
+      // The constructor threw before any handler was attached (bad URL, CSP block,
+      // resource exhaustion): nothing will ever fire onclose/onerror to release the
+      // keep-alive, so tear down here instead of leaking it until the backstop
+      // deadline. handleFailure is idempotent (channel.closing) and closeWSChannel
+      // tolerates a null socket.
+      channel.ws = null;
+      storeLog('error', 11, err, 'WebSocket construction failed');
+      handleFailure();
+      return channel;
+    }
 
     channel.ws.onopen = () => {
-      reconnectAttempts = 0;
+      // Record when the socket opened; scheduleReconnect uses this to decide
+      // whether the connection was stable enough to reset the attempt counter.
+      // (Resetting unconditionally here let accept-then-drop bypass the cap.)
+      connectionOpenedAt = Date.now();
 
       const remaining = deadline - Date.now();
 

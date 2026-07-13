@@ -21,12 +21,15 @@
  * Reconciles the locally cached devices against the authoritative list from the
  * API. Pure reducer for use inside the `devices` storage lock (`mutateDevices`).
  *
- * Local devices carry only what the extension needs to encrypt tokens
- * (`{ device_id, device_public_key }`); the API returns richer records keyed by
- * `id` with a `public_key`. A new API device is added only when it has a usable
- * `public_key` — an empty key yields a broken record (token encryption can't
- * work, and pairing rejects it too), so it is left out and re-added by a later
- * sync once the key is present.
+ * Local devices are cached as `{ device_id, device_public_key }` (mirroring the
+ * record pairing writes); the API returns richer records keyed by `id` with a
+ * `public_key`. Token decryption uses the extension's OWN private key, not this
+ * per-device key, so `device_public_key` is not consumed here — it is stored only
+ * for parity with the pairing record. A new API device is still added only when it
+ * has a non-empty `public_key`: an empty one marks an incompletely-provisioned
+ * device server-side (pairing also rejects it), so it is left out and re-added by
+ * a later sync once the key is present, keeping the local list consistent with
+ * what a completed pairing stores.
  *
  * @param {Array<{device_id: string, device_public_key: string}>} [localDevices] - Cached local devices.
  * @param {Array<{id: string, public_key: string}>} apiDevices - Devices from the API.

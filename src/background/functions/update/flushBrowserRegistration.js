@@ -35,8 +35,8 @@ import {
 } from './registrationRetryPolicy.js';
 
 // In-flight guard: collapses concurrent triggers (alarm / 'online' / onStartup /
-// keepalive tick / inline enqueue) into a single execution so the non-atomic
-// read-modify-write of the storage record never races against itself.
+// inline enqueue) into a single execution so the non-atomic read-modify-write of
+// the storage record never races against itself.
 let inFlight = null;
 
 /**
@@ -280,12 +280,12 @@ const handleFailure = async (record, err, now) => {
 
 /**
  * One flush pass: attempts to deliver the pending registration, applying the
- * offline gate, the schedule (for periodic ticks) and the retry/backoff policy.
- * @param {boolean} force - When false, respect nextAttemptAt (used by the periodic
- *                          keepalive tick); event/alarm/startup driven calls force now.
+ * offline gate and the retry/backoff policy. Every trigger (alarm / 'online' /
+ * onStartup / inline enqueue) attempts immediately — the alarm is already
+ * scheduled at the record's nextAttemptAt, so there is no separate schedule gate.
  * @returns {Promise<void>}
  */
-const doFlush = async force => {
+const doFlush = async () => {
   const record = await loadRecord();
 
   if (!record) {
@@ -294,10 +294,6 @@ const doFlush = async force => {
   }
 
   const now = Date.now();
-
-  if (!force && now < record.nextAttemptAt) {
-    return;
-  }
 
   if (navigator.onLine === false) {
     // Don't burn an attempt while offline; recover via the 'online' event / alarm /
@@ -338,17 +334,14 @@ const doFlush = async force => {
  * service-worker termination. Safe to call from many triggers — concurrent calls
  * share a single in-flight execution and it never rejects.
  *
- * @param {Object} [options]
- * @param {boolean} [options.force=true] - When false, only attempt if the backoff
- *                                         schedule is due (for the periodic keepalive tick).
  * @returns {Promise<void>}
  */
-const flushBrowserRegistration = ({ force = true } = {}) => {
+const flushBrowserRegistration = () => {
   if (inFlight) {
     return inFlight;
   }
 
-  inFlight = doFlush(force)
+  inFlight = doFlush()
     .catch(err => console.error('flushBrowserRegistration', err))
     .finally(() => { inFlight = null; });
 

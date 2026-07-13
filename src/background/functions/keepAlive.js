@@ -49,6 +49,28 @@ export const KEEP_ALIVE_ALARM_NAME = 'keepAliveDuringRequest';
 /** Session-storage key holding the epoch (ms) past which the keep-alive self-terminates. */
 const KEEP_ALIVE_DEADLINE_KEY = 'keepAliveUntil';
 
+// The alarm name and the session-storage deadline key are extension-GLOBAL: the
+// background service worker and the install page (which also opens a channel via
+// subscribeChannel) would otherwise share them, so one context's teardown would
+// clear the other's backstop. Only the context that owns the alarm handler — the
+// background, marked once via setKeepAliveAlarmOwner() — manages the alarm and the
+// deadline key. Every other context (the install page) runs the in-memory
+// heartbeat only, which is all a non-evictable page needs and which touches no
+// shared state, so the two can never interfere. Detecting "am I the background?"
+// via `window`/`self` is unreliable (the background is a page on Firefox/Safari),
+// so ownership is declared explicitly from the background entry point instead.
+let isAlarmOwner = false;
+
+/**
+ * Marks THIS context as the keep-alive alarm owner (called once from the
+ * background entry point). Only the owner creates/clears the backstop alarm and
+ * writes the shared deadline key.
+ * @returns {void}
+ */
+export const setKeepAliveAlarmOwner = () => {
+  isAlarmOwner = true;
+};
+
 /**
  * Heartbeat period (ms). Comfortably under the 30s service-worker idle timeout so each
  * storage read resets the timer before it can fire.
@@ -118,6 +140,12 @@ const teardownKeepAlive = async () => {
   activeRequests = 0;
   stopHeartbeat();
 
+  // Only the alarm owner touches the shared alarm / deadline key; a non-owner
+  // (install page) has neither, so tearing its heartbeat down is enough.
+  if (!isAlarmOwner) {
+    return;
+  }
+
   try {
     if (browser?.alarms?.clear) {
       await browser.alarms.clear(KEEP_ALIVE_ALARM_NAME);
@@ -143,6 +171,12 @@ const teardownKeepAlive = async () => {
 export const startKeepAlive = async durationMs => {
   activeRequests += 1;
   startHeartbeat();
+
+  // Only the alarm owner (background) writes the shared deadline key and creates
+  // the backstop alarm. A page context relies solely on its heartbeat while open.
+  if (!isAlarmOwner) {
+    return;
+  }
 
   try {
     await saveToSessionStorage({ [KEEP_ALIVE_DEADLINE_KEY]: Date.now() + durationMs });

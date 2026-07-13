@@ -49,11 +49,16 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
 
   if (properElements.length > 0) {
     // Several frames can report a fillable target at once — the focus-less
-    // one-time-code fallback fires independently in every frame. getAllFrames()
-    // order does not guarantee the top frame comes first, so prefer it
-    // explicitly; otherwise keep the first reported frame (the focused one in
-    // the normal single-frame case, including legitimate cross-origin iframes).
-    const chosen = properElements.find(el => el.frameId === 0) || properElements[0];
+    // one-time-code fallback fires independently in every frame. Prefer a frame
+    // that reported a REAL focused field ('focused') over one that only produced
+    // the one-time-code fallback ('fallback'), so a top-frame fallback can't beat
+    // the sub-frame that actually holds focus (Z4). Among same-precedence matches,
+    // prefer the top frame (getAllFrames() order is not guaranteed); otherwise keep
+    // the first reported frame (the focused one in the normal single-frame case,
+    // including legitimate cross-origin iframes).
+    const focusedElements = properElements.filter(el => el.response.matchType === 'focused');
+    const pool = focusedElements.length > 0 ? focusedElements : properElements;
+    const chosen = pool.find(el => el.frameId === 0) || pool[0];
 
     let frameOrigin = null;
 
@@ -63,13 +68,16 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
       frameOrigin = null;
     }
 
-    // Record the input UUID, the frame it lives in and that frame's origin, so
-    // the decrypted token is later delivered only to that frame and only while
-    // it still hosts the same origin (frameIds are reused across navigations —
-    // see resolveTokenTargetFrame / handleLoginRequest).
+    // Record the input UUID, the frame it lives in, that frame's origin AND its
+    // exact URL, so the decrypted token is later delivered only to that frame and
+    // only while it still hosts the same document (frameIds are reused across
+    // navigations — see resolveTokenTargetFrame / handleLoginRequest). The URL is
+    // what lets an opaque-origin sub-frame (about:srcdoc / data:) be re-verified,
+    // since its origin stringifies to the non-comparable "null" (Z7).
     tabData.lastFocusedInput = chosen.response.id;
     tabData.lastFocusedFrameId = chosen.frameId;
     tabData.lastFocusedFrameOrigin = frameOrigin;
+    tabData.lastFocusedFrameUrl = chosen.url || null;
     await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
     return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
   }
@@ -77,6 +85,7 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
   delete tabData.lastFocusedInput;
   delete tabData.lastFocusedFrameId;
   delete tabData.lastFocusedFrameOrigin;
+  delete tabData.lastFocusedFrameUrl;
   await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
 
   return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);

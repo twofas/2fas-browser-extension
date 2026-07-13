@@ -22,16 +22,7 @@ import configurationComplete from '@/installPage/functions/configurationComplete
 import TwoFasNotification from '@notification/index.js';
 import storeLog from '@partials/storeLog.js';
 import { mutateDevices } from '@background/functions/listStore.js';
-
-/**
- * Checks if a device with the given ID already exists in the devices array.
- * @param {Array} devices - Array of paired devices.
- * @param {string} deviceId - The device ID to check.
- * @returns {boolean} True if device exists.
- */
-const deviceExists = (devices, deviceId) => {
-  return devices.some(device => device.device_id === deviceId);
-};
+import deviceListHasId from '@partials/deviceListHasId.js';
 
 /**
  * Handles a device pairing configuration request from the mobile app.
@@ -55,7 +46,7 @@ const handleConfigurationRequest = async (tabID, data) => {
     // resulting length; returning the list unchanged when the device already
     // exists still re-asserts configured=true.
     await mutateDevices(devices => (
-      deviceExists(devices, device_id)
+      deviceListHasId(devices, device_id)
         ? devices
         : [...devices, { device_id, device_public_key }] // eslint-disable-line camelcase
     ));

@@ -48,6 +48,11 @@ const getIgnoreButtonTextsSet = () => {
  * (its `.value` is empty) or an icon-only `<button type="submit">` must not be
  * dropped, or auto-submit silently fails on forms whose only submit is unlabelled.
  *
+ * Reads the IDL `.type` property, not the `type` attribute: a `<button>` with no
+ * `type` attribute defaults to `submit` per the HTML spec, and `.type` reflects
+ * that ('submit') while `getAttribute('type')` returns null — so an icon-only
+ * default `<button>` (the only submit on many forms) would otherwise be dropped.
+ *
  * @param {HTMLElement} element - The element to test
  * @returns {boolean} True for a submit-typed input/button
  */
@@ -58,7 +63,7 @@ const isSubmitTypedControl = element => {
     return false;
   }
 
-  return (element.getAttribute?.('type') || '').toLowerCase() === 'submit';
+  return (element.type || '').toLowerCase() === 'submit';
 };
 
 /**

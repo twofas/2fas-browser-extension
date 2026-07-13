@@ -17,55 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global URL */
-import browser from 'webextension-polyfill';
 import { loadFromSessionStorage } from '@sessionStorage/index.js';
 import storeLog from '@partials/storeLog.js';
-
-/**
- * Whether an origin is a usable, comparable identity. Opaque origins
- * (`data:`, `about:srcdoc`, sandboxed frames) all stringify to the literal
- * "null", so two *different* opaque documents would compare equal — they must
- * never be treated as a match for token delivery.
- *
- * @param {*} origin - The origin string from `new URL(url).origin`.
- * @return {boolean} True when the origin uniquely identifies a real origin.
- */
-const isUsableOrigin = origin => typeof origin === 'string' && origin.length > 0 && origin !== 'null';
-
-/**
- * Whether a frame currently hosts `expectedOrigin`. Looks up the frame's live URL
- * via webNavigation and compares origins; any doubt (removed frame, opaque/changed
- * origin, lookup error) resolves to false so the caller does not deliver there.
- *
- * @async
- * @param {number} tabID - The tab to look the frame up in.
- * @param {number} frameId - The frame to check (0 = top frame).
- * @param {string} expectedOrigin - The origin the frame must still host.
- * @return {Promise<boolean>} True only when the frame still hosts expectedOrigin.
- */
-const frameHostsOrigin = async (tabID, frameId, expectedOrigin) => {
-  try {
-    const frame = await browser.webNavigation.getFrame({ tabId: tabID, frameId });
-    let currentOrigin = null;
-
-    try {
-      currentOrigin = frame?.url ? new URL(frame.url).origin : null;
-    } catch {
-      currentOrigin = null;
-    }
-
-    if (isUsableOrigin(currentOrigin) && isUsableOrigin(expectedOrigin) && currentOrigin === expectedOrigin) {
-      return true;
-    }
-
-    await storeLog('warning', 51, new Error('Target frame origin changed since request'), 'resolveTokenTargetFrame');
-    return false;
-  } catch (err) {
-    await storeLog('warning', 51, err, 'resolveTokenTargetFrame - frame lookup failed');
-    return false;
-  }
-};
+import isUsableOrigin from '@background/functions/isUsableOrigin.js';
+import frameHostsOrigin from '@background/functions/frameHostsOrigin.js';
+import frameHostsUrl from '@background/functions/frameHostsUrl.js';
 
 /**
  * Resolves the frame the decrypted token should be delivered to.
@@ -90,6 +46,7 @@ const frameHostsOrigin = async (tabID, frameId, expectedOrigin) => {
 const resolveTokenTargetFrame = async tabID => {
   let storedFrameId;
   let storedOrigin;
+  let storedUrl;
   let requestOrigin;
 
   try {
@@ -97,6 +54,7 @@ const resolveTokenTargetFrame = async tabID => {
     const tabData = sessionData?.[`tabData-${tabID}`];
     storedFrameId = tabData?.lastFocusedFrameId;
     storedOrigin = tabData?.lastFocusedFrameOrigin;
+    storedUrl = tabData?.lastFocusedFrameUrl;
     requestOrigin = tabData?.origin;
   } catch (err) {
     await storeLog('warning', 49, err, 'resolveTokenTargetFrame - session load failed');
@@ -114,9 +72,17 @@ const resolveTokenTargetFrame = async tabID => {
     return (await frameHostsOrigin(tabID, 0, requestOrigin)) ? 0 : null;
   }
 
-  // A frame was recorded (top or sub). With no recorded origin to compare against
-  // (legacy record) fall back to the top frame unverified.
+  // A frame was recorded (top or sub) but its origin is opaque (about:srcdoc,
+  // data:, sandbox without allow-same-origin) — origins are all "null" and not
+  // comparable. Re-verify by exact URL instead and deliver to the recorded frame:
+  // this restores autofill into opaque sub-frames (3DS / IdP / CMP widgets) that
+  // the origin-only check used to misroute to the top frame (Z7). A legacy record
+  // with no stored URL keeps the prior behavior (top frame unverified).
   if (!isUsableOrigin(storedOrigin)) {
+    if (typeof storedUrl === 'string' && storedUrl.length > 0) {
+      return (await frameHostsUrl(tabID, storedFrameId, storedUrl)) ? storedFrameId : null;
+    }
+
     return 0;
   }
 

@@ -45,6 +45,11 @@
 49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
 50 - handleLoginRequest - inputToken delivery to recorded frame failed [warning]
 51 - resolveTokenTargetFrame - target frame origin changed / lookup failed, fallback to top frame [warning]
+53 - updateList (onMessage) - list mutation failed [error]
+54 - runStorageMigrations - storage migration failed [error]
+56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning]
+57 - verifyStorageIntegrity - private key missing while public key + extensionID valid: re-pairing required, regeneration skipped [error]
+58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
 
 // CONTENT
 33 - content_script
@@ -61,6 +66,7 @@
 *43 - pageLoadComplete - loadFromLocalStorage [deprecated]
 *44 - pageLoadComplete - saveToLocalStorage [deprecated]
 46 - clickSubmit - loadFromLocalStorage
+59 - tokenNotification - clipboard copy failed (no secure context / execCommand fallback failed) [warning]
 
 // INSTALL PAGE
 20 - installPage

@@ -19,7 +19,7 @@
 
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain, resumePendingSubmit } from '@content/functions';
+import { notification, inputToken, getTokenInput, findFallbackOtpInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain, resumePendingSubmit } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -75,15 +75,13 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
             return;
           }
 
-          // Missing tab context (e.g. getTabData failed transiently) is not a genuinely
-          // outdated request — tell the user to refresh instead of showing "OldRequest".
-          const errorText = hasTabContext ? config.Texts.Error.OldRequest : config.Texts.Error.General;
-
-          sendResponse({
-            status: 'notification',
-            title: errorText.Title,
-            message: errorText.Message
-          });
+          // The recorded request context is gone (superseded request, or getTabData
+          // failed transiently). The token is already decrypted, so it must still
+          // reach the user: return a non-'completed' status and let the background's
+          // uniform fallback show the copy-to-clipboard token notification (the old
+          // {status:'notification'} error shape was dead — the background never read
+          // its title/message, it only reacts to a non-'completed' status).
+          sendResponse({ status: 'ok' });
           return;
         }
 
@@ -98,16 +96,22 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
           }
         }
 
+        // T8: the tagged node was removed (SPA re-render between request and
+        // delivery) or the OTP field only appeared after the request. Re-search for
+        // a fresh high-confidence target at delivery time before giving up.
+        if (!tokenInput) {
+          tokenInput = findFallbackOtpInput();
+        }
+
         if (!tokenInput) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
             return;
           }
 
-          if (!lastFocusedInput) {
-            tokenNotification(request.token, request.token_request_id);
-          }
-
+          // No fillable target anywhere in the top frame: the decrypted token must
+          // still reach the user, so always show the copy-to-clipboard notification.
+          tokenNotification(request.token, request.token_request_id);
           sendResponse({ status: 'ok' });
           return;
         }

@@ -22,6 +22,7 @@ import browser from 'webextension-polyfill';
 import i18n from '@partials/i18n.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import TwoFasNotification from '@notification';
+import pageError from '@partials/pageError.js';
 import SDK from '@sdk';
 import extPageOnMessage from '@partials/extPageOnMessage.js';
 import { delay, storeLog, handleTargetBlank, hidePreloader, storageValidation } from '@partials';
@@ -112,10 +113,7 @@ const init = async storage => {
   hidePreloader();
 };
 
-const optionsPageError = async err => {
-  await storeLog('error', 21, err, 'optionsPage');
-  return TwoFasNotification.showWithoutTimeout(config.Texts.Error.UndefinedError);
-};
+const optionsPageError = pageError(21, 'optionsPage', config.Texts.Error.UndefinedError);
 
 window.onload = async () => {
   try {

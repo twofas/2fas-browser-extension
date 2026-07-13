@@ -25,8 +25,15 @@ import {
   shouldStopKeepAlive,
   startKeepAlive,
   stopKeepAlive,
-  handleKeepAliveAlarm
+  handleKeepAliveAlarm,
+  setKeepAliveAlarmOwner
 } from './keepAlive.js';
+
+// This suite exercises the background (alarm-owner) behavior: only the owner
+// creates/clears the backstop alarm and writes the shared deadline key. Declare
+// ownership once for the whole file (the install-page / non-owner path lives in
+// keepAlive.nonowner.test.js, which needs a fresh module instance).
+setKeepAliveAlarmOwner();
 
 const DEADLINE_KEY = 'keepAliveUntil';
 

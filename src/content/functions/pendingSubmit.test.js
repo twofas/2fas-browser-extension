@@ -28,6 +28,7 @@ const {
   setPendingSubmit,
   resumePendingSubmit,
   clearPendingSubmit,
+  consumeLoadCompleteSignal,
   MAX_PENDING_SUBMIT_AGE_MS
 } = await import('./pendingSubmit.js');
 
@@ -44,6 +45,28 @@ describe('pendingSubmit (U5 deferred auto-submit)', () => {
   it('does nothing and reports false when no submit is queued', () => {
     expect(resumePendingSubmit()).toBe(false);
     expect(clickSubmitMock).not.toHaveBeenCalled();
+  });
+
+  describe('load-complete latch (mid-fill race)', () => {
+    it('latches a resume that arrives with an empty queue and exposes it once', () => {
+      // pageLoadComplete fired mid-fill, before the queue was armed.
+      expect(resumePendingSubmit()).toBe(false);
+      expect(clickSubmitMock).not.toHaveBeenCalled();
+
+      // The signal is remembered, then consumed exactly once.
+      expect(consumeLoadCompleteSignal()).toBe(true);
+      expect(consumeLoadCompleteSignal()).toBe(false);
+    });
+
+    it('reports no latched signal when nothing fired', () => {
+      expect(consumeLoadCompleteSignal()).toBe(false);
+    });
+
+    it('clearPendingSubmit resets the latch (scoped to one fill cycle)', () => {
+      resumePendingSubmit(); // latch it
+      clearPendingSubmit();
+      expect(consumeLoadCompleteSignal()).toBe(false);
+    });
   });
 
   it('fires the queued submit with the stored element and URL on resume', () => {

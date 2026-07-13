@@ -28,6 +28,7 @@ import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
+import tagIndexedDBError from '@background/functions/tagIndexedDBError.js';
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -46,13 +47,19 @@ const generateDefaultStorage = browserInfo => {
       }
 
       // Reset clears storage.local; the private key now lives in IndexedDB, so
-      // wipe it too to keep a regeneration fully clean.
-      return Promise.all([clearLocalStorage(), deletePrivateKey()]);
+      // wipe it too to keep a regeneration fully clean. A failing delete here means
+      // IndexedDB is unavailable — tag it as retryable rather than terminal.
+      return Promise.all([
+        clearLocalStorage(),
+        deletePrivateKey().catch(err => { throw tagIndexedDBError(err); })
+      ]);
     })
     .then(() => crypt.generateKeys())
     .then(keys => Promise.all([
       crypt.exportKey('spki', keys.publicKey),
-      savePrivateKey(keys.privateKey)
+      // Tag an IndexedDB private-key store failure so the catch can treat it as a
+      // transient/retryable condition rather than a terminal error-28.
+      savePrivateKey(keys.privateKey).catch(err => { throw tagIndexedDBError(err); })
     ]))
     .then(data => {
       const keys = {
@@ -106,6 +113,15 @@ const generateDefaultStorage = browserInfo => {
 
       if (hasKeys && !hasExtID && isRetryable(classifyError(err))) {
         return enqueueBrowserRegistration({ op: 'create', payload: s.browserInfo || browserInfo });
+      }
+
+      if (err?.isIndexedDBError) {
+        // The private-key store (IndexedDB) was unavailable — disabled by policy,
+        // transiently evicted, or over quota — so generation could not persist the
+        // key. Treat it like a transient failure rather than a terminal error-28
+        // flood: the next startup / verifyStorageIntegrity re-attempts generation,
+        // and a transient failure then succeeds. Surface once, at 'warning'.
+        return storeLog('warning', 28, err, 'generateDefaultStorage - IndexedDB unavailable, will retry on next startup');
       }
 
       return storeLog('error', 28, err, 'generateDefaultStorage');

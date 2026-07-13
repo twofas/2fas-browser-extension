@@ -21,48 +21,14 @@ import browser from 'webextension-polyfill';
 import config from '@/config.js';
 import closeRequest from '@background/functions/closeRequest.js';
 import TwoFasNotification from '@notification/index.js';
-import Crypt from '@background/functions/Crypt.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
-import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
 import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFrame.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
-
-/**
- * Checks if an error indicates a missing or invalid tab.
- * @param {Error} err - The error to check.
- * @returns {boolean} True if the error indicates a tab issue.
- */
-const isTabError = err => {
-  const message = err?.message || '';
-  return message.includes('No tab with id') || message.includes('Invalid tab ID');
-};
-
-/**
- * Decrypts an encrypted 2FA token using the extension's private key.
- * @param {string} encryptedToken - The encrypted token from the mobile app.
- * @param {CryptoKey} privateKey - The non-extractable RSA-OAEP private key from IndexedDB.
- * @returns {Promise<string>} The decrypted token.
- */
-const decryptToken = async (encryptedToken, privateKey) => {
-  const crypt = new Crypt();
-  const decrypted = await crypt.decrypt(privateKey, crypt.stringToArrayBuffer(encryptedToken));
-
-  return crypt.decodeText(decrypted);
-};
-
-/**
- * Checks if the device that sent the token is still paired.
- * @param {Object} storage - Storage object with extensionID and devices.
- * @param {string} deviceId - The device ID to verify.
- * @returns {Promise<boolean>} True if device exists.
- */
-const isDevicePaired = async (storage, deviceId) => {
-  const syncResult = await syncDevicesWithAPI(storage);
-  const devices = syncResult.storage?.devices || [];
-
-  return devices.some(device => device.device_id === deviceId);
-};
+import isTabError from '@background/functions/isTabError.js';
+import decryptToken from '@background/functions/decryptToken.js';
+import isDevicePaired from '@background/functions/isDevicePaired.js';
+import deliverTokenNotificationFallback from '@background/functions/deliverTokenNotificationFallback.js';
 
 /**
  * Handles a 2FA login request by decrypting the token and sending it to the content script.
@@ -113,32 +79,32 @@ const handleLoginRequest = async (tabID, data) => {
     // verified to still host the request's origin (the page navigated away).
     const targetFrameId = await resolveTokenTargetFrame(tabID);
 
-    if (targetFrameId === null) {
-      // No frame still hosts the origin that initiated the request — the page
-      // navigated away. Deliver the plaintext token nowhere (neither inputToken
-      // nor the fallback notification, both of which would expose it) and just
-      // close the stale backend request.
-      await storeLog('warning', 51, new Error('No safe target frame for token delivery'), 'handleLoginRequest');
-      return closeRequest(tabID, data.token_request_id);
+    let completed = false;
+
+    if (targetFrameId !== null) {
+      // A safe target frame exists — attempt the autofill there.
+      const response = await browser.tabs
+        .sendMessage(tabID, { action: 'inputToken', ...loginData }, { frameId: targetFrameId })
+        .catch(async err => {
+          // A failure to reach the specific recorded subframe is worth surfacing
+          // (it went away between request and delivery); top-frame failures are the
+          // ordinary "no content script on this page" case, so leave those silent.
+          if (targetFrameId !== 0) {
+            await storeLog('warning', 50, err, 'handleLoginRequest - inputToken delivery to recorded frame failed');
+          }
+
+          return false;
+        });
+
+      completed = response?.status === 'completed';
     }
 
-    const response = await browser.tabs
-      .sendMessage(tabID, { action: 'inputToken', ...loginData }, { frameId: targetFrameId })
-      .catch(async err => {
-        // A failure to reach the specific recorded subframe is worth surfacing
-        // (it went away between request and delivery); top-frame failures are the
-        // ordinary "no content script on this page" case, so leave those silent.
-        if (targetFrameId !== 0) {
-          await storeLog('warning', 50, err, 'handleLoginRequest - inputToken delivery to recorded frame failed');
-        }
-
-        return false;
-      });
-
-    const completed = response?.status === 'completed';
-
+    // Whenever the token wasn't autofilled — no safe target frame (the recorded
+    // sub-frame navigated away, Z2), or the fill did not complete — surface the
+    // token so the user can copy it, but only after re-validating the top frame
+    // (Z1) and with a native-notification last resort (N4).
     if (!completed) {
-      await browser.tabs.sendMessage(tabID, { action: 'showTokenNotification', token, token_request_id: data.token_request_id }, { frameId: 0 }).catch(() => {});
+      await deliverTokenNotificationFallback(tabID, token, data.token_request_id);
     }
 
     await closeRequest(tabID, data.token_request_id);
