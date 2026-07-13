@@ -101,7 +101,7 @@
   "dependencies": {
     "@babel/runtime": "^8.0.0",
     "qrcode": "^1.5.3",
-    "slim-select": "^3.6.1",
+    "slim-select": "^4.0.4",
     "uuid": "^14.0.1"
   }
 }

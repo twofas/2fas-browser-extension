@@ -55,7 +55,8 @@ const setIconSelect = async () => {
     ],
     settings: {
       showSearch: false,
-      closeOnSelect: true
+      closeOnSelect: true,
+      modal: 'off'
     },
     events: {
       afterChange: async item => {
