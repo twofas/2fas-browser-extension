@@ -17,22 +17,140 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global Event, KeyboardEvent, InputEvent */
-import runTasksWithDelay from '@partials/runTasksWithDelay.js';
+/* global Event, KeyboardEvent, InputEvent, DataTransfer, ClipboardEvent */
+import wait from '@partials/wait.js';
 import getTabData from '@content/functions/getTabData.js';
-import clickSubmit from '@content/functions/clickSubmit.js';
+import { setPendingSubmit, resumePendingSubmit, clearPendingSubmit, consumeLoadCompleteSignal } from '@content/functions/pendingSubmit.js';
 import clearAfterInputToken from '@content/functions/clearAfterInputToken.js';
+import setNativeValue from '@content/functions/setNativeValue.js';
+import detectOtpInputs, { isContentEditableTarget } from '@content/functions/detectOtpInputs.js';
 import { getDeepActiveElement } from '@content/functions/shadowDomUtils.js';
 
-const KEYSTROKE_DELAY_MS = 150;
+// Base cadence between keystrokes — fast enough to feel instant, still slow
+// enough for per-character validators (U3). The rise below is the exception.
+const KEYSTROKE_DELAY_MS = 40;
+// Applied only to segmented OTP widgets (the "6 boxes" pattern), where focus
+// moves box-to-box between digits and the widget may need time to re-render.
+const SEGMENTED_ADVANCE_DELAY_MS = 150;
+const PASTE_SETTLE_MS = 120;
 
 /**
- * Dispatches keyboard events to simulate typing a single digit.
+ * Checks whether an element is a native input/textarea (a valid keystroke target).
+ * @param {Element} element - Element to check
+ * @returns {boolean} True for input/textarea
+ */
+const isFillableInput = element => {
+  const nodeName = element?.nodeName?.toLowerCase();
+  return nodeName === 'input' || nodeName === 'textarea';
+};
+
+/**
+ * Picks the pause before the next keystroke. Fast by default; rises only for
+ * segmented OTP widgets, where focus moves box-to-box and the widget may need
+ * time to re-render between digits (U3 adaptive rhythm).
+ * @param {boolean} isSegmented - Whether the fill target is a segmented OTP group
+ * @returns {number} Delay in milliseconds before the next keystroke
+ */
+const keystrokeDelay = isSegmented => (isSegmented ? SEGMENTED_ADVANCE_DELAY_MS : KEYSTROKE_DELAY_MS);
+
+/**
+ * Reads the current text of a fill target (value or, for contenteditable, textContent).
+ * @param {Element} element - Element to read
+ * @returns {string} Current text
+ */
+const getElementText = element => {
+  if (!element) {
+    return '';
+  }
+
+  if (isContentEditableTarget(element)) {
+    return element.textContent || '';
+  }
+
+  return element.value || '';
+};
+
+/**
+ * Normalizes a code for comparison (drops spaces and dashes used by formatters).
+ * @param {string} value - Value to normalize
+ * @returns {string} Normalized value
+ */
+const normalizeCode = value => (value || '').replace(/[\s-]/g, '');
+
+/**
+ * Verifies the token has actually landed in the target(s) — handles a single
+ * field, a segmented group (concatenated boxes), and contenteditable.
+ * @param {{mode: string, boxes: Element[]}} group - Detected target group
+ * @param {string} token - Expected token
+ * @returns {boolean} True if the filled value matches the token
+ */
+const isTokenFilled = (group, token) => {
+  const expected = normalizeCode(token);
+
+  if (!expected) {
+    return false;
+  }
+
+  if (group.mode === 'segmented') {
+    const values = group.boxes.map(element => normalizeCode(getElementText(element)));
+
+    if (values.join('') !== expected) {
+      return false;
+    }
+
+    // Guard against the whole code piled into one box (a widget that did not
+    // auto-advance): require it to be genuinely distributed, one char per box,
+    // so auto-submit never fires on a malformed fill.
+    const filledBoxes = values.filter(value => value.length > 0);
+
+    return filledBoxes.length === expected.length && filledBoxes.every(value => value.length === 1);
+  }
+
+  return normalizeCode(getElementText(group.boxes[0])) === expected;
+};
+
+/**
+ * Clears a single fill target and notifies frameworks of the change.
+ * @param {Element} element - Element to clear
+ */
+const clearField = element => {
+  if (!element) {
+    return;
+  }
+
+  try {
+    if (isContentEditableTarget(element)) {
+      element.textContent = '';
+    } else {
+      setNativeValue(element, '');
+    }
+
+    element.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+      inputType: 'deleteContentBackward',
+      which: 0
+    }));
+  } catch {
+    // Best-effort clear; ignore elements that reject programmatic mutation.
+  }
+};
+
+/**
+ * Clears every box of a detected group.
+ * @param {{boxes: Element[]}} group - Detected target group
+ */
+const clearGroup = group => group.boxes.forEach(clearField);
+
+/**
+ * Dispatches keyboard + input events for a single digit and sets the element's
+ * value through the native prototype setter (so React-controlled fields update).
  * @param {HTMLElement} element - Target element for the events
  * @param {string} digit - Single digit character to type
  * @param {number} keyCode - Key code for the digit (48-57 for 0-9)
+ * @param {string} valueForElement - The full value the element should hold afterwards
  */
-const dispatchKeystrokeEvents = (element, digit, keyCode) => {
+const dispatchKeystrokeEvents = (element, digit, keyCode, valueForElement) => {
   const keyboardEventOptions = {
     bubbles: true,
     cancelable: true,
@@ -51,13 +169,7 @@ const dispatchKeystrokeEvents = (element, digit, keyCode) => {
   element.dispatchEvent(new KeyboardEvent('keydown', keyboardEventOptions));
   element.dispatchEvent(new KeyboardEvent('keypress', { ...keyboardEventOptions, charCode: keyCode }));
 
-  const inputType = element.type?.toLowerCase();
-
-  if (inputType === 'number') {
-    element.value += Number(digit);
-  } else {
-    element.value += digit;
-  }
+  setNativeValue(element, valueForElement);
 
   element.dispatchEvent(new InputEvent('input', {
     bubbles: true,
@@ -72,9 +184,225 @@ const dispatchKeystrokeEvents = (element, digit, keyCode) => {
 };
 
 /**
- * Inputs a 2FA token into the specified input element by simulating keystrokes.
+ * Decides whether to attempt a paste-based fill before keystroke simulation.
+ * Paste only helps managed widgets (segmented groups, contenteditable editors,
+ * or single inputs flagged with one-time-code); a plain input gains nothing and
+ * would just pay the settle delay, so type into it directly.
+ * @param {{mode: string, boxes: Element[]}} group - Detected target group
+ * @returns {boolean} True if a paste attempt is worthwhile
+ */
+const shouldTryPaste = group => {
+  if (group.mode === 'segmented' || group.mode === 'contenteditable') {
+    return true;
+  }
+
+  const target = group.boxes[0];
+  const autocomplete = (target?.getAttribute?.('autocomplete') || '').toLowerCase();
+
+  return autocomplete.includes('one-time-code');
+};
+
+/**
+ * Attempts to fill the token by dispatching a synthetic paste carrying the full
+ * code, letting the widget's own paste handler distribute it (the robust path
+ * for segmented "6 boxes" components). Returns whether the token actually landed.
+ * @param {{mode: string, boxes: Element[]}} group - Detected target group
+ * @param {string} token - Token to paste
+ * @returns {Promise<boolean>} True if verified filled after the paste
+ */
+const tryPasteFill = async (group, token) => {
+  const target = group.boxes[0];
+
+  if (!target) {
+    return false;
+  }
+
+  try {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text/plain', token);
+
+    target.focus();
+    target.dispatchEvent(new ClipboardEvent('paste', {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: dataTransfer
+    }));
+  } catch {
+    return false;
+  }
+
+  await wait(PASTE_SETTLE_MS);
+
+  return isTokenFilled(group, token);
+};
+
+/**
+ * Writes a token into a contenteditable target (best-effort, single pass).
+ * @param {HTMLElement} element - Contenteditable element
+ * @param {string} token - Token to write
+ */
+const writeContentEditable = (element, token) => {
+  try {
+    element.focus();
+    element.dispatchEvent(new InputEvent('beforeinput', {
+      bubbles: true,
+      cancelable: true,
+      data: token,
+      inputType: 'insertText'
+    }));
+    element.textContent = token;
+    element.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+      data: token,
+      inputType: 'insertText'
+    }));
+  } catch {
+    // Best-effort; contenteditable editors vary widely.
+  }
+};
+
+/**
+ * Fills a segmented OTP group by writing each digit DIRECTLY into its box
+ * (group.boxes[i]) rather than relying on the widget to auto-advance focus. This
+ * is the robust path for widgets that do not move focus on synthetic events, and
+ * it is inherently safe: it only ever touches a detected group box, so a digit can
+ * never spill into an unrelated field (T5's overriding constraint). Surplus digits
+ * (more than there are boxes) are dropped — isTokenFilled then reports the fill
+ * unverified and the copy fallback kicks in, which is the safe outcome.
+ * @param {{boxes: Element[]}} group - Detected segmented group
+ * @param {string} token - Token to type
+ * @returns {Promise<void>}
+ */
+const typeSegmentedByBox = async (group, token) => {
+  const { boxes } = group;
+
+  for (let i = 0; i < token.length; i++) {
+    const box = boxes[i];
+
+    if (!box || !isFillableInput(box)) {
+      continue;
+    }
+
+    box.focus();
+    const digit = token[i];
+    dispatchKeystrokeEvents(box, digit, 48 + Number(digit), digit);
+
+    if (i < token.length - 1) {
+      await wait(keystrokeDelay(true));
+    }
+  }
+};
+
+/**
+ * Fills the token by simulating keystrokes. Segmented groups are written box-by-box
+ * (see typeSegmentedByBox); a single field follows focus but only ever writes into
+ * the anchor element — if focus escapes to an unrelated/non-input element the digit
+ * is not written there (prevents overwriting e.g. a password field the user clicked
+ * mid-fill).
+ * @param {HTMLElement} inputElement - The anchor (tagged) element
+ * @param {{mode: string, boxes: Element[]}} group - Detected target group
+ * @param {string} token - Token to type
+ * @returns {Promise<void>}
+ */
+const simulateTyping = async (inputElement, group, token) => {
+  if (group.mode === 'contenteditable') {
+    writeContentEditable(inputElement, token);
+    return;
+  }
+
+  if (group.mode === 'segmented') {
+    await typeSegmentedByBox(group, token);
+    return;
+  }
+
+  // Single field (segmented is handled above by typeSegmentedByBox): type into the
+  // anchor only, at the fast single-field cadence (U3).
+  inputElement.focus();
+
+  let accumulated = '';
+
+  // Writes one digit into the anchor, skipping the keystroke if focus escaped to a
+  // different element we must not touch (R10 abort guard) and the anchor can't be
+  // refocused.
+  const typeDigit = digit => {
+    const keyCode = 48 + Number(digit);
+    let activeElement = getDeepActiveElement();
+
+    if (activeElement !== inputElement) {
+      if (isFillableInput(inputElement)) {
+        inputElement.focus();
+        activeElement = inputElement;
+      } else {
+        return;
+      }
+    }
+
+    accumulated += digit;
+    dispatchKeystrokeEvents(activeElement, digit, keyCode, accumulated);
+  };
+
+  for (let i = 0; i < token.length; i++) {
+    typeDigit(token[i]);
+
+    // The final keystroke needs no trailing wait.
+    if (i < token.length - 1) {
+      await wait(keystrokeDelay(false));
+    }
+  }
+};
+
+/**
+ * Decides what to do with auto-submit once the token has landed (U5 deferred
+ * auto-submit). The submit is queued BEFORE the getTabData() round-trip, because
+ * that await is a real interleaving point: if the page reaches 'complete' during
+ * it, the background broadcasts 'pageLoadComplete' and the content script runs
+ * resumePendingSubmit() synchronously — so the queue must already be set, or the
+ * signal is consumed against an empty queue and the submit is lost. Once the
+ * status is known, a loaded page is replayed-and-cleared immediately (idempotent
+ * if 'pageLoadComplete' already did it during the await — the queue is then empty
+ * and resume is a no-op, so it never double-submits); a still-loading page is
+ * left queued for the pageLoadComplete handler.
+ * @param {HTMLElement} inputElement - The filled input element.
+ * @param {string} siteURL - URL of the current site.
+ * @param {boolean} verified - Whether the token was confirmed filled.
+ * @returns {Promise<void>}
+ */
+const scheduleAutoSubmit = async (inputElement, siteURL, verified) => {
+  if (verified) {
+    setPendingSubmit(inputElement, siteURL);
+
+    // A 'pageLoadComplete' that fired mid-fill (before the queue was armed) is
+    // latched; honor it now so the deferred submit is not lost to that race.
+    if (consumeLoadCompleteSignal()) {
+      resumePendingSubmit();
+      return;
+    }
+  }
+
+  let status;
+
+  try {
+    const tab = await getTabData();
+    status = tab?.status;
+  } catch {
+    // Tab status is unknowable — drop the queued submit rather than auto-submit
+    // blind (preserves the prior "no auto-submit on getTabData failure" behavior).
+    clearPendingSubmit();
+    return;
+  }
+
+  if (status === 'complete') {
+    resumePendingSubmit();
+  }
+};
+
+/**
+ * Inputs a 2FA token into the resolved target. Tries a paste-based fill first
+ * for managed widgets, falls back to keystroke simulation, verifies the result,
+ * and only then (and only when verified) triggers auto-submit.
  * @param {Object} request - Request object containing the token
- * @param {HTMLElement} inputElement - Target input element
+ * @param {HTMLElement} inputElement - Target input element (tagged/focused/fallback)
  * @param {string} siteURL - URL of the current site
  * @returns {Promise<Object>} Result object with status and url
  */
@@ -87,42 +415,58 @@ const inputToken = async (request, inputElement, siteURL) => {
     return { status: 'emptyInput' };
   }
 
-  const tasks = [];
+  // A new fill supersedes any auto-submit still queued from a previous request in
+  // this frame, so a stale fill can never replay — including if 'pageLoadComplete'
+  // arrives while this new fill is still typing (U5).
+  clearPendingSubmit();
 
-  inputElement.value = '';
-  inputElement.focus();
+  const token = String(request.token);
+  const group = detectOtpInputs(inputElement);
 
-  for (let i = 0; i < request.token.length; i++) {
-    tasks.push(() => {
-      const digit = request.token[i];
-      const keyCode = 48 + Number(digit);
-      const activeElement = getDeepActiveElement();
+  let filled = false;
 
-      if (activeElement !== inputElement) {
-        activeElement.value = '';
-      }
-
-      dispatchKeystrokeEvents(activeElement, digit, keyCode);
-    });
+  // R6: try paste first for managed widgets, then fall back to simulation.
+  if (shouldTryPaste(group)) {
+    try {
+      filled = await tryPasteFill(group, token);
+    } catch {
+      filled = false;
+    }
   }
 
-  await runTasksWithDelay(tasks, KEYSTROKE_DELAY_MS);
+  if (!filled) {
+    clearGroup(group);
 
-  let tab = {};
-
-  try {
-    tab = await getTabData();
-  } catch {
-    return { status: 'completed', url: siteURL };
+    try {
+      await simulateTyping(inputElement, group, token);
+    } catch {
+      clearAfterInputToken(inputElement);
+      return { status: 'error', url: siteURL };
+    }
   }
 
-  if (tab?.status === 'complete') {
-    clickSubmit(inputElement, siteURL);
+  // Managed rich-text editors (Draft.js / Slate on contenteditable) reconcile
+  // asynchronously and may reject or replace a programmatically-set value AFTER it
+  // lands. Let that settle before verifying, so a value the editor discards is
+  // reported 'unverified' (→ copy-to-clipboard fallback) rather than a false
+  // 'completed' that leaves the user with an empty field and no token.
+  if (group.mode === 'contenteditable') {
+    await wait(PASTE_SETTLE_MS);
   }
+
+  // R10: confirm the token landed before auto-submitting (handles 1 and 6 fields).
+  const verified = isTokenFilled(group, token);
+
+  await scheduleAutoSubmit(inputElement, siteURL, verified);
 
   clearAfterInputToken(inputElement);
 
-  return { status: 'completed', url: siteURL };
+  // Report the verification outcome, not just "did not throw": handleLoginRequest
+  // only shows the copy-to-clipboard fallback notification when the status is not
+  // 'completed', so a silently-failed fill must NOT claim success — otherwise the
+  // user gets neither a filled field nor a way to read the token.
+  return { status: verified ? 'completed' : 'unverified', url: siteURL };
 };
 
+export { keystrokeDelay, scheduleAutoSubmit };
 export default inputToken;

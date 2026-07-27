@@ -19,7 +19,7 @@
 
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { notification, inputToken, getTokenInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain } from '@content/functions';
+import { notification, inputToken, getTokenInput, findFallbackOtpInput, loadFonts, isInFrame, getActiveElement, tokenNotification, checkCrossDomain, resumePendingSubmit } from '@content/functions';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -65,17 +65,23 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
           return;
         }
 
-        if (!sessionTabData || !sessionTabData[`tabData-${tabData?.id}`] || sessionTabData[`tabData-${tabData?.id}`]?.requestID !== request.token_request_id) {
+        const tabRecord = sessionTabData?.[`tabData-${tabData?.id}`];
+        const hasTabContext = Boolean(tabData?.id) && Boolean(sessionTabData);
+        const isValidRequest = hasTabContext && tabRecord?.requestID === request.token_request_id;
+
+        if (!isValidRequest) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
             return;
           }
 
-          sendResponse({
-            status: 'notification',
-            title: config.Texts.Error.OldRequest.Title,
-            message: config.Texts.Error.OldRequest.Message
-          });
+          // The recorded request context is gone (superseded request, or getTabData
+          // failed transiently). The token is already decrypted, so it must still
+          // reach the user: return a non-'completed' status and let the background's
+          // uniform fallback show the copy-to-clipboard token notification (the old
+          // {status:'notification'} error shape was dead — the background never read
+          // its title/message, it only reacts to a non-'completed' status).
+          sendResponse({ status: 'ok' });
           return;
         }
 
@@ -90,16 +96,22 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
           }
         }
 
+        // T8: the tagged node was removed (SPA re-render between request and
+        // delivery) or the OTP field only appeared after the request. Re-search for
+        // a fresh high-confidence target at delivery time before giving up.
+        if (!tokenInput) {
+          tokenInput = findFallbackOtpInput();
+        }
+
         if (!tokenInput) {
           if (isInFrame()) {
             sendResponse({ status: 'omitted' });
             return;
           }
 
-          if (!lastFocusedInput) {
-            tokenNotification(request.token);
-          }
-
+          // No fillable target anywhere in the top frame: the decrypted token must
+          // still reach the user, so always show the copy-to-clipboard notification.
+          tokenNotification(request.token, request.token_request_id);
           sendResponse({ status: 'ok' });
           return;
         }
@@ -135,6 +147,9 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
     }
 
     case 'pageLoadComplete': {
+      // The page finished loading after a token was filled mid-load: replay the
+      // auto-submit that inputToken deferred (U5 deferred auto-submit).
+      resumePendingSubmit();
       sendResponse({ status: 'ok' });
       break;
     }
@@ -153,7 +168,7 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
 
     case 'showTokenNotification': {
       loadFonts();
-      tokenNotification(request.token);
+      tokenNotification(request.token, request.token_request_id);
       sendResponse({ status: 'ok' });
       break;
     }

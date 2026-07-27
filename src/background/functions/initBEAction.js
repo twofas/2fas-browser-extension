@@ -66,12 +66,19 @@ const initBEAction = async (url, tab, storageData) => {
   }
 
   if (condition) {
+    const previousLastAction = tabData.lastAction;
+    let pushRequested = false;
+
     tabData.lastAction = now;
+    // `url` here is already an origin (the caller passes url.origin); store it under
+    // an honest name so same-origin comparisons downstream are unambiguous.
+    tabData.origin = url;
 
     try {
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });
 
       const requestData = await new SDK().request2FAToken(storage.extensionID, url);
+      pushRequested = true;
       tabData.requestID = requestData.token_request_id;
 
       await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData });
@@ -81,9 +88,9 @@ const initBEAction = async (url, tab, storageData) => {
         timeout: true,
         login: true,
         requestID: tabData.requestID,
+        origin: url,
         notifications: {
-          timeout: config.Texts.Error.PushExpired(url),
-          error: config.Texts.Error.General
+          timeout: config.Texts.Error.PushExpired(url)
         }
       });
 
@@ -92,7 +99,17 @@ const initBEAction = async (url, tab, storageData) => {
       const elements = await sendMessageToAllFrames(tab.id, { action: 'getActiveElement' });
       await handleFrontElement(elements, tab.id, sessionData);
     } catch (err) {
-      await storeLog('error', 5, err, tabData.url);
+      if (!pushRequested) {
+        // The push request never reached the backend, so keeping `lastAction`
+        // would only block a legitimate retry as "TooSoon". Restore the previous
+        // timestamp so the next attempt is allowed straight away. When the POST
+        // did succeed (a later step failed), the throttle stays to avoid asking
+        // the backend for a duplicate token.
+        tabData.lastAction = previousLastAction;
+        await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData }).catch(() => {});
+      }
+
+      await storeLog('error', 5, err, url);
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab.id);
     } finally {
       storage = null;

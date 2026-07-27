@@ -17,13 +17,105 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global fetch */
+/* global fetch, AbortController, Response, setTimeout, clearTimeout */
+
+/**
+ * Hard per-request timeout (ms) for the runtime SDK calls (token flow, device
+ * list, log upload). A hung connection must reject deterministically instead of
+ * keeping a promise — and the MV3 service worker — alive indefinitely.
+ * Aligned with REGISTRATION_TIMEOUT_MS used by the durable-registration flow.
+ */
+const DEFAULT_TIMEOUT_MS = 15000;
+
+/**
+ * Backoff delays (ms) between retries of the idempotent GET getAllPairedDevices.
+ * Its length is the retry count (2 retries → at most 3 attempts).
+ */
+const PAIRED_DEVICES_RETRY_BACKOFF_MS = [1000, 2000];
 
 /**
  * SDK class for communicating with the 2FAS REST API.
  */
 class SDK {
   REST_API_URL = process.env.API_URL;
+
+  /**
+   * Performs a fetch with an optional hard timeout.
+   * When `timeoutMs` is falsy the call behaves exactly like a bare fetch (no
+   * AbortController), preserving the original behaviour for user-initiated calls.
+   * When set, a hung connection is aborted so the promise rejects deterministically
+   * (surfaced as an AbortError, classified as a transient network failure).
+   *
+   * @param {string} url - The request URL.
+   * @param {Object} options - fetch() options.
+   * @param {number} [timeoutMs] - Abort the request after this many milliseconds.
+   * @returns {Promise<Response>}
+   */
+  fetchWithTimeout (url, options, timeoutMs) {
+    if (!timeoutMs) {
+      return fetch(url, options);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    return fetch(url, { ...options, signal: controller.signal })
+      .finally(() => clearTimeout(timer));
+  }
+
+  /**
+   * Whether a raw fetch rejection is worth retrying for an idempotent request.
+   * Network/abort errors (rejection is an Error, no Response) are transient; among
+   * HTTP errors (rejection is the Response, from onSuccess) only 408/425/429/5xx are.
+   * Everything else (404 and other deterministic 4xx) must fail fast.
+   *
+   * @param {Response|Error} err - The raw rejection.
+   * @returns {boolean}
+   */
+  isRetryableError (err) {
+    if (err instanceof Response) {
+      const { status } = err;
+      return status === 408 || status === 425 || status === 429 || status >= 500;
+    }
+
+    // A malformed-body parse failure (SyntaxError from onSuccess) is deterministic —
+    // the same bad body will fail identically on retry, so fail fast instead of
+    // burning the backoff window. Genuine network/abort errors fall through to retry.
+    if (err instanceof SyntaxError) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Performs a request with a hard timeout and bounded retries on transient
+   * failures (network/abort errors and retryable server statuses), pausing for
+   * the supplied backoff delay before each retry. Exhausted retries and
+   * non-retryable rejections are normalized through onError.
+   * Use ONLY for idempotent requests (GET) — a retried POST could double-act.
+   *
+   * @param {string} url - The request URL.
+   * @param {Object} options - fetch() options.
+   * @param {Object} [settings] - Retry settings.
+   * @param {number} [settings.timeoutMs] - Per-attempt timeout.
+   * @param {number[]} [settings.backoffMs] - Delay before each retry; its length is the retry count.
+   * @returns {Promise<Object>}
+   */
+  fetchWithRetry (url, options, { timeoutMs, backoffMs = [] } = {}) {
+    const attempt = i => this.fetchWithTimeout(url, options, timeoutMs)
+      .then(this.onSuccess)
+      .catch(err => {
+        if (i < backoffMs.length && this.isRetryableError(err)) {
+          return new Promise(resolve => setTimeout(resolve, backoffMs[i]))
+            .then(() => attempt(i + 1));
+        }
+
+        return this.onError(err);
+      });
+
+    return attempt(0);
+  }
 
   /**
    * Handles successful API responses.
@@ -113,17 +205,19 @@ class SDK {
   /**
    * Creates a new browser extension instance on the server.
    * @param {Object} browserInfo - Browser information object
+   * @param {Object} [options] - Optional settings.
+   * @param {number} [options.timeoutMs] - Abort the request after this many milliseconds.
    * @returns {Promise<Object>} Promise resolving to the created extension data
    */
-  createExtensionInstance (browserInfo) {
-    return fetch(`${this.REST_API_URL}/browser_extensions`, {
+  createExtensionInstance (browserInfo, { timeoutMs } = {}) {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify(browserInfo)
-    }).then(this.onSuccess).catch(this.onError);
+    }, timeoutMs).then(this.onSuccess).catch(this.onError);
   }
 
   /**
@@ -131,9 +225,11 @@ class SDK {
    * Server requires extension_id to be a valid UUID4 and name to be non-blank.
    * @param {string} extID - The extension ID (must be a UUID4)
    * @param {Object} browserInfo - Updated browser information ({ name, browser_name, browser_version })
+   * @param {Object} [options] - Optional settings.
+   * @param {number} [options.timeoutMs] - Abort the request after this many milliseconds.
    * @returns {Promise<Object>} Promise resolving to the updated extension data
    */
-  updateBrowserExtension (extID, browserInfo) {
+  updateBrowserExtension (extID, browserInfo, { timeoutMs } = {}) {
     if (!extID || typeof extID !== 'string') {
       return Promise.reject(new Error('updateBrowserExtension: missing or invalid extID'));
     }
@@ -146,14 +242,14 @@ class SDK {
       return Promise.reject(new Error('updateBrowserExtension: name is required and must be non-blank'));
     }
 
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'PUT',
       body: JSON.stringify(browserInfo)
-    }).then(this.onSuccess).catch(this.onError);
+    }, timeoutMs).then(this.onSuccess).catch(this.onError);
   }
 
   /**
@@ -162,13 +258,13 @@ class SDK {
    * @returns {Promise<Object[]>} Promise resolving to array of paired devices
    */
   getAllPairedDevices (extID) {
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/devices`, {
+    return this.fetchWithRetry(`${this.REST_API_URL}/browser_extensions/${extID}/devices`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'GET'
-    }).then(this.onSuccess).catch(this.onError);
+    }, { timeoutMs: DEFAULT_TIMEOUT_MS, backoffMs: PAIRED_DEVICES_RETRY_BACKOFF_MS });
   }
 
   /**
@@ -178,13 +274,13 @@ class SDK {
    * @returns {Promise<Object>} Promise resolving when device is removed
    */
   removePairedDevice (extID, deviceID) {
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/devices/${deviceID}`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}/devices/${deviceID}`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'DELETE'
-    }).then(this.onSuccess).catch(this.onError);
+    }, DEFAULT_TIMEOUT_MS).then(this.onSuccess).catch(this.onError);
   }
 
   /**
@@ -194,14 +290,14 @@ class SDK {
    * @returns {Promise<Object>} Promise resolving to the request data
    */
   request2FAToken (extID, domain) {
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/commands/request_2fa_token`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}/commands/request_2fa_token`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify({ domain })
-    }).then(this.onSuccess).catch(this.onError);
+    }, DEFAULT_TIMEOUT_MS).then(this.onSuccess).catch(this.onError);
   }
 
   /**
@@ -214,14 +310,14 @@ class SDK {
   close2FARequest (extID, requestID, status = true) {
     const data = { status: status ? 'completed' : 'terminated' };
 
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/2fa_requests/${requestID}/commands/close_2fa_request`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}/2fa_requests/${requestID}/commands/close_2fa_request`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify(data)
-    }).then(this.onSuccess).catch(this.ignoreError);
+    }, DEFAULT_TIMEOUT_MS).then(this.onSuccess).catch(this.ignoreError);
   }
 
   /**
@@ -239,14 +335,14 @@ class SDK {
       return Promise.reject(new Error('Invalid log level'));
     }
 
-    return fetch(`${this.REST_API_URL}/browser_extensions/${extID}/commands/store_log`, {
+    return this.fetchWithTimeout(`${this.REST_API_URL}/browser_extensions/${extID}/commands/store_log`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify({ level, message, context: JSON.stringify(context) })
-    }).then(this.onSuccess).catch(this.ignoreError);
+    }, DEFAULT_TIMEOUT_MS).then(this.onSuccess).catch(this.ignoreError);
   }
 
   /**

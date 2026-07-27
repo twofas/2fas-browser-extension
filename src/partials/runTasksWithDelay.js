@@ -26,9 +26,12 @@ import wait from './wait.js';
  * @returns {Promise<void>}
  */
 const runTasksWithDelay = async (tasks, delayTime) => {
-  for (const task of tasks) {
-    await task();
-    await wait(delayTime);
+  for (let i = 0; i < tasks.length; i++) {
+    await tasks[i]();
+
+    if (i < tasks.length - 1) {
+      await wait(delayTime);
+    }
   }
 };
 

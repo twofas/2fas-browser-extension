@@ -38,6 +38,75 @@ const logURL = url => {
     .replaceAll('.', '*');
 };
 
+// Matches any `scheme://…` sequence (http, https, ws, wss, ftp,
+// chrome-extension, moz-extension, …) so URLs embedded anywhere in error
+// data — messages, stack traces, event targets — can be masked.
+const URL_REGEX = /[a-z][a-z0-9.+-]*:\/\/\S+/gi;
+const MAX_SANITIZE_DEPTH = 6;
+
+/**
+ * Recursively masks every URL found within a value before it is sent to the
+ * backend. Strings have their embedded URLs replaced via {@link logURL};
+ * arrays, plain objects and Error objects are traversed (Error message/stack
+ * are non-enumerable, so they are extracted explicitly). Other primitives are
+ * returned unchanged. Cyclic references, excessive depth and throwing getters
+ * are all guarded so a malformed error object can never hang, leak through an
+ * unvisited branch, or blow up the logger.
+ * @param {*} value - The value to sanitize.
+ * @param {number} [depth=0] - Current recursion depth.
+ * @param {WeakSet} [seen=new WeakSet()] - Objects already visited.
+ * @return {*} A sanitized copy of the value.
+ */
+const sanitizeLogValue = (value, depth = 0, seen = new WeakSet()) => {
+  if (typeof value === 'string') {
+    return value.replace(URL_REGEX, match => logURL(match));
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  // Beyond the depth limit, drop the sub-tree to a placeholder rather than
+  // returning it raw — a raw object would carry unmasked URL strings to the
+  // backend without ever being visited.
+  if (depth >= MAX_SANITIZE_DEPTH) {
+    return Array.isArray(value) ? '[array]' : '[object]';
+  }
+
+  if (seen.has(value)) {
+    return '[Circular]';
+  }
+
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    return value.map(item => sanitizeLogValue(item, depth + 1, seen));
+  }
+
+  if (value instanceof Error) {
+    return {
+      name: value.name || '',
+      message: sanitizeLogValue(value.message || '', depth + 1, seen),
+      stack: sanitizeLogValue(value.stack || '', depth + 1, seen),
+      cause: sanitizeLogValue(value.cause, depth + 1, seen)
+    };
+  }
+
+  const result = {};
+
+  for (const key of Object.keys(value)) {
+    // A property may be backed by a throwing getter; never let that escape
+    // storeLog, which is itself called from catch blocks across the codebase.
+    try {
+      result[key] = sanitizeLogValue(value[key], depth + 1, seen);
+    } catch {
+      result[key] = '[unserializable]';
+    }
+  }
+
+  return result;
+};
+
 /**
  * Checks if a log should be debounced based on logID and error message.
  * @param {number} logID - The log identifier.
@@ -136,9 +205,6 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   if (
-    (storage?.browserInfo?.browser_name === 'Firefox' && storage?.browserInfo?.browser_version === '105.0' && logID === 14) ||
-    (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107' && logID === 14) ||
-    (storage?.browserInfo?.browser_name === 'Chrome' && storage?.browserInfo?.browser_version === '107.0.0.0' && logID === 14) ||
     (c?.errorInfo?.message?.includes('FILE_ERROR_NO_SPACE')) ||
     (c?.errorInfo?.status === 407) ||
     (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
@@ -171,6 +237,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   c.extensionVersion = config.ExtensionVersion;
   c.browserInfo = storage.browserInfo;
   c.url = logURL(url);
+  c.online = (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') ? navigator.onLine : null;
 
   if (!url.includes('http')) {
     if (typeof window !== 'undefined' && window?.location?.href) {
@@ -181,6 +248,8 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   }
 
   try {
+    m = sanitizeLogValue(m);
+    c.errorInfo = sanitizeLogValue(c.errorInfo);
     await new SDK().storeLog(storage.extensionID, level, m, c);
   } catch (err) {
     console.error('Failed to send log:', err);
@@ -192,3 +261,4 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
 };
 
 export default storeLog;
+export { logURL, sanitizeLogValue, shouldDebounce };

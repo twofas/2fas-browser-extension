@@ -36,7 +36,9 @@ const onTabRemoved = async tabID => {
     storage = await loadFromLocalStorage(['extensionID']);
     sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    await storeLog('error', 2, err, sessionData?.[`tabData-${tabID}`]?.url);
+    // `sessionData` is always null here (the load above threw) and onRemoved
+    // gives us no URL, so there is no tab URL context to log.
+    await storeLog('error', 2, err);
     storage = null;
     sessionData = null;
     return;
@@ -50,7 +52,7 @@ const onTabRemoved = async tabID => {
     try {
       await removeFromSessionStorage(`tabData-${tabID}`);
     } catch (err) {
-      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.url);
+      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.origin);
     }
   }
 

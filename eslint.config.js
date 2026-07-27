@@ -17,7 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-const path = require('node:path');
 const neostandard = require('neostandard');
 
 module.exports = [
@@ -36,25 +35,6 @@ module.exports = [
     languageOptions: {
       sourceType: 'module',
       ecmaVersion: 2022
-    },
-    settings: {
-      'import/resolver': {
-        alias: {
-          map: [
-            ['@', path.resolve(__dirname, 'src')],
-            ['@background', path.resolve(__dirname, 'src/background')],
-            ['@content', path.resolve(__dirname, 'src/content')],
-            ['@partials', path.resolve(__dirname, 'src/partials')],
-            ['@localStorage', path.resolve(__dirname, 'src/localStorage')],
-            ['@notification', path.resolve(__dirname, 'src/notification')],
-            ['@sdk', path.resolve(__dirname, 'src/sdk')],
-            ['@optionsPage', path.resolve(__dirname, 'src/optionsPage')],
-            ['@installPage', path.resolve(__dirname, 'src/installPage')],
-            ['@images', path.resolve(__dirname, 'src/images')]
-          ],
-          extensions: ['.js', '.json']
-        }
-      }
     },
     rules: {
       'no-tabs': 'off',

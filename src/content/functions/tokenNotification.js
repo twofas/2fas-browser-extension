@@ -19,30 +19,37 @@
 
 import config from '@/config.js';
 import isInFrame from '@content/functions/isInFrame.js';
+import copyToClipboard from '@content/functions/copyToClipboard.js';
+import mountTopLayer from '@content/functions/mountTopLayer.js';
+import storeLog from '@partials/storeLog.js';
 import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
 import iconSrc from '@images/notification-logo.svg';
 import copySrc from '@images/copy-icon.svg';
 import closeSrc from '@images/notification-close.svg';
 import S from '@/selectors.js';
 
-let lastTokenNotificationToken = null;
+let lastTokenNotificationRequestId = null;
 
 /**
  * Displays a notification with the 2FA token and a copy button.
  *
  * @param {string} token - The 2FA token to display
+ * @param {string} [tokenRequestId] - The unique request ID, used to deduplicate
+ *   the notification within a single request. TOTP values are time-based and
+ *   repeat across requests, so deduplicating by token value would suppress
+ *   legitimate re-requests of the same code.
  * @returns {boolean} False if running in a frame or duplicate, otherwise undefined
  */
-const tokenNotification = token => {
+const tokenNotification = (token, tokenRequestId) => {
   if (isInFrame()) {
     return false;
   }
 
-  if (token === lastTokenNotificationToken) {
+  if (tokenRequestId && tokenRequestId === lastTokenNotificationRequestId) {
     return false;
   }
 
-  lastTokenNotificationToken = token;
+  lastTokenNotificationRequestId = tokenRequestId;
 
   let n = {
     container: document.querySelector(S.notification.container),
@@ -84,8 +91,13 @@ const tokenNotification = token => {
 
   if (!n.container) {
     n.container = createElement('div', 'twofas-be-notifications');
-    window.top.document.body.appendChild(n.container);
   }
+
+  // Mount (or re-mount) the container into the top layer so the copy button is
+  // never hidden behind a modal <dialog>, a z-index:2147483647 overlay or fullscreen
+  // (Z6/N3): inside an open modal dialog / fullscreen element, else as a non-blocking
+  // popover in the body.
+  mountTopLayer(n.container);
 
   n.notification = createElement('div', 'twofas-be-notification');
   n.closeBtn = createElement('button', 'twofas-be-notification-close');
@@ -110,12 +122,25 @@ const tokenNotification = token => {
   n.tokenBox = createElement('div', 'twofas-be-notification-token-box');
   n.tokenText = createTextElement('p', token, 'twofas-be-notification-token-box-text');
   n.tokenButton = createElement('button', 'twofas-be-notification-token-box-copy-button');
-  n.tokenButton.addEventListener('click', () => {
-    navigator.clipboard.writeText(token);
-    n.tokenButtonText.innerText = config.Texts.Token.Copied;
+  n.tokenButton.addEventListener('click', async () => {
+    // Copy robustly (Z5/N1/N2): feature-detect + await + execCommand fallback so the
+    // button works on http:// (where navigator.clipboard is undefined) and the
+    // "Copied" label appears ONLY on a real success, never on a silent rejection.
+    const copied = await copyToClipboard(token, n?.container);
+
+    if (!copied) {
+      await storeLog('warning', 59, new Error('Clipboard copy failed'), 'tokenNotification');
+      return;
+    }
+
+    if (n && n.tokenButtonText) {
+      n.tokenButtonText.textContent = config.Texts.Token.Copied;
+    }
 
     setTimeout(() => {
-      n.tokenButtonText.innerText = config.Texts.Token.Copy;
+      if (n && n.tokenButtonText) {
+        n.tokenButtonText.textContent = config.Texts.Token.Copy;
+      }
     }, 1000);
   });
   n.tokenButtonText = createTextElement('span', config.Texts.Token.Copy);

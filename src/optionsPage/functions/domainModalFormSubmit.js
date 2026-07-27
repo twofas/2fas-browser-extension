@@ -20,23 +20,11 @@
 /* global FormData */
 import browser from 'webextension-polyfill';
 import S from '@/selectors.js';
-import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
 import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
-
-/**
- * Validates if the provided string is a valid URL format.
- *
- * @param {string} urlString - The URL string to validate
- * @returns {boolean} True if the URL is valid, false otherwise
- */
-const isValidUrl = urlString => {
-  const urlRegex = /^(((http|https):\/\/|)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}(:[0-9]{1,5})?(\/.*)?)$/;
-  return urlRegex.test(urlString);
-};
+import validateExcludedDomain from '@optionsPage/functions/validateExcludedDomain.js';
 
 /**
  * Handles the domain modal form submission, validates input, and saves the excluded domain.
@@ -49,58 +37,32 @@ const domainModalFormSubmit = e => {
   e.stopPropagation();
 
   const data = new FormData(e.target);
-  const domain = data.get('domain').trim();
   const validation = document.querySelector(S.optionsPage.domainModal.validation);
+  const result = validateExcludedDomain(data.get('domain'));
 
-  if (!domain || domain.length <= 0) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainRequired') || 'Domain is required';
+  if (!result.valid) {
+    validation.innerText = browser.i18n.getMessage(result.messageKey) || result.messageFallback;
     return false;
   }
 
-  if (domain.length > 256) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainTooLong') || 'Domain is too long';
-    return false;
-  }
+  const url = result.domain;
 
-  if (!isValidUrl(domain)) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
-    return false;
-  }
-
-  const urlTemp = domain.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-  let url;
-
-  try {
-    const urlObj = new URL(`https://${urlTemp}`);
-    url = urlObj.hostname.replace(/^(www\.)?/, '').replace(/\/$/, '');
-  } catch (err) {
-    validation.innerText = browser.i18n.getMessage('optionsDomainIncorrect') || 'Domain is not correct';
-    return false;
-  }
-
-  return loadFromLocalStorage('autoSubmitExcludedDomains')
-    .then(storage => {
-      let autoSubmitExcludedDomains = storage?.autoSubmitExcludedDomains;
-
-      if (!autoSubmitExcludedDomains) {
-        autoSubmitExcludedDomains = [];
+  // The background owns the write and de-duplicates authoritatively; it reports
+  // `added:false` when the domain was already excluded. The list re-renders from
+  // the storage.onChanged listener.
+  return browser.runtime.sendMessage({ action: 'updateList', list: 'domains', op: 'add', value: url })
+    .then(res => {
+      if (!res || res.status !== 'ok') {
+        throw new Error('updateList add domain failed');
       }
 
-      if (autoSubmitExcludedDomains.includes(url)) {
+      if (!res.added) {
         validation.innerText = browser.i18n.getMessage('optionsDomainExists') || 'Domain exists on excluded list';
         return false;
       }
 
-      autoSubmitExcludedDomains.push(url);
-
-      return saveToLocalStorage({ autoSubmitExcludedDomains }, storage);
-    })
-    .then(res => {
-      if (res) {
-        generateDomainsList(res.autoSubmitExcludedDomains);
-        hideDomainModal();
-        TwoFasNotification.show(config.Texts.Success.DomainExcluded);
-      }
+      hideDomainModal();
+      return TwoFasNotification.show(config.Texts.Success.DomainExcluded);
     })
     .catch(async err => {
       await storeLog('error', 45, err, 'domainModalFormSubmit');

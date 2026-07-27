@@ -22,8 +22,13 @@ import browser from 'webextension-polyfill';
 import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
 import Crypt from '@background/functions/Crypt.js';
+import { savePrivateKey, deletePrivateKey } from '@background/functions/privateKeyStore.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
+import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
+import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
+import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
+import tagIndexedDBError from '@background/functions/tagIndexedDBError.js';
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -41,17 +46,24 @@ const generateDefaultStorage = browserInfo => {
         attempt = res.attempt;
       }
 
-      return clearLocalStorage();
+      // Reset clears storage.local; the private key now lives in IndexedDB, so
+      // wipe it too to keep a regeneration fully clean. A failing delete here means
+      // IndexedDB is unavailable — tag it as retryable rather than terminal.
+      return Promise.all([
+        clearLocalStorage(),
+        deletePrivateKey().catch(err => { throw tagIndexedDBError(err); })
+      ]);
     })
     .then(() => crypt.generateKeys())
     .then(keys => Promise.all([
       crypt.exportKey('spki', keys.publicKey),
-      crypt.exportKey('pkcs8', keys.privateKey)
+      // Tag an IndexedDB private-key store failure so the catch can treat it as a
+      // transient/retryable condition rather than a terminal error-28.
+      savePrivateKey(keys.privateKey).catch(err => { throw tagIndexedDBError(err); })
     ]))
     .then(data => {
       const keys = {
-        publicKey: crypt.ArrayBufferToString(data[0]),
-        privateKey: crypt.ArrayBufferToString(data[1])
+        publicKey: crypt.ArrayBufferToString(data[0])
       };
 
       return saveToLocalStorage({
@@ -67,14 +79,15 @@ const generateDefaultStorage = browserInfo => {
         autoSubmitEnabled: false,
         autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
         attempt: attempt + 1,
-        extIcon: 0 // 0 - default
+        extIcon: 0, // 0 - default
+        storageSchemaVersion: CURRENT_SCHEMA_VERSION
       });
     })
     .then(storage => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
 
-      return new SDK().createExtensionInstance(extensionInstanceBody);
+      return new SDK().createExtensionInstance(extensionInstanceBody, { timeoutMs: REGISTRATION_TIMEOUT_MS });
     })
     .then(data => saveToLocalStorage({ extensionID: data.id }))
     .then(storage => {
@@ -84,7 +97,35 @@ const generateDefaultStorage = browserInfo => {
 
       return browser.runtime.setUninstallURL(`https://2fas.com/auth/byebye/${storage.extensionID}/`);
     })
-    .catch(err => storeLog('error', 28, err, 'generateDefaultStorage'));
+    .catch(async err => {
+      // If local storage was initialised (keys present) but server registration didn't go
+      // through because of a transient/offline network failure, defer to the durable retry
+      // instead of logging now — otherwise the install-time flood (error 28) reappears and the
+      // extension is left permanently without an extensionID. Non-network failures still log.
+      let s = null;
+
+      try {
+        s = await loadFromLocalStorage(['keys', 'extensionID', 'browserInfo']);
+      } catch (e) {}
+
+      const hasKeys = Boolean(s?.keys?.publicKey);
+      const hasExtID = Boolean(s?.extensionID);
+
+      if (hasKeys && !hasExtID && isRetryable(classifyError(err))) {
+        return enqueueBrowserRegistration({ op: 'create', payload: s.browserInfo || browserInfo });
+      }
+
+      if (err?.isIndexedDBError) {
+        // The private-key store (IndexedDB) was unavailable — disabled by policy,
+        // transiently evicted, or over quota — so generation could not persist the
+        // key. Treat it like a transient failure rather than a terminal error-28
+        // flood: the next startup / verifyStorageIntegrity re-attempts generation,
+        // and a transient failure then succeeds. Surface once, at 'warning'.
+        return storeLog('warning', 28, err, 'generateDefaultStorage - IndexedDB unavailable, will retry on next startup');
+      }
+
+      return storeLog('error', 28, err, 'generateDefaultStorage');
+    });
 };
 
 export default generateDefaultStorage;

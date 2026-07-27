@@ -27,7 +27,7 @@ const clearLocalStorage = () => {
   return browser.storage.local.clear()
     .catch(err => {
       console.error({ err });
-      throw new Error(err);
+      throw err;
     });
 };
 

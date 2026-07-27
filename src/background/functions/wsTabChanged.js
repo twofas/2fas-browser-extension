@@ -18,6 +18,7 @@
 //
 
 import closeWSChannel from '@background/functions/closeWSChannel.js';
+import getOrigin from '@partials/getOrigin.js';
 
 /**
  * Handles tab URL change event and closes WebSocket channel if the associated tab navigated.
@@ -27,17 +28,31 @@ import closeWSChannel from '@background/functions/closeWSChannel.js';
  * @param {number} tabIDws - The ID of the tab associated with the WebSocket
  * @param {Object} channel - The WebSocket channel object
  * @param {number} timeoutID - The timeout ID to clear
+ * @param {string|null} [requestOrigin=null] - Origin of the page that opened the request; when set, same-origin navigations keep the channel open
  * @returns {boolean|void} Returns false if change is not relevant
  */
-const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID) => {
-  if (!changeInfo.url || !changeInfo.status === 'complete' || !changeInfo.status === 'loading') {
+const wsTabChanged = (tabIDChanged, changeInfo, tabIDws, channel, timeoutID, requestOrigin = null) => {
+  if (!changeInfo.url || (changeInfo.status !== 'complete' && changeInfo.status !== 'loading')) {
     return false;
   }
 
-  if (tabIDChanged === tabIDws) {
-    clearTimeout(timeoutID);
-    closeWSChannel(channel);
+  if (tabIDChanged !== tabIDws) {
+    return false;
   }
+
+  // Keep the channel alive across same-origin navigations (SPA route changes,
+  // same-origin redirects) so a kept 2FA request stays deliverable; only a real
+  // cross-origin navigation tears it down. Mirrors shouldInvalidateTabRequest (B3).
+  if (requestOrigin) {
+    const changedOrigin = getOrigin(changeInfo.url);
+
+    if (changedOrigin && changedOrigin === requestOrigin) {
+      return false;
+    }
+  }
+
+  clearTimeout(timeoutID);
+  closeWSChannel(channel);
 };
 
 export default wsTabChanged;

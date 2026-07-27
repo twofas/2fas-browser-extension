@@ -17,10 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
-import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
-import uniqueOnly from '@partials/uniqueOnly.js';
-import generateDomainsList from '@optionsPage/functions/generateDomainsList.js';
+import browser from 'webextension-polyfill';
 import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
@@ -35,17 +32,15 @@ const handleImportDefaultExcludedDomains = e => {
   e.preventDefault();
   e.stopPropagation();
 
-  return loadFromLocalStorage(['autoSubmitExcludedDomains'])
-    .then(data => {
-      const currentExcludedDomains = data.autoSubmitExcludedDomains;
-      let newExcludedDomains = [...currentExcludedDomains, ...defaultAutoSubmitExcludedDomains];
-      newExcludedDomains = newExcludedDomains.filter(uniqueOnly);
-
-      return saveToLocalStorage({ autoSubmitExcludedDomains: newExcludedDomains }, {});
-    })
+  // The background merges the defaults into the list (de-duplicated) under the
+  // shared lock; the list re-renders from the storage.onChanged listener.
+  return browser.runtime.sendMessage({ action: 'updateList', list: 'domains', op: 'importDefaults' })
     .then(res => {
-      generateDomainsList(res.autoSubmitExcludedDomains);
-      TwoFasNotification.show(config.Texts.Success.DomainExcluded);
+      if (!res || res.status !== 'ok') {
+        throw new Error('updateList importDefaults failed');
+      }
+
+      return TwoFasNotification.show(config.Texts.Success.DomainExcluded);
     })
     .catch(async err => {
       await storeLog('error', 47, err, 'handleImportDefaultExcludedDomains');

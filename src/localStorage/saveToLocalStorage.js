@@ -30,7 +30,7 @@ const saveToLocalStorage = (data, storageObj = {}) => {
     .then(() => Object.assign(storageObj, data))
     .catch(err => {
       console.error({ err });
-      throw new Error(err);
+      throw err;
     });
 };
 

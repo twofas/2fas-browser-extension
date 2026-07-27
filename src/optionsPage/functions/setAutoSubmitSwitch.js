@@ -40,9 +40,8 @@ const setAutoSubmitSwitch = () => {
 
       if (autoSubmitToggle) {
         autoSubmitToggle.checked = storage.autoSubmitEnabled;
+        autoSubmitToggle.addEventListener('change', handleAutoSubmitChange);
       }
-
-      autoSubmitToggle.addEventListener('change', handleAutoSubmitChange);
 
       return Promise.resolve();
     })

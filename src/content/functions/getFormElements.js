@@ -22,7 +22,8 @@ import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
 import isVisible from '@partials/isVisible.js';
-import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
+import isDeniedField from '@partials/otpFieldHeuristics.js';
+import { querySelectorAllDeep, collectAllShadowRoots } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Finds and returns all visible form input elements and submit buttons in the document.
@@ -31,31 +32,43 @@ import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
  * hidden elements are stripped from the final result so they don't pollute
  * data-twofas-element-number numbering used by clickClosestSubmit.
  *
+ * @param {ShadowRoot[]} [providedShadowRoots] - Pre-collected shadow roots to reuse
+ *   (lets a caller that already walked the DOM avoid a second full traversal)
  * @returns {HTMLElement[]} Array of visible input and submit elements (in DOM order)
  */
-const getFormElements = () => {
+const getFormElements = (providedShadowRoots = null) => {
+  // Collect shadow roots once and reuse across every deep query in this pass,
+  // instead of re-walking the whole DOM on each querySelectorAllDeep call.
+  const shadowRoots = providedShadowRoots || collectAllShadowRoots();
+
   const inputsSelector = inputsSelectors();
   let submitsSelector = formSubmitSelectors();
   let requiresTextCheck = false;
 
-  if (querySelectorAllDeep(submitsSelector).filter(isVisible).length === 0) {
+  if (querySelectorAllDeep(submitsSelector, shadowRoots).filter(isVisible).length === 0) {
     submitsSelector = formSubmitSecondSelectors();
   }
 
-  if (querySelectorAllDeep(submitsSelector).filter(isVisible).length === 0) {
-    submitsSelector = 'button';
+  if (querySelectorAllDeep(submitsSelector, shadowRoots).filter(isVisible).length === 0) {
+    // Mirror getFormSubmitElements' 3rd-level selector so the same submit
+    // candidates clickClosestSubmit will consider also get numbered here;
+    // otherwise input[type=button] submits fall back to the -999 sentinel.
+    submitsSelector = 'input[type="button"],button';
     requiresTextCheck = true;
   }
 
   const query = `${inputsSelector},${submitsSelector}`;
-  let elements = querySelectorAllDeep(query);
+  let elements = querySelectorAllDeep(query, shadowRoots);
 
   if (requiresTextCheck) {
     elements = elements.filter(element => {
       const nodeName = element.nodeName.toLowerCase();
 
       if (nodeName === 'input') {
-        return true;
+        // input[type=button] is a submit candidate (same as in
+        // getFormSubmitElements) and must clear the same text check;
+        // token inputs pass through untouched.
+        return element.type !== 'button' || isSubmitButtonText(element);
       }
 
       if (nodeName === 'button') {
@@ -76,6 +89,9 @@ const getFormElements = () => {
 
       return isValidButtonText(element);
     })
+    // Drop inputs that look like CVC/postal/coupon/recovery/etc. so they do not
+    // pollute the element numbering used for auto-submit proximity.
+    .filter(element => element.nodeName.toLowerCase() !== 'input' || !isDeniedField(element))
     .filter(isVisible);
 };
 

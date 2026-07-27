@@ -19,6 +19,7 @@
 
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import openInstallPage from '@background/functions/openInstallPage.js';
 import storeLog from '@partials/storeLog.js';
 
@@ -32,11 +33,15 @@ const checkSafariStorage = async browserInfo => {
   try {
     const storage = await loadFromLocalStorage(null);
 
-    const hasValidStorage =
+    const hasBaseStorage = Boolean(
       storage?.browserInfo &&
       storage?.keys?.publicKey &&
-      storage?.keys?.privateKey &&
-      storage?.extensionID;
+      storage?.extensionID
+    );
+
+    // The private key lives in IndexedDB; this also migrates a legacy base64
+    // key out of storage.local on first run after the upgrade.
+    const hasValidStorage = hasBaseStorage && Boolean(await getOrMigratePrivateKey(storage));
 
     if (hasValidStorage) {
       return;

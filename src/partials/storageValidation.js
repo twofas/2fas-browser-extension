@@ -50,7 +50,10 @@ const isStorageEmpty = storage => {
  * @returns {Promise<void>} Resolves if valid, rejects with TypeError if invalid
  */
 const storageValidation = async storage => {
-  const hasValidKeys = storage?.keys?.publicKey && storage?.keys?.privateKey;
+  // The private key lives in IndexedDB and is only used in the background; the
+  // options/install pages just need to confirm the extension is configured, for
+  // which a public key + extension ID is the authoritative signal.
+  const hasValidKeys = Boolean(storage?.keys?.publicKey);
   const hasExtensionID = Boolean(storage?.extensionID);
 
   if (!hasValidKeys || !hasExtensionID) {

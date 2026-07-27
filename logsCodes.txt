@@ -35,12 +35,21 @@
 12 - subscribeChannel - browser_extensions.pairing.failure
 13 - subscribeChannel - subscribeChannel event default
 26 - updateIncognitoAccess
-27 - updateBrowserExtension
-28 - generateDefaultStorage
+27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]
+28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST)
 29 - verifyStorageIntegrity
 30 - closeRequest
 35 - checkSafariStorage
 37 - storageReset
+48 - updateBrowserExtension - storage load / enqueue
+49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
+50 - handleLoginRequest - inputToken delivery to recorded frame failed [warning]
+51 - resolveTokenTargetFrame - target frame origin changed / lookup failed, fallback to top frame [warning]
+53 - updateList (onMessage) - list mutation failed [error]
+54 - runStorageMigrations - storage migration failed [error]
+56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning]
+57 - verifyStorageIntegrity - private key missing while public key + extensionID valid: re-pairing required, regeneration skipped [error]
+58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
 
 // CONTENT
 33 - content_script
@@ -57,6 +66,7 @@
 *43 - pageLoadComplete - loadFromLocalStorage [deprecated]
 *44 - pageLoadComplete - saveToLocalStorage [deprecated]
 46 - clickSubmit - loadFromLocalStorage
+59 - tokenNotification - clipboard copy failed (no secure context / execCommand fallback failed) [warning]
 
 // INSTALL PAGE
 20 - installPage
@@ -70,6 +80,8 @@
 38 - storageValidationReload
 45 - domainModalFormSubmit
 47 - handleImportDefaultExcludedDomains
+52 - removeDomain
+55 - removeDomain - wrong domain
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]

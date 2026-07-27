@@ -24,7 +24,8 @@ import browser from 'webextension-polyfill';
  *
  * @param {number} tabId - The ID of the tab to send messages to
  * @param {Object} message - The message object to send
- * @returns {Promise<Array|boolean>} A promise that resolves to an array of responses or false if no frames
+ * @returns {Promise<Array<{frameId: number, url: string, response: *}>|boolean>} A promise that resolves to an
+ *   array of per-frame results (each carrying the originating `frameId` and `url`) or false if there are no frames
  */
 const sendMessageToAllFrames = async (tabId, message) => {
   let frames;
@@ -56,7 +57,12 @@ const sendMessageToAllFrames = async (tabId, message) => {
   });
 
   return Promise.all(
-    frames.map(frame => browser.tabs.sendMessage(tabId, message, { frameId: frame.frameId }).catch(() => false))
+    frames.map(frame =>
+      browser.tabs
+        .sendMessage(tabId, message, { frameId: frame.frameId })
+        .then(response => ({ frameId: frame.frameId, url: frame.url, response }))
+        .catch(() => ({ frameId: frame.frameId, url: frame.url, response: false }))
+    )
   );
 };
 
