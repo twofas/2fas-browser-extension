@@ -20,7 +20,7 @@
 import getFormSubmitElements from '@content/functions/getFormSubmitElements.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import storeLog from '@partials/storeLog.js';
-import delay from '@partials/delay.js';
+import wait from '@partials/wait.js';
 import { isValidButtonText } from '@partials/isValidButtonText.js';
 import isVisible from '@partials/isVisible.js';
 import { closestDeep } from '@content/functions/shadowDomUtils.js';
@@ -93,111 +93,179 @@ const isExcludedDomain = (excludedDomains, hostname) => {
   return excludedDomains.includes(hostname);
 };
 
+// Sentinel returned when an element was never assigned a position by
+// addFormElementsNumber. Such candidates must be kept out of the proximity
+// metric instead of being compared as a real number.
+const NOT_NUMBERED = -999;
+
+// Instead of a fixed settle delay before clicking submit, poll the chosen button's
+// readiness: clicking a still-disabled button is a silent no-op, and debounced/async
+// validators can take a beat to re-enable it after the token lands (T9). This is
+// fast when the button is already enabled and patient (up to the budget) when it is
+// not — better than a single fixed delay that is both too long for ready buttons and
+// too short for slow validators.
+const SUBMIT_READINESS_POLL_MS = 50;
+const SUBMIT_READINESS_BUDGET_MS = 600;
+
+/**
+ * Waits until the element is clickable (not disabled) or the readiness budget
+ * elapses, polling on a short interval. Resolves immediately for an already-enabled
+ * button (the common case).
+ * @param {HTMLElement} element - The submit control to wait on
+ * @returns {Promise<void>}
+ */
+const waitForClickable = async element => {
+  if (!element) {
+    return;
+  }
+
+  const deadline = Date.now() + SUBMIT_READINESS_BUDGET_MS;
+
+  while (element.disabled && Date.now() < deadline) {
+    await wait(SUBMIT_READINESS_POLL_MS);
+  }
+};
+
 /**
  * Gets the element number attribute value from an element.
  *
  * @param {HTMLElement} element - The element to get the number from
- * @returns {number} The element number or -999 if not found
+ * @returns {number} The element number, or NOT_NUMBERED if it has none
  */
 const getElementNumber = element => {
-  return parseInt(element?.getAttribute('data-twofas-element-number') || '-999', 10);
+  const raw = element?.getAttribute('data-twofas-element-number');
+
+  if (raw === null || raw === undefined) {
+    return NOT_NUMBERED;
+  }
+
+  const parsed = parseInt(raw, 10);
+
+  return Number.isNaN(parsed) ? NOT_NUMBERED : parsed;
 };
 
 /**
- * Tries to find and click a submit button within the input's form.
- * Traverses shadowRoots to find the form element. Hidden submit buttons
- * are filtered out so multi-step forms with alternate submits still
- * resolve to a single visible target.
+ * Picks the single visible, label-valid submit button inside the input's form, if
+ * there is exactly one. Traverses shadowRoots to find the form element.
  *
  * @param {HTMLElement} inputElement - The input element
- * @returns {boolean} True if a form submit button was found and clicked
+ * @returns {HTMLElement|null} The form's sole submit button, or null
  */
-const tryFormSubmit = inputElement => {
+const pickFormSubmit = inputElement => {
   const form = closestDeep(inputElement, 'form');
 
   if (!form) {
-    return false;
+    return null;
   }
 
   const formSubmits = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'))
     .filter(isVisible);
 
   if (formSubmits.length !== 1) {
-    return false;
+    return null;
   }
 
   const submitButton = formSubmits[0];
 
-  if (isValidButtonText(submitButton)) {
-    safeClick(submitButton);
-
-    return true;
-  }
-
-  return false;
+  return isValidButtonText(submitButton) ? submitButton : null;
 };
 
 /**
- * Finds and clicks the closest submit button based on element positioning.
+ * Picks the submit button closest to the input element based on element positioning.
  *
  * @param {HTMLElement} inputElement - The input element
  * @param {HTMLElement[]} submits - Array of submit elements
+ * @returns {HTMLElement|null} The closest submit element, or null
  */
-const clickClosestSubmit = (inputElement, submits) => {
+const pickClosestSubmit = (inputElement, submits) => {
   if (submits.length === 0) {
-    return;
+    return null;
   }
 
   const inputNumber = getElementNumber(inputElement);
-  const submitNumbers = submits.map(getElementNumber);
-  const closestIndex = findClosestIndex(submitNumbers, inputNumber);
 
-  if (closestIndex >= 0 && submits[closestIndex]) {
-    safeClick(submits[closestIndex]);
+  // Only candidates that share the input's numbering space can be compared by
+  // proximity. Unnumbered submits — from selector drift between the numbering
+  // pass (getFormElements) and the click candidates (getFormSubmitElements), or
+  // from DOM mutation in between — would otherwise enter the metric as -999 and
+  // skew the result, so they are dropped here.
+  const numbered = submits
+    .map(submit => ({ submit, number: getElementNumber(submit) }))
+    .filter(entry => entry.number !== NOT_NUMBERED);
+
+  // Without usable numbering the metric is meaningless; fall back to the first
+  // submit in DOM order (getFormSubmitElements returns elements in DOM order).
+  if (inputNumber === NOT_NUMBERED || numbered.length === 0) {
+    return submits[0];
   }
+
+  const closestIndex = findClosestIndex(numbered.map(entry => entry.number), inputNumber);
+
+  if (closestIndex >= 0 && numbered[closestIndex]) {
+    return numbered[closestIndex].submit;
+  }
+
+  return null;
 };
 
 /**
- * Automatically clicks the submit button closest to the input element after token insertion.
+ * Automatically clicks the submit button closest to the input element after token
+ * insertion, waiting for the button to become clickable (T9) rather than pausing a
+ * fixed amount before clicking.
  *
  * @param {HTMLElement} inputElement - The input element where the token was inserted
  * @param {string} siteURL - The current site URL for exclusion checking
  * @returns {Promise<boolean>} Promise that resolves to true if submit was clicked, false otherwise
  */
-const clickSubmit = (inputElement, siteURL) => {
-  return delay(() => {}, 500)
-    .then(() => loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']))
-    .then(storage => {
-      if (!storage?.autoSubmitEnabled) {
-        return false;
-      }
+const clickSubmit = async (inputElement, siteURL) => {
+  try {
+    const storage = await loadFromLocalStorage(['autoSubmitExcludedDomains', 'autoSubmitEnabled']);
 
-      const excludedDomains = storage.autoSubmitExcludedDomains || [];
-      const hostname = extractHostname(siteURL);
-
-      if (isExcludedDomain(excludedDomains, hostname)) {
-        return false;
-      }
-
-      const submits = getFormSubmitElements();
-
-      if (submits.length === 0) {
-        return false;
-      }
-
-      if (tryFormSubmit(inputElement)) {
-        return true;
-      }
-
-      clickClosestSubmit(inputElement, submits);
-
-      return true;
-    })
-    .catch(async err => {
-      await storeLog('error', 46, err, 'clickSubmit');
-
+    if (!storage?.autoSubmitEnabled) {
       return false;
-    });
+    }
+
+    const excludedDomains = storage.autoSubmitExcludedDomains || [];
+    const hostname = extractHostname(siteURL);
+
+    if (isExcludedDomain(excludedDomains, hostname)) {
+      return false;
+    }
+
+    const submits = getFormSubmitElements();
+
+    if (submits.length === 0) {
+      return false;
+    }
+
+    const target = pickFormSubmit(inputElement) || pickClosestSubmit(inputElement, submits);
+
+    if (!target) {
+      return false;
+    }
+
+    // Poll the chosen button's readiness before clicking: async/debounced
+    // validators can leave it briefly disabled, and a click on a disabled button
+    // is a silent no-op (the token is in the field but "nothing happened").
+    await waitForClickable(target);
+
+    // If the button never became clickable within the budget (still disabled) or was
+    // detached from the document while we waited, clicking it does nothing — report
+    // the auto-submit as NOT performed instead of falsely claiming success (F4), so
+    // the documented `true = clicked` contract holds for any future caller.
+    if (!target.isConnected || target.disabled) {
+      return false;
+    }
+
+    safeClick(target);
+
+    return true;
+  } catch (err) {
+    await storeLog('error', 46, err, 'clickSubmit');
+
+    return false;
+  }
 };
 
 export default clickSubmit;
+export { findClosestIndex, extractHostname, isExcludedDomain };

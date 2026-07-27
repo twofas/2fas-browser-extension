@@ -23,6 +23,7 @@ export { default as extNameUpdate } from './extNameUpdate.js';
 export { default as extPageOnMessage } from './extPageOnMessage.js';
 export { default as formSubmitSelectors } from './formSubmitSelectors.js';
 export { default as formSubmitSecondSelectors } from './formSubmitSecondSelectors.js';
+export { default as getOrigin } from './getOrigin.js';
 export { default as handleTargetBlank } from './handleTargetBlank.js';
 export { default as hidePreloader } from './hidePreloader.js';
 export { default as i18n } from './i18n.js';

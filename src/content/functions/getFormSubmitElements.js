@@ -21,7 +21,7 @@ import formSubmitSelectors from '@partials/formSubmitSelectors.js';
 import formSubmitSecondSelectors from '@partials/formSubmitSecondSelectors.js';
 import { isValidButtonText, isSubmitButtonText } from '@partials/isValidButtonText.js';
 import isVisible from '@partials/isVisible.js';
-import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
+import { querySelectorAllDeep, collectAllShadowRoots } from '@content/functions/shadowDomUtils.js';
 
 /**
  * Finds and returns submit button elements in the document.
@@ -32,14 +32,18 @@ import { querySelectorAllDeep } from '@content/functions/shadowDomUtils.js';
  * @returns {HTMLElement[]} Array of visible submit button elements
  */
 const getFormSubmitElements = () => {
-  let submits = querySelectorAllDeep(formSubmitSelectors()).filter(isVisible);
+  // Collect shadow roots once and reuse across the selector waterfall instead
+  // of re-walking the whole DOM on each querySelectorAllDeep call (up to 3×).
+  const shadowRoots = collectAllShadowRoots();
+
+  let submits = querySelectorAllDeep(formSubmitSelectors(), shadowRoots).filter(isVisible);
 
   if (submits.length === 0) {
-    submits = querySelectorAllDeep(formSubmitSecondSelectors()).filter(isVisible);
+    submits = querySelectorAllDeep(formSubmitSecondSelectors(), shadowRoots).filter(isVisible);
   }
 
   if (submits.length === 0) {
-    const buttons = querySelectorAllDeep('input[type="button"],button');
+    const buttons = querySelectorAllDeep('input[type="button"],button', shadowRoots);
     submits = buttons.filter(isSubmitButtonText).filter(isVisible);
   }
 

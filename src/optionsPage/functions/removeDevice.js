@@ -20,7 +20,7 @@
 import config from '@/config.js';
 import browser from 'webextension-polyfill';
 import SDK from '@sdk';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage';
+import { loadFromLocalStorage } from '@localStorage';
 import storeLog from '@partials/storeLog.js';
 import removeDeviceFromDOM from '@optionsPage/functions/removeDeviceFromDOM.js';
 import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
@@ -50,29 +50,20 @@ const removeDevice = function (e) {
     browser.i18n.getMessage('modalDisconnectDeviceHeader'),
     browser.i18n.getMessage('modalDisconnectDeviceText').replace('DEVICE_NAME', deviceName),
     () => {
-      let storage;
-
-      return loadFromLocalStorage(['extensionID', 'devices'])
-        .then(data => {
-          storage = data;
-          return new SDK().removePairedDevice(storage.extensionID, deviceID);
-        })
-        .then(() => {
-          if (!storage || !storage.devices) {
-            return [];
+      // Unpair on the server first, then let the background apply the local-cache
+      // removal through the shared devices lock (it also re-derives `configured`).
+      // The devices table is rendered from the API, not storage, so the row is
+      // removed directly here rather than via storage.onChanged.
+      return loadFromLocalStorage(['extensionID'])
+        .then(data => new SDK().removePairedDevice(data.extensionID, deviceID))
+        .then(() => browser.runtime.sendMessage({ action: 'updateList', list: 'devices', op: 'remove', deviceId: deviceID }))
+        .then(res => {
+          if (!res || res.status !== 'ok') {
+            throw new Error('updateList remove device failed');
           }
 
-          return storage.devices.filter(device => device.device_id !== deviceID);
+          return removeDeviceFromDOM(deviceID);
         })
-        .then(devices => {
-          let configured = true;
-          if (devices.length <= 0) {
-            configured = false;
-          }
-
-          return saveToLocalStorage({ devices, configured }, storage);
-        })
-        .then(() => removeDeviceFromDOM(deviceID))
         .then(() => TwoFasNotification.show(config.Texts.Success.DeviceDisconnected))
         .catch(async err => {
           await storeLog('error', 22, err, 'removeDevice');

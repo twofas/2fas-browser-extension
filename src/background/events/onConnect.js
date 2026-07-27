@@ -20,7 +20,12 @@
 import openBrowserPage from '@background/functions/openBrowserPage.js';
 
 /**
- * Handles port connection events from content scripts.
+ * Handles '2FAS' port connections from content scripts and extension pages.
+ *
+ * The port no longer doubles as a service-worker keep-alive (that concern moved to
+ * the request-scoped browser.alarms keep-alive); it now only carries openBrowserPage
+ * requests from contexts that cannot open a tab themselves.
+ *
  * @param {Object} port - The port object for communication.
  * @return {boolean|undefined}
  */
@@ -29,52 +34,19 @@ const onConnect = port => {
     return false;
   }
 
-  port._connected = true;
-
-  const forceReconnect = p => {
-    p._connected = false;
-    p.onDisconnect.removeListener(onPortDisconnect);
-    p.onMessage.removeListener(onPortMessage);
-
-    if (p._timer) {
-      clearTimeout(p._timer);
-      p._timer = null;
+  const onPortMessage = msg => {
+    if (msg?.action === 'openBrowserPage' && msg.url) {
+      openBrowserPage(msg.url);
     }
-
-    p.disconnect();
-    p = undefined;
   };
 
-  const onPortDisconnect = p => {
-    p._connected = false;
-    p.onMessage.removeListener(onPortMessage);
-    p.onDisconnect.removeListener(onPortDisconnect);
-
-    if (p._timer) {
-      clearTimeout(p._timer);
-      p._timer = null;
-    }
-
-    p = undefined;
-  };
-
-  const onPortMessage = (msg, p) => {
-    if (msg.action === 'openBrowserPage' && msg.url) {
-      return openBrowserPage(msg.url);
-    }
-
-    return setTimeout(() => {
-      if (p._connected) {
-        try {
-          p.postMessage({ msg: 'pong' });
-        } catch (e) {}
-      }
-    }, 10000);
+  const onPortDisconnect = () => {
+    port.onMessage.removeListener(onPortMessage);
+    port.onDisconnect.removeListener(onPortDisconnect);
   };
 
   port.onMessage.addListener(onPortMessage);
   port.onDisconnect.addListener(onPortDisconnect);
-  port._timer = setTimeout(forceReconnect, 250e3, port);
 };
 
 export default onConnect;

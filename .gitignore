@@ -124,3 +124,5 @@ iOSInjectionProject/
 .xcuserstate
 utils/export/messages.json
 .mcp.json
+.playwright-mcp
+memory/

@@ -3,7 +3,7 @@
   "name": "2FAS Auth - Two Factor Authentication",
   "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "icons": {
@@ -54,7 +54,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.2fas.com wss://*.2fas.com"
   },
   "commands": {
     "tokenRequest": {
@@ -72,7 +72,8 @@
     "storage",
     "notifications",
     "contextMenus",
-    "webNavigation"
+    "webNavigation",
+    "alarms"
   ],
   "host_permissions": [
     "*://*.2fas.com/*"

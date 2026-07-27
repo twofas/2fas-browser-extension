@@ -17,6 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global URL */
 import config from '@/config.js';
 import TwoFasNotification from '@notification/index.js';
 import { saveToSessionStorage } from '@sessionStorage/index.js';
@@ -24,7 +25,8 @@ import { saveToSessionStorage } from '@sessionStorage/index.js';
 /**
  * Handles the focused input element and saves it to session storage.
  * @async
- * @param {Array} activeElements - Array of active element information from frames.
+ * @param {Array<{frameId: number, url: string, response: *}>} activeElements - Per-frame getActiveElement
+ *   results, each carrying the originating `frameId`, frame `url` and the frame's response.
  * @param {number} tabId - The tab ID.
  * @param {Object} sessionData - The session data object containing tabData.
  * @return {Promise<void>}
@@ -33,23 +35,57 @@ const handleFrontElement = async (activeElements, tabId, sessionData) => {
   let properElements = [];
 
   if (activeElements && activeElements.length > 0) {
+    // getActiveElement only returns an id for a fillable target (input/textarea,
+    // contenteditable, ARIA textbox, or the one-time-code fallback), so the id
+    // presence is authoritative — no need to re-gate on nodeName here.
     properElements = activeElements.filter(el =>
-      el?.id &&
-      (typeof el?.id === 'string' || el?.id instanceof String) &&
-      el?.id?.length > 0 &&
-      (el?.nodeName === 'input' || el?.nodeName === 'textarea')
+      el?.response?.id &&
+      (typeof el?.response?.id === 'string' || el?.response?.id instanceof String) &&
+      el?.response?.id?.length > 0
     );
   }
 
   const tabData = sessionData[`tabData-${tabId}`] || {};
 
   if (properElements.length > 0) {
-    tabData.lastFocusedInput = properElements[0].id;
+    // Several frames can report a fillable target at once — the focus-less
+    // one-time-code fallback fires independently in every frame. Prefer a frame
+    // that reported a REAL focused field ('focused') over one that only produced
+    // the one-time-code fallback ('fallback'), so a top-frame fallback can't beat
+    // the sub-frame that actually holds focus (Z4). Among same-precedence matches,
+    // prefer the top frame (getAllFrames() order is not guaranteed); otherwise keep
+    // the first reported frame (the focused one in the normal single-frame case,
+    // including legitimate cross-origin iframes).
+    const focusedElements = properElements.filter(el => el.response.matchType === 'focused');
+    const pool = focusedElements.length > 0 ? focusedElements : properElements;
+    const chosen = pool.find(el => el.frameId === 0) || pool[0];
+
+    let frameOrigin = null;
+
+    try {
+      frameOrigin = chosen.url ? new URL(chosen.url).origin : null;
+    } catch {
+      frameOrigin = null;
+    }
+
+    // Record the input UUID, the frame it lives in, that frame's origin AND its
+    // exact URL, so the decrypted token is later delivered only to that frame and
+    // only while it still hosts the same document (frameIds are reused across
+    // navigations — see resolveTokenTargetFrame / handleLoginRequest). The URL is
+    // what lets an opaque-origin sub-frame (about:srcdoc / data:) be re-verified,
+    // since its origin stringifies to the non-comparable "null" (Z7).
+    tabData.lastFocusedInput = chosen.response.id;
+    tabData.lastFocusedFrameId = chosen.frameId;
+    tabData.lastFocusedFrameOrigin = frameOrigin;
+    tabData.lastFocusedFrameUrl = chosen.url || null;
     await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
     return TwoFasNotification.show(config.Texts.Success.PushSent, tabId);
   }
 
   delete tabData.lastFocusedInput;
+  delete tabData.lastFocusedFrameId;
+  delete tabData.lastFocusedFrameOrigin;
+  delete tabData.lastFocusedFrameUrl;
   await saveToSessionStorage({ [`tabData-${tabId}`]: tabData });
 
   return TwoFasNotification.show(config.Texts.Success.PushSentClipboard, tabId);

@@ -57,7 +57,7 @@ const closeRequest = async (tabID, requestID) => {
 
     await saveToSessionStorage({ [`tabData-${tabID}`]: tabObject });
   } catch (err) {
-    await storeLog('error', 30, err, sessionData[`tabData-${tabID}`]?.url);
+    await storeLog('error', 30, err, sessionData[`tabData-${tabID}`]?.origin);
   } finally {
     storage = null;
     sessionData = null;

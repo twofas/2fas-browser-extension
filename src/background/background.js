@@ -20,10 +20,17 @@
 import browser from 'webextension-polyfill';
 import { onConnect, onCommand, onInstalled, onMessage, onStartup } from '@background/events/index.js';
 import { createContextMenus, onContextMenuClick } from '@background/contextMenu/index.js';
-import { browserAction, dummyGetLocalStorage, setIcon } from '@background/functions/index.js';
+import { browserAction, setIcon } from '@background/functions/index.js';
+import { KEEP_ALIVE_ALARM_NAME, handleKeepAliveAlarm, setKeepAliveAlarmOwner } from '@background/functions/keepAlive.js';
+import { flushBrowserRegistration, REGISTRATION_ALARM_NAME } from '@background/functions/update/index.js';
 import { onTabRemoved, onTabUpdated, onTabActivated } from '@background/tabs/index.js';
 
 createContextMenus();
+
+// This is the keep-alive alarm owner: only the background creates/clears the
+// backstop alarm and writes the shared deadline key (the install page runs the
+// heartbeat only), so the two contexts never clear each other's backstop.
+setKeepAliveAlarmOwner();
 
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(onMessage);
@@ -39,8 +46,22 @@ browser.tabs.onRemoved.addListener(onTabRemoved);
 browser.tabs.onUpdated.addListener(onTabUpdated);
 browser.tabs.onActivated.addListener(onTabActivated);
 
-setInterval(() => {
-  return dummyGetLocalStorage();
-}, 25 * 1000);
+// Two independent alarm-driven concerns share the single onAlarm listener:
+//   - REGISTRATION_ALARM_NAME wakes a terminated service worker when a durable
+//     registration delivery is due (the 'online' event recovers the moment
+//     connectivity returns: captive portal / VPN / wake-from-sleep).
+//   - KEEP_ALIVE_ALARM_NAME holds the worker warm while a 2FA / pairing request is
+//     pending, then self-terminates so the worker can suspend when idle.
+if (browser.alarms?.onAlarm) {
+  browser.alarms.onAlarm.addListener(alarm => {
+    if (alarm?.name === REGISTRATION_ALARM_NAME) {
+      flushBrowserRegistration();
+    } else if (alarm?.name === KEEP_ALIVE_ALARM_NAME) {
+      handleKeepAliveAlarm();
+    }
+  });
+}
+
+self.addEventListener('online', () => flushBrowserRegistration());
 
 setIcon(null, false, false);

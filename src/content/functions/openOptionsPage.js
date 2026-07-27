@@ -42,6 +42,10 @@ const openOptionsPage = e => {
     action: 'openBrowserPage',
     url: browser.runtime.getURL('/optionsPage/optionsPage.html')
   });
+
+  // The background no longer reaps this port via a keep-alive timer, so close it
+  // ourselves once the one-shot message is sent (matches openShortcutEdit).
+  port.disconnect();
 };
 
 export default openOptionsPage;

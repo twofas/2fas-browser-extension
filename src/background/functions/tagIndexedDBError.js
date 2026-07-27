@@ -17,29 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import generateEmptyDomainRow from '@optionsPage/functions/generateEmptyDomainRow.js';
-import S from '@/selectors.js';
-
 /**
- * Removes a domain row from the DOM and shows empty state if no domains remain.
- *
- * @param {string} domain - The domain name to remove from the list
- * @returns {boolean} Always returns true after removal
+ * Wraps an IndexedDB private-key store rejection with a marker so the catch treats
+ * it as a transient/retryable condition (retry on next startup) rather than the
+ * terminal error-28. Applied to EVERY IndexedDB op in the chain — both the initial
+ * deletePrivateKey and the later savePrivateKey go through the same openKeyDB, and
+ * when IndexedDB is entirely unavailable (Firefox dom.indexedDB disabled, policy)
+ * the delete fails FIRST, so tagging only the save would miss the flagship case.
+ * @param {Error} err - The raw rejection from a privateKeyStore op.
+ * @returns {Error} A tagged error.
  */
-const removeDomainFromDOM = domain => {
-  const tr = document.querySelector(`tr[data-domain="${domain}"]`);
-
-  if (tr && typeof tr.remove === 'function') {
-    tr.remove();
-  }
-
-  const tbody = document.querySelector(S.optionsPage.autoSubmit.list);
-
-  if (tbody.childElementCount === 0) {
-    generateEmptyDomainRow(tbody);
-  }
-
-  return true;
+const tagIndexedDBError = err => {
+  const tagged = new Error(`IndexedDB private-key store unavailable: ${err?.message || err}`);
+  tagged.name = 'PrivateKeyStoreUnavailable';
+  tagged.isIndexedDBError = true;
+  return tagged;
 };
 
-export default removeDomainFromDOM;
+export default tagIndexedDBError;

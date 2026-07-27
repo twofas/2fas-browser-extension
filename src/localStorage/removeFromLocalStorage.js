@@ -29,7 +29,7 @@ const removeFromLocalStorage = key => {
     .then(result => result)
     .catch(err => {
       console.error({ err });
-      throw new Error(err);
+      throw err;
     });
 };
 

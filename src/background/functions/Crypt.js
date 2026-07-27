@@ -34,7 +34,11 @@ class Crypt {
   }
 
   /**
-   * Generates a new RSA-OAEP key pair.
+   * Generates a new RSA-OAEP key pair. The private key is non-extractable
+   * (extractable: false), so its raw material can never be exported; it is
+   * persisted as a CryptoKey object in IndexedDB. The public key of an
+   * asymmetric pair is always extractable regardless of this flag, so it can
+   * still be exported (spki) and sent to the API.
    * @returns {Promise<CryptoKeyPair>} Promise resolving to the generated key pair
    */
   generateKeys () {
@@ -45,7 +49,7 @@ class Crypt {
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: { name: 'SHA-512' }
       },
-      true,
+      false,
       ['encrypt', 'decrypt']
     );
   }

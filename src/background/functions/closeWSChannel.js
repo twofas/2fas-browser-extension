@@ -22,10 +22,20 @@
 /**
  * Closes a WebSocket channel if the connection is open or still connecting.
  *
+ * Marks the channel as deliberately closing so subscribeChannel's onclose/onerror
+ * handlers can tell an intentional teardown (timeout, navigation, tab close, token
+ * received) apart from an unexpected network drop that should trigger a reconnect.
+ *
  * @param {Object} channel - The channel object containing the WebSocket instance
  */
 const closeWSChannel = channel => {
-  if (!channel?.ws) {
+  if (!channel) {
+    return;
+  }
+
+  channel.closing = true;
+
+  if (!channel.ws) {
     return;
   }
 

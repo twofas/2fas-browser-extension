@@ -19,7 +19,7 @@
 
 import './styles/content_script.scss';
 import browser from 'webextension-polyfill';
-import { getTabData, portSetup, isInFrame } from '@content/functions';
+import { getTabData, isInFrame } from '@content/functions';
 import contentOnMessage from '@content/events/contentOnMessage.js';
 
 let tabData = null;
@@ -50,7 +50,6 @@ const contentScriptRun = () => {
   }
 
   isTopFrame = !isInFrame();
-  portSetup();
 
   if (window[LISTENER_KEY]) {
     try {
