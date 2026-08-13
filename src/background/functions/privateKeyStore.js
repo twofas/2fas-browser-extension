@@ -131,40 +131,55 @@ const getPrivateKey = () => withStore('readonly', store => store.get(PRIVATE_KEY
 const deletePrivateKey = () => withStore('readwrite', store => store.delete(PRIVATE_KEY_ID));
 
 /**
- * Returns the private CryptoKey, migrating an existing user's legacy base64 key
- * out of storage.local on first use. The migrated key is imported as
- * non-extractable, so the raw material never becomes exportable again. The
- * plaintext copy is stripped from storage.local once the key is in IndexedDB
- * (and re-stripped defensively if a previous run stored the key but failed to
- * remove the plaintext).
+ * Returns the private CryptoKey. A valid base64 key in storage.local (a legacy
+ * install, or the fallback written when IndexedDB is unavailable — e.g. Firefox
+ * with "Never remember history", where indexedDB.open throws for extension pages
+ * too) always wins over the IndexedDB copy: when both exist and differ, the
+ * IndexedDB one is a stale leftover of a reset that could not wipe it. The
+ * storage.local key is imported as non-extractable and promoted into IndexedDB
+ * best-effort; while IndexedDB stays broken the plaintext copy is kept in
+ * storage.local as the working fallback, and it is stripped only once the key
+ * is safely in IndexedDB.
+ *
+ * With no storage.local key, an IndexedDB failure still throws (never returns
+ * null), so a transient error cannot masquerade as 'missingPrivateKey'.
  *
  * @async
- * @param {Object} storage - Storage object that may hold a legacy keys.privateKey.
+ * @param {Object} storage - Storage object that may hold a keys.privateKey.
  * @returns {Promise<CryptoKey|null>} The private key, or null when none exists.
  */
 const getOrMigratePrivateKey = async storage => {
-  const existing = await getPrivateKey();
   const legacy = storage?.keys?.privateKey;
 
-  if (existing) {
-    if (legacy) {
-      await stripLegacyPrivateKey(storage);
+  if (legacy) {
+    const crypt = new Crypt();
+    let imported = null;
+
+    try {
+      imported = await crypt.importKey(crypt.stringToArrayBuffer(legacy), 'pkcs8', ['decrypt']);
+    } catch (err) {
+      imported = null; // corrupt leftover — fall through to the IndexedDB key
     }
 
-    return existing;
+    if (imported) {
+      try {
+        await savePrivateKey(imported);
+        await stripLegacyPrivateKey(storage);
+      } catch (err) {
+        // IndexedDB unavailable — the storage.local copy stays authoritative.
+      }
+
+      return imported;
+    }
   }
 
-  if (!legacy) {
-    return null;
+  const existing = await getPrivateKey();
+
+  if (existing && legacy) {
+    await stripLegacyPrivateKey(storage);
   }
 
-  const crypt = new Crypt();
-  const privateKey = await crypt.importKey(crypt.stringToArrayBuffer(legacy), 'pkcs8', ['decrypt']);
-
-  await savePrivateKey(privateKey);
-  await stripLegacyPrivateKey(storage);
-
-  return privateKey;
+  return existing || null;
 };
 
 export { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey };

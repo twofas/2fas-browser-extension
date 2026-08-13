@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global crypto */
+/* global crypto, DOMException */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
@@ -85,5 +85,34 @@ describe('verifyStorageIntegrity', () => {
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
     expect(after.keys.publicKey).toBe('pub');
     expect(after.extensionID).toBe('id');
+  });
+
+  it('becomes valid via the storage.local fallback key when IndexedDB is unavailable (fresh install)', async () => {
+    // Firefox permanent private browsing: indexedDB.open throws for extension pages.
+    globalThis.indexedDB = {
+      open: () => {
+        throw new DOMException('A mutation operation was attempted on a database that did not allow mutations.', 'InvalidStateError');
+      }
+    };
+
+    // Simulate generateDefaultStorage's fallback outcome: registration completed,
+    // private key persisted as pkcs8 base64 in storage.local instead of IndexedDB.
+    generateDefaultStorage.mockImplementationOnce(async () => {
+      const crypt = new Crypt();
+      const pair = await crypto.subtle.generateKey(GEN_PARAMS, true, ['encrypt', 'decrypt']);
+      await saveToLocalStorage({
+        keys: {
+          publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)),
+          privateKey: crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey))
+        },
+        extensionID: 'id'
+      });
+    });
+
+    expect(await verifyStorageIntegrity({ name: 'Firefox' })).toBe(true);
+    expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+    // The fallback key must survive in storage.local — it is the only copy.
+    const after = await loadFromLocalStorage(['keys']);
+    expect(after.keys.privateKey).toBeDefined();
   });
 });

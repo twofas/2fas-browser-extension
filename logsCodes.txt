@@ -50,6 +50,7 @@
 56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning]
 57 - verifyStorageIntegrity - private key missing while public key + extensionID valid: re-pairing required, regeneration skipped [error]
 58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
+60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback [warning]
 
 // CONTENT
 33 - content_script
