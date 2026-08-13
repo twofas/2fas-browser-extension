@@ -19,6 +19,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import browser from 'webextension-polyfill';
+import config from '@/config.js';
 import { saveToSessionStorage } from '@sessionStorage/index.js';
 
 const storeLog = vi.fn().mockResolvedValue(undefined);
@@ -27,7 +28,8 @@ vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
 const closeRequest = vi.fn().mockResolvedValue(undefined);
 vi.mock('@background/functions/closeRequest.js', () => ({ default: (...a) => closeRequest(...a) }));
 
-vi.mock('@notification/index.js', () => ({ default: { show: vi.fn().mockResolvedValue(undefined) } }));
+const notificationShow = vi.fn().mockResolvedValue(undefined);
+vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
 
 const showNativePush = vi.fn().mockResolvedValue('id');
 vi.mock('@notification/functions', () => ({ showNativePush: (...a) => showNativePush(...a) }));
@@ -83,6 +85,7 @@ beforeEach(() => {
   storeLog.mockClear();
   closeRequest.mockClear();
   showNativePush.mockClear();
+  notificationShow.mockClear();
   resolveTokenTargetFrame.mockReset();
   inputTokenResponse = { status: 'completed' };
   showTokenBehavior = 'ok';
@@ -138,7 +141,7 @@ describe('handleLoginRequest — token delivery tail', () => {
     expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
   });
 
-  it('Z1: withholds the token (no notification anywhere) when the top frame navigated to a different origin', async () => {
+  it('Z1: withholds the token SILENTLY (no notification, no log) when the top frame navigated to a different origin', async () => {
     resolveTokenTargetFrame.mockResolvedValue(null);
     await setup({ tabData: { origin: 'https://site.test', requestID: REQ }, frameUrl: 'https://evil.test/x' });
 
@@ -146,11 +149,12 @@ describe('handleLoginRequest — token delivery tail', () => {
 
     expect(sentActions()).not.toContain('showTokenNotification');
     expect(showNativePush).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('warning', 56, expect.any(Error), 'handleLoginRequest');
+    expect(notificationShow).not.toHaveBeenCalled();
+    expect(storeLog).not.toHaveBeenCalled();
     expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
   });
 
-  it('Z1: withholds the token when the request was superseded (requestID mismatch)', async () => {
+  it('Z1: withholds the token, logs info 61 and notifies the user when the request was superseded (requestID mismatch)', async () => {
     resolveTokenTargetFrame.mockResolvedValue(null);
     await setup({ tabData: { origin: 'https://site.test', requestID: 'a-newer-request' } });
 
@@ -158,6 +162,7 @@ describe('handleLoginRequest — token delivery tail', () => {
 
     expect(sentActions()).not.toContain('showTokenNotification');
     expect(showNativePush).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('warning', 56, expect.any(Error), 'handleLoginRequest');
+    expect(storeLog).toHaveBeenCalledWith('info', 61, expect.any(Error), 'handleLoginRequest');
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.OldRequest, TAB);
   });
 });

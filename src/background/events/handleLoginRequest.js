@@ -102,7 +102,8 @@ const handleLoginRequest = async (tabID, data) => {
     // Whenever the token wasn't autofilled — no safe target frame (the recorded
     // sub-frame navigated away, Z2), or the fill did not complete — surface the
     // token so the user can copy it, but only after re-validating the top frame
-    // (Z1) and with a native-notification last resort (N4).
+    // (Z1); an unsafe top frame drops the token (silently after a post-login
+    // redirect, with an "Outdated request" notification for a superseded request).
     if (!completed) {
       await deliverTokenNotificationFallback(tabID, token, data.token_request_id);
     }
