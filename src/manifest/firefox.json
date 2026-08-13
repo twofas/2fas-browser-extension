@@ -75,6 +75,7 @@
     "activeTab",
     "tabs",
     "storage",
+    "unlimitedStorage",
     "notifications",
     "contextMenus",
     "webNavigation",

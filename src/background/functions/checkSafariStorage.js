@@ -20,11 +20,17 @@
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
+import reportMissingPrivateKey, { clearMissingPrivateKeyReport } from '@background/functions/reportMissingPrivateKey.js';
 import openInstallPage from '@background/functions/openInstallPage.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
  * Checks if Safari storage has all required data and regenerates it if missing.
+ *
+ * A fully registered install whose private key vanished is NOT regenerated —
+ * the same policy as verifyStorageIntegrity: re-registering would orphan every
+ * paired device, so the state is reported (log 57, once) and recovery is the
+ * user's explicit reset/re-pair (Safari has the Reset extension button).
  *
  * @param {Object} browserInfo - The browser information object
  * @returns {Promise<void>}
@@ -44,6 +50,14 @@ const checkSafariStorage = async browserInfo => {
     const hasValidStorage = hasBaseStorage && Boolean(await getOrMigratePrivateKey(storage));
 
     if (hasValidStorage) {
+      await clearMissingPrivateKeyReport();
+
+      return;
+    }
+
+    if (hasBaseStorage) {
+      await reportMissingPrivateKey(storage, 'checkSafariStorage');
+
       return;
     }
 

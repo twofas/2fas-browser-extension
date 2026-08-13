@@ -17,11 +17,10 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import config from '@/config.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
-import TwoFasNotification from '@notification/index.js';
+import reportMissingPrivateKey, { clearMissingPrivateKeyReport } from '@background/functions/reportMissingPrivateKey.js';
 import storeLog from '@partials/storeLog.js';
 
 const STORAGE_VALID = 'valid';
@@ -77,15 +76,17 @@ const verifyStorageIntegrity = async browserInfo => {
     const state = await classifyStorage(storage);
 
     if (state === STORAGE_VALID) {
+      await clearMissingPrivateKeyReport();
+
       return true;
     }
 
     if (state === STORAGE_MISSING_PRIVATE_KEY) {
       // Registered, but the private key is gone. Do NOT regenerate (it would orphan
       // every paired device with no way to rotate the server key). Surface a re-pair
-      // prompt and leave storage untouched — recovery is an explicit reset/re-pair.
-      await storeLog('error', 57, new Error('Private key missing while registration valid; re-pairing required'), 'verifyStorageIntegrity');
-      await TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+      // prompt (once per incident) and leave storage untouched — recovery is an
+      // explicit reset/re-pair.
+      await reportMissingPrivateKey(storage, 'verifyStorageIntegrity');
 
       return false;
     }
