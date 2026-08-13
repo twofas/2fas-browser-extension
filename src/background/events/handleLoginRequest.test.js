@@ -42,7 +42,15 @@ vi.mock('@background/functions/Crypt.js', () => ({
   }
 }));
 
-vi.mock('@background/functions/privateKeyStore.js', () => ({ getOrMigratePrivateKey: vi.fn().mockResolvedValue({}) }));
+const getOrMigratePrivateKey = vi.fn();
+vi.mock('@background/functions/privateKeyStore.js', () => ({ getOrMigratePrivateKey: (...a) => getOrMigratePrivateKey(...a) }));
+
+const reportMissingPrivateKey = vi.fn().mockResolvedValue(undefined);
+vi.mock('@background/functions/reportMissingPrivateKey.js', () => ({
+  default: (...a) => reportMissingPrivateKey(...a),
+  clearMissingPrivateKeyReport: vi.fn().mockResolvedValue(undefined)
+}));
+
 vi.mock('@background/functions/syncDevicesWithAPI.js', () => ({ default: vi.fn().mockResolvedValue({ storage: { devices: [] } }) }));
 
 const resolveTokenTargetFrame = vi.fn();
@@ -87,6 +95,9 @@ beforeEach(() => {
   showNativePush.mockClear();
   notificationShow.mockClear();
   resolveTokenTargetFrame.mockReset();
+  getOrMigratePrivateKey.mockReset();
+  getOrMigratePrivateKey.mockResolvedValue({});
+  reportMissingPrivateKey.mockClear();
   inputTokenResponse = { status: 'completed' };
   showTokenBehavior = 'ok';
 });
@@ -164,5 +175,30 @@ describe('handleLoginRequest — token delivery tail', () => {
     expect(showNativePush).not.toHaveBeenCalled();
     expect(storeLog).toHaveBeenCalledWith('info', 61, expect.any(Error), 'handleLoginRequest');
     expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.OldRequest, TAB);
+  });
+});
+
+describe('handleLoginRequest — missing private key', () => {
+  it('routes through the deduped log-57 reporter, shows the re-pair notification per request, closes the request — no error 8', async () => {
+    getOrMigratePrivateKey.mockResolvedValue(null);
+    resolveTokenTargetFrame.mockResolvedValue(0);
+    await setup();
+
+    await handleLoginRequest(TAB, DATA);
+
+    // Log 57 (deduped by the helper) instead of a per-request error 8 flood.
+    expect(reportMissingPrivateKey).toHaveBeenCalledWith(expect.anything(), 'handleLoginRequest', { notify: false });
+    expect(storeLog).not.toHaveBeenCalled();
+
+    // The user actively awaited this token, so the actionable re-pair
+    // notification is shown on EVERY request, not once per incident.
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.StorageIntegrity, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.UndefinedError, TAB);
+
+    // The pending token_request no longer dangles until the backend timeout.
+    expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
+
+    // No token delivery is attempted without a key.
+    expect(sentActions()).toEqual([]);
   });
 });

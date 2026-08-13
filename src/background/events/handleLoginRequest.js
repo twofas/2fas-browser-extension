@@ -26,6 +26,7 @@ import storeLog from '@partials/storeLog.js';
 import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFrame.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import isTabError from '@background/functions/isTabError.js';
+import reportMissingPrivateKey from '@background/functions/reportMissingPrivateKey.js';
 import decryptToken from '@background/functions/decryptToken.js';
 import isDevicePaired from '@background/functions/isDevicePaired.js';
 import deliverTokenNotificationFallback from '@background/functions/deliverTokenNotificationFallback.js';
@@ -64,7 +65,15 @@ const handleLoginRequest = async (tabID, data) => {
     const privateKey = await getOrMigratePrivateKey(storage);
 
     if (!privateKey) {
-      throw new Error('Private key not found in storage');
+      // Permanent broken state (key lost while registration stays valid) — not a
+      // per-request failure. Route into the deduped log-57 reporter instead of
+      // flooding bucket 8 on every token request, and show the actionable re-pair
+      // notification here (per request — the user actively awaited this token)
+      // rather than the reporter's once-per-incident one.
+      await reportMissingPrivateKey(storage, 'handleLoginRequest', { notify: false });
+      await closeRequest(tabID, data.token_request_id);
+
+      return TwoFasNotification.show(config.Texts.Error.StorageIntegrity, tabID);
     }
 
     const token = await decryptToken(data.token, privateKey);

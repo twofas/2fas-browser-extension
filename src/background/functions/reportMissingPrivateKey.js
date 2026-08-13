@@ -40,9 +40,12 @@ const REPORTED_FLAG = 'privateKeyMissingReported';
  * @async
  * @param {Object} storage - Storage object holding keys (used for diagnostics only).
  * @param {string} context - Caller name for the log entry.
+ * @param {Object} [options]
+ * @param {boolean} [options.notify=true] - Skip the built-in (deduped) notification
+ *   when the caller shows its own per-request one instead (token request path).
  * @returns {Promise<void>}
  */
-const reportMissingPrivateKey = async (storage, context) => {
+const reportMissingPrivateKey = async (storage, context, { notify = true } = {}) => {
   const flagged = await loadFromLocalStorage(REPORTED_FLAG);
 
   if (flagged?.[REPORTED_FLAG]) {
@@ -55,11 +58,13 @@ const reportMissingPrivateKey = async (storage, context) => {
 
   await storeLog('error', 57, err, context);
 
-  try {
-    await TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
-  } catch (notificationErr) {
-    // A failed notification must not leave the flag unset — that would re-open
-    // the per-update-event flood this reporter exists to prevent.
+  if (notify) {
+    try {
+      await TwoFasNotification.show(config.Texts.Error.StorageIntegrity);
+    } catch (notificationErr) {
+      // A failed notification must not leave the flag unset — that would re-open
+      // the per-update-event flood this reporter exists to prevent.
+    }
   }
 
   await saveToLocalStorage({ [REPORTED_FLAG]: true });
