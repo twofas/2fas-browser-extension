@@ -147,7 +147,8 @@ const installPageProdConfig = {
     }),
     new StyleLintPlugin({
       configFile: config.SCSSLintConfigFile,
-      failOnError: false
+      failOnError: false,
+      extensions: ['scss']
     }),
     new CopyWebpackPlugin(config.extPlatform[process.env.EXT_PLATFORM.toLowerCase()].filesList),
     new webpack.ProvidePlugin({
