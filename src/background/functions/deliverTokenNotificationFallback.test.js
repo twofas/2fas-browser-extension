@@ -30,6 +30,9 @@ vi.mock('@background/functions/topFrameStillHostsRequest.js', () => ({ default: 
 const notificationShow = vi.fn().mockResolvedValue(undefined);
 vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
 
+const showNativePush = vi.fn().mockResolvedValue('notification-id');
+vi.mock('@notification/functions/showNativePush.js', () => ({ default: (...a) => showNativePush(...a) }));
+
 import deliverTokenNotificationFallback from './deliverTokenNotificationFallback.js';
 
 const TAB = 8;
@@ -40,6 +43,8 @@ beforeEach(() => {
   vi.restoreAllMocks();
   storeLog.mockClear();
   notificationShow.mockClear();
+  showNativePush.mockClear();
+  showNativePush.mockResolvedValue('notification-id');
   topFrameStillHostsRequest.mockReset();
 });
 
@@ -57,6 +62,7 @@ describe('deliverTokenNotificationFallback', () => {
     );
     expect(storeLog).not.toHaveBeenCalled();
     expect(notificationShow).not.toHaveBeenCalled();
+    expect(showNativePush).not.toHaveBeenCalled();
   });
 
   it('Z1: withholds the token silently when the top frame origin changed (post-login redirect)', async () => {
@@ -68,6 +74,7 @@ describe('deliverTokenNotificationFallback', () => {
     expect(sendMessage).not.toHaveBeenCalled();
     expect(storeLog).not.toHaveBeenCalled();
     expect(notificationShow).not.toHaveBeenCalled();
+    expect(showNativePush).not.toHaveBeenCalled();
   });
 
   it('superseded: withholds the token, logs info 61 and notifies the user (native/front-end per setting)', async () => {
@@ -103,7 +110,7 @@ describe('deliverTokenNotificationFallback', () => {
     expect(notificationShow).not.toHaveBeenCalled();
   });
 
-  it('F1: never surfaces the token via a native notification — logs 58 and drops it when the front-end notification is rejected', async () => {
+  it('F1: never surfaces the token via a native notification — logs 58 (real failure in cause) and shows a token-free recovery push', async () => {
     topFrameStillHostsRequest.mockResolvedValue({ safe: true });
     vi.spyOn(browser.tabs, 'sendMessage').mockRejectedValue(new Error('no content script'));
 
@@ -112,17 +119,37 @@ describe('deliverTokenNotificationFallback', () => {
     expect(storeLog).toHaveBeenCalledWith(
       'warning',
       58,
-      expect.objectContaining({ message: expect.stringContaining('withheld') }),
+      expect.objectContaining({
+        message: expect.stringContaining('withheld'),
+        cause: 'no content script'
+      }),
       'handleLoginRequest'
     );
+    expect(showNativePush).toHaveBeenCalledWith(config.Texts.Error.TokenNotDelivered, false);
+    // The recovery push must not carry the token.
+    expect(JSON.stringify(showNativePush.mock.calls)).not.toContain(TOKEN);
   });
 
-  it('logs 58 when the content script responds with a non-ok status', async () => {
+  it('logs 58 with the response status as cause when the content script responds with a non-ok status', async () => {
     topFrameStillHostsRequest.mockResolvedValue({ safe: true });
-    vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue({ status: 'omitted' });
+    vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue({ status: 'error', message: 'DOM exploded' });
 
     await deliverTokenNotificationFallback(TAB, TOKEN, REQ);
 
-    expect(storeLog).toHaveBeenCalledWith('warning', 58, expect.any(Error), 'handleLoginRequest');
+    expect(storeLog).toHaveBeenCalledWith(
+      'warning',
+      58,
+      expect.objectContaining({ cause: 'content script responded with status: error (DOM exploded)' }),
+      'handleLoginRequest'
+    );
+    expect(showNativePush).toHaveBeenCalledWith(config.Texts.Error.TokenNotDelivered, false);
+  });
+
+  it('a failed recovery push is swallowed — delivery still resolves', async () => {
+    topFrameStillHostsRequest.mockResolvedValue({ safe: true });
+    vi.spyOn(browser.tabs, 'sendMessage').mockRejectedValue(new Error('no content script'));
+    showNativePush.mockRejectedValueOnce(new Error('notifications unavailable'));
+
+    await expect(deliverTokenNotificationFallback(TAB, TOKEN, REQ)).resolves.toBeUndefined();
   });
 });

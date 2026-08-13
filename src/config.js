@@ -105,6 +105,10 @@ const config = {
         Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
         Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
       },
+      TokenNotDelivered: {
+        Title: browser.i18n.getMessage('errorTokenNotDeliveredTitle') || t.errorTokenNotDeliveredTitle,
+        Message: browser.i18n.getMessage('errorTokenNotDeliveredMessage') || t.errorTokenNotDeliveredMessage
+      },
       DeviceUnpaired: {
         Title: browser.i18n.getMessage('errorDeviceUnpairedTitle') || t.errorDeviceUnpairedTitle,
         Message: browser.i18n.getMessage('errorDeviceUnpairedMessage') || t.errorDeviceUnpairedMessage

@@ -28,7 +28,9 @@ import getOrigin from '@partials/getOrigin.js';
  * superseded (requestID) and that the top frame STILL hosts the origin that
  * initiated the request (frameIds/tabs are reused across navigations, so a page
  * that navigated to a different site must not receive the token). A legacy record
- * with no comparable origin is allowed, preserving prior behavior.
+ * with no comparable origin is allowed as long as the top frame is an ordinary
+ * http/https page, preserving prior behavior without ever surfacing the token on
+ * an extension or browser page.
  *
  * Returns a verdict rather than a bare boolean so the caller can tell the benign
  * causes apart (a post-login redirect vs. an approved-but-outdated request vs. a
@@ -53,13 +55,20 @@ const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
     }
 
     const requestOrigin = tabData?.origin;
-
-    if (!isUsableOrigin(requestOrigin)) {
-      return { safe: true };
-    }
-
     const frame = await browser.webNavigation.getFrame({ tabId: tabID, frameId: 0 });
     const currentOrigin = getOrigin(frame?.url);
+
+    if (!isUsableOrigin(requestOrigin)) {
+      // Legacy/wiped session record — no request origin to compare against.
+      // Keep the legacy allowance, but only for an ordinary web page: requests
+      // start exclusively on http/https, so an extension/browser page in the
+      // top frame can never be the page that initiated this request.
+      if (typeof frame?.url === 'string' && /^https?:/i.test(frame.url)) {
+        return { safe: true };
+      }
+
+      return { safe: false, reason: 'originChanged' };
+    }
 
     if (isUsableOrigin(currentOrigin) && currentOrigin === requestOrigin) {
       return { safe: true };
