@@ -167,9 +167,17 @@ const contentOnMessage = (request, sender, sendResponse, tabData, isTopFrame) =>
     }
 
     case 'showTokenNotification': {
-      loadFonts();
-      tokenNotification(request.token, request.token_request_id);
-      sendResponse({ status: 'ok' });
+      // A throw before sendResponse would reach the background as a rejected
+      // sendMessage — indistinguishable from a missing content script (log 58).
+      // Answer with an explicit error status so the failure keeps its cause.
+      try {
+        loadFonts();
+        tokenNotification(request.token, request.token_request_id);
+        sendResponse({ status: 'ok' });
+      } catch (err) {
+        sendResponse({ status: 'error', message: err?.message || 'showTokenNotification failed' });
+      }
+
       break;
     }
 

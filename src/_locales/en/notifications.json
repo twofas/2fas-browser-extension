@@ -143,6 +143,14 @@
     "message": "It seems like you're responding to an outdated request that can no longer be executed",
     "description": ""
   },
+  "errorTokenNotDeliveredTitle": {
+    "message": "Token not delivered",
+    "description": ""
+  },
+  "errorTokenNotDeliveredMessage": {
+    "message": "The page could not receive your 2FA token. Reload the page and request the token again.",
+    "description": ""
+  },
   "errorDeviceUnpairedTitle": {
     "message": "Device unpaired",
     "description": ""
@@ -152,7 +160,7 @@
     "description": ""
   },
   "errorNoInternetTitle": {
-    "message": "No internet connection",
+    "message": "No Internet connection",
     "description": ""
   },
   "errorNoInternetMessage": {

@@ -18,7 +18,10 @@
 //
 
 import browser from 'webextension-polyfill';
+import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
+import TwoFasNotification from '@notification/index.js';
+import showNativePush from '@notification/functions/showNativePush.js';
 import topFrameStillHostsRequest from '@background/functions/topFrameStillHostsRequest.js';
 
 // NOTE: the decrypted token is NEVER surfaced through a native OS notification.
@@ -30,12 +33,25 @@ import topFrameStillHostsRequest from '@background/functions/topFrameStillHostsR
  * Last-resort delivery of the decrypted token when it could not be autofilled: show
  * the copy-to-clipboard token notification in the top frame. Gated by
  * topFrameStillHostsRequest so the token is never surfaced on a page that navigated
- * away (Z1) — on mismatch the token is delivered nowhere.
+ * away (Z1) — when the top frame is not safe the token is delivered nowhere, and the
+ * blocked causes are handled separately:
+ *   - originChanged: the top frame navigated since the request — almost always the
+ *     post-login redirect after a successful fill, so it is not logged at all;
+ *   - superseded: the user approved an outdated push (a newer request took over the
+ *     tab) — logged as info (61) and the user is told via TwoFasNotification, which
+ *     honors the native/front-end notification setting; the token itself is dropped;
+ *   - lookupFailed: the safety check itself failed — logged as warning (62) with the
+ *     real underlying error.
  *
- * If the front-end notification cannot render (no content script — orphaned/blocked
- * page) the token is dropped, NOT pushed to a native OS notification: a 2FA code
- * must never leave the page (see the note at the top of this file). The undeliverable
- * case is logged so it is still observable; the user can re-request the token.
+ * If the front-end notification cannot render (no content script — bfcache-restored,
+ * orphaned or blocked page) the token is dropped, NOT pushed to a native OS
+ * notification: a 2FA code must never leave the page (see the note at the top of
+ * this file). The undeliverable case is logged with the underlying failure as the
+ * error `cause` (kept out of the message so storeLog's global message filters don't
+ * swallow it) and the user gets a token-FREE native notification telling them to
+ * reload the page — the front-end channel is by definition dead here, so
+ * TwoFasNotification.show (which honors the nativePush setting) would be a no-op
+ * for front-end users.
  *
  * @async
  * @param {number} tabID - The tab to notify.
@@ -44,23 +60,51 @@ import topFrameStillHostsRequest from '@background/functions/topFrameStillHostsR
  * @returns {Promise<void>}
  */
 const deliverTokenNotificationFallback = async (tabID, token, tokenRequestId) => {
-  const safe = await topFrameStillHostsRequest(tabID, tokenRequestId);
+  const verdict = await topFrameStillHostsRequest(tabID, tokenRequestId);
 
-  if (!safe) {
-    await storeLog('warning', 56, new Error('Top-frame token fallback blocked (requestID/origin mismatch)'), 'handleLoginRequest');
+  if (!verdict.safe) {
+    if (verdict.reason === 'superseded') {
+      await storeLog('info', 61, new Error('Token withheld: request superseded by a newer one (outdated push approved)'), 'handleLoginRequest');
+      // Best-effort feedback (no token attached) — a page without the content
+      // script must not escalate this benign case into an error.
+      await TwoFasNotification.show(config.Texts.Error.OldRequest, tabID).catch(() => {});
+    } else if (verdict.reason === 'lookupFailed') {
+      await storeLog('warning', 62, verdict.error, 'handleLoginRequest');
+    }
+
+    // originChanged: the page navigated after a (nearly always successful) login —
+    // withhold the token silently, this is the fallback working as designed.
     return;
   }
 
+  let failure = null;
+
   const shown = await browser.tabs
     .sendMessage(tabID, { action: 'showTokenNotification', token, token_request_id: tokenRequestId }, { frameId: 0 })
-    .then(res => res?.status === 'ok')
-    .catch(() => false);
+    .then(res => {
+      if (res?.status === 'ok') {
+        return true;
+      }
+
+      failure = `content script responded with status: ${res?.status || 'none'}${res?.message ? ` (${res.message})` : ''}`;
+      return false;
+    })
+    .catch(err => {
+      failure = err?.message || String(err);
+      return false;
+    });
 
   if (!shown) {
     // The front-end notification could not render (no content script). Do NOT fall
     // back to a native OS notification carrying the token — the code stays in the
-    // page. Log and drop so the failure is observable without leaking the token.
-    await storeLog('warning', 58, new Error('Front-end token notification undeliverable; token withheld'), 'handleLoginRequest');
+    // page. Log (real failure in `cause`) and drop, then tell the user how to
+    // recover via a token-free native notification; without it every retry hits
+    // the same dead channel invisibly.
+    await storeLog('warning', 58, new Error('Front-end token notification undeliverable; token withheld', { cause: failure }), 'handleLoginRequest');
+
+    try {
+      await showNativePush(config.Texts.Error.TokenNotDelivered, false);
+    } catch {}
   }
 };
 

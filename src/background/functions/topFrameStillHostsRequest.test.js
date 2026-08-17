@@ -33,36 +33,60 @@ beforeEach(() => {
 });
 
 describe('topFrameStillHostsRequest', () => {
-  it('is true when the top frame still hosts the request origin', async () => {
+  it('is safe when the top frame still hosts the request origin', async () => {
     await setTabData({ origin: 'https://site.test', requestID: REQ });
     vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://site.test/login' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toBe(true);
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: true });
   });
 
-  it('is false when the top frame navigated to a different origin (Z1)', async () => {
+  it('reports originChanged when the top frame navigated to a different origin (Z1)', async () => {
     await setTabData({ origin: 'https://site.test', requestID: REQ });
     vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://evil.test/x' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toBe(false);
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'originChanged' });
   });
 
-  it('is false when the request was superseded (requestID mismatch)', async () => {
+  it('reports originChanged when the top frame origin is not comparable (mid-navigation)', async () => {
+    await setTabData({ origin: 'https://site.test', requestID: REQ });
+    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'about:blank' });
+
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'originChanged' });
+  });
+
+  it('reports superseded when a newer request took over the tab (requestID mismatch)', async () => {
     await setTabData({ origin: 'https://site.test', requestID: 'a-newer-request' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toBe(false);
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'superseded' });
   });
 
-  it('is true (legacy) when no comparable request origin is recorded', async () => {
+  it('is safe (legacy) when no comparable request origin is recorded and the top frame is an http(s) page', async () => {
     await setTabData({ requestID: REQ });
+    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://site.test/login' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toBe(true);
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: true });
   });
 
-  it('is false when the frame lookup throws', async () => {
-    await setTabData({ origin: 'https://site.test', requestID: REQ });
-    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(new Error('no frame'));
+  it('blocks the legacy allowance when the top frame is not an ordinary web page', async () => {
+    await setTabData({ requestID: REQ });
+    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'chrome-extension://abc/optionsPage.html' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toBe(false);
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'originChanged' });
+  });
+
+  it('reports lookupFailed when the frame lookup throws on a legacy record', async () => {
+    await setTabData({ requestID: REQ });
+    const boom = new Error('no frame');
+    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
+
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'lookupFailed', error: boom });
+  });
+
+  it('reports lookupFailed with the real error when the frame lookup throws', async () => {
+    await setTabData({ origin: 'https://site.test', requestID: REQ });
+    const boom = new Error('no frame');
+    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
+
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'lookupFailed', error: boom });
   });
 });

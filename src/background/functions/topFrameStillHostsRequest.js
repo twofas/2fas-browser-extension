@@ -28,12 +28,21 @@ import getOrigin from '@partials/getOrigin.js';
  * superseded (requestID) and that the top frame STILL hosts the origin that
  * initiated the request (frameIds/tabs are reused across navigations, so a page
  * that navigated to a different site must not receive the token). A legacy record
- * with no comparable origin is allowed, preserving prior behavior.
+ * with no comparable origin is allowed as long as the top frame is an ordinary
+ * http/https page, preserving prior behavior without ever surfacing the token on
+ * an extension or browser page.
+ *
+ * Returns a verdict rather than a bare boolean so the caller can tell the benign
+ * causes apart (a post-login redirect vs. an approved-but-outdated request vs. a
+ * genuine lookup failure) instead of logging them all as one event.
  *
  * @async
  * @param {number} tabID - The tab to check.
  * @param {string} tokenRequestId - The request id this token belongs to.
- * @returns {Promise<boolean>} True only when the top frame is safe for the token.
+ * @returns {Promise<{safe: boolean, reason?: ('superseded'|'originChanged'|'lookupFailed'), error?: Error}>}
+ *   `{safe: true}` when the top frame may receive the token; otherwise `safe: false` with
+ *   `reason` — 'superseded' (a newer request took over the tab), 'originChanged' (the top
+ *   frame no longer hosts the request origin) or 'lookupFailed' (with the real `error`).
  */
 const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
   try {
@@ -42,21 +51,35 @@ const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
 
     // A newer request took over this tab → this token is stale; withhold it.
     if (tabData?.requestID && tabData.requestID !== tokenRequestId) {
-      return false;
+      return { safe: false, reason: 'superseded' };
     }
 
     const requestOrigin = tabData?.origin;
-
-    if (!isUsableOrigin(requestOrigin)) {
-      return true;
-    }
-
     const frame = await browser.webNavigation.getFrame({ tabId: tabID, frameId: 0 });
     const currentOrigin = getOrigin(frame?.url);
 
-    return isUsableOrigin(currentOrigin) && currentOrigin === requestOrigin;
-  } catch {
-    return false;
+    if (!isUsableOrigin(requestOrigin)) {
+      // Legacy/wiped session record — no request origin to compare against.
+      // Keep the legacy allowance, but only for an ordinary web page: requests
+      // start exclusively on http/https, so an extension/browser page in the
+      // top frame can never be the page that initiated this request.
+      if (typeof frame?.url === 'string' && /^https?:/i.test(frame.url)) {
+        return { safe: true };
+      }
+
+      return { safe: false, reason: 'originChanged' };
+    }
+
+    if (isUsableOrigin(currentOrigin) && currentOrigin === requestOrigin) {
+      return { safe: true };
+    }
+
+    // Also covers an opaque/undeterminable current origin (mid-navigation,
+    // about:blank): the top frame is in transit, which is the same "page moved
+    // on" situation as a committed cross-origin navigation.
+    return { safe: false, reason: 'originChanged' };
+  } catch (err) {
+    return { safe: false, reason: 'lookupFailed', error: err };
   }
 };
 

@@ -23,6 +23,7 @@ import config from '@/config.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
+import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import {
   REGISTRATION_STORAGE_KEY,
   REGISTRATION_ALARM_NAME,
@@ -178,8 +179,10 @@ const sendUpdate = async record => {
 const sendCreate = async record => {
   const storage = await loadFromLocalStorage(['keys', 'browserInfo', 'extensionID']);
 
-  if (storage?.extensionID) {
-    // Already registered (race) — nothing to create.
+  if (storage?.extensionID && !record.reregister) {
+    // Already registered (race) — nothing to create. A 'reregister' record is the
+    // exception: the server returned 404 for the stored extensionID, so that ID is
+    // dead and a fresh registration must overwrite it.
     await clearRecord();
     await clearAlarm();
     return;
@@ -194,8 +197,24 @@ const sendCreate = async record => {
     return;
   }
 
+  // Never commit a registration whose private half is gone: the resulting state
+  // is permanently broken (missing-private-key, log 57) instead of a regenerable
+  // incomplete one. A transient IndexedDB failure throws and retries via the
+  // normal backoff; a genuinely absent key drops the record so the integrity
+  // check can regenerate or surface the re-pair prompt.
+  if (!(await getOrMigratePrivateKey(storage))) {
+    await clearRecord();
+    await clearAlarm();
+    return;
+  }
+
   const body = {
-    name: record.payload?.name || storage?.browserInfo?.name,
+    // A reregister record was converted from an update and may carry a stale
+    // payload name — prefer the live storage name so a user rename made while
+    // the record was pending is never clobbered (mirrors sendUpdate).
+    name: record.reregister
+      ? (storage?.browserInfo?.name || record.payload?.name)
+      : (record.payload?.name || storage?.browserInfo?.name),
     browser_name: record.payload?.browser_name || storage?.browserInfo?.browser_name,
     browser_version: record.payload?.browser_version || storage?.browserInfo?.browser_version,
     public_key: publicKey
@@ -233,11 +252,15 @@ const handleFailure = async (record, err, now) => {
   const classification = classifyError(err);
 
   if (record.op === 'update' && classification === 'notFound') {
-    // Server no longer knows this extension — switch to re-registration.
+    // Server no longer knows this extension — switch to re-registration. The
+    // reregister flag lets sendCreate proceed despite the (dead) stored
+    // extensionID; the new registration overwrites it. Pairings tied to the old
+    // ID are already gone server-side — the user re-pairs against the new one.
     const next = now + computeBackoffMs(1);
     await persistRecord({
       ...record,
       op: 'create',
+      reregister: true,
       attempts: 0,
       firstAttemptAt: now,
       nextAttemptAt: next,

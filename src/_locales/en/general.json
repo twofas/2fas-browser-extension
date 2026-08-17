@@ -180,7 +180,7 @@
     "description": ""
   },
   "devicesListError": {
-    "message": "Cannot load paired devices — the 2FAS service is unreachable. Please refresh this page to try again.",
+    "message": "Cannot load paired devices — the 2FAS service is unreachable. Please refresh this page and try again.",
     "description": ""
   },
   "noExcludedDomains": {

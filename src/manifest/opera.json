@@ -3,7 +3,7 @@
   "name": "2FAS Auth - Two Factor Authentication",
   "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "icons": {
@@ -69,6 +69,7 @@
     "activeTab",
     "tabs",
     "storage",
+    "unlimitedStorage",
     "notifications",
     "contextMenus",
     "webNavigation",

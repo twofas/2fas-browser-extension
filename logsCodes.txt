@@ -47,9 +47,12 @@
 51 - resolveTokenTargetFrame - target frame origin changed / lookup failed, fallback to top frame [warning]
 53 - updateList (onMessage) - list mutation failed [error]
 54 - runStorageMigrations - storage migration failed [error]
-56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning]
+*56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning] [deprecated in 1.8.4 — split into 61 (superseded) and 62 (lookup failed); origin-change after a successful login redirect is no longer logged]
 57 - verifyStorageIntegrity - private key missing while public key + extensionID valid: re-pairing required, regeneration skipped [error]
 58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
+60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback [warning]
+61 - handleLoginRequest - token withheld: request superseded by a newer one (user approved an outdated push), user notified via Outdated request notification [info]
+62 - handleLoginRequest - token fallback blocked: top-frame safety lookup failed (session storage read / webNavigation.getFrame error) [warning]
 
 // CONTENT
 33 - content_script

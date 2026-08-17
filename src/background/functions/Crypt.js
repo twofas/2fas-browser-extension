@@ -34,14 +34,19 @@ class Crypt {
   }
 
   /**
-   * Generates a new RSA-OAEP key pair. The private key is non-extractable
-   * (extractable: false), so its raw material can never be exported; it is
-   * persisted as a CryptoKey object in IndexedDB. The public key of an
-   * asymmetric pair is always extractable regardless of this flag, so it can
-   * still be exported (spki) and sent to the API.
+   * Generates a new RSA-OAEP key pair. By default the private key is
+   * non-extractable (extractable: false), so its raw material can never be
+   * exported; it is persisted as a CryptoKey object in IndexedDB. The public
+   * key of an asymmetric pair is always extractable regardless of this flag,
+   * so it can still be exported (spki) and sent to the API.
+   *
+   * extractable: true is used ONLY for the storage.local fallback, where the
+   * private key must be exported (pkcs8) because IndexedDB is unavailable and
+   * a CryptoKey object cannot be persisted anywhere else.
+   * @param {boolean} [extractable=false] - Whether the private key can be exported
    * @returns {Promise<CryptoKeyPair>} Promise resolving to the generated key pair
    */
-  generateKeys () {
+  generateKeys (extractable = false) {
     return crypto.subtle.generateKey(
       {
         name: 'RSA-OAEP',
@@ -49,7 +54,7 @@ class Crypt {
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: { name: 'SHA-512' }
       },
-      false,
+      extractable,
       ['encrypt', 'decrypt']
     );
   }

@@ -28,7 +28,59 @@ import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
-import tagIndexedDBError from '@background/functions/tagIndexedDBError.js';
+
+/**
+ * Generates the RSA keypair and persists the private key. Preferred: a
+ * non-extractable CryptoKey in IndexedDB. When IndexedDB is unavailable —
+ * Firefox with "Never remember history" (permanent private browsing) makes
+ * indexedDB.open throw for extension pages too (Bugzilla 1841806), and a
+ * corrupted profile storage behaves the same; neither is cleared by
+ * reinstalling the extension — falls back to the legacy scheme: an extractable
+ * key exported as pkcs8 base64, persisted in storage.local via the returned
+ * keys object. getOrMigratePrivateKey treats that copy as authoritative and
+ * promotes it into IndexedDB automatically if IndexedDB recovers.
+ *
+ * @async
+ * @param {Crypt} crypt - Crypt instance used for key generation and export.
+ * @returns {Promise<{publicKey: string, privateKey?: string}>} The keys object for storage.local.
+ */
+const generateKeyMaterial = async crypt => {
+  let idbError = null;
+
+  // Reset clears storage.local; wipe any stale IndexedDB key too, so a
+  // regeneration is fully clean. A failing delete means IndexedDB is
+  // unavailable — switch to the fallback instead of aborting.
+  try {
+    await deletePrivateKey();
+  } catch (err) {
+    idbError = err;
+  }
+
+  if (!idbError) {
+    const pair = await crypt.generateKeys();
+
+    try {
+      await savePrivateKey(pair.privateKey);
+
+      return { publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)) };
+    } catch (err) {
+      idbError = err;
+    }
+  }
+
+  const pair = await crypt.generateKeys(true);
+  const [spki, pkcs8] = await Promise.all([
+    crypt.exportKey('spki', pair.publicKey),
+    crypt.exportKey('pkcs8', pair.privateKey)
+  ]);
+
+  await storeLog('warning', 60, idbError, 'generateDefaultStorage - IndexedDB unavailable, private key stored in storage.local fallback');
+
+  return {
+    publicKey: crypt.ArrayBufferToString(spki),
+    privateKey: crypt.ArrayBufferToString(pkcs8)
+  };
+};
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -46,43 +98,25 @@ const generateDefaultStorage = browserInfo => {
         attempt = res.attempt;
       }
 
-      // Reset clears storage.local; the private key now lives in IndexedDB, so
-      // wipe it too to keep a regeneration fully clean. A failing delete here means
-      // IndexedDB is unavailable — tag it as retryable rather than terminal.
-      return Promise.all([
-        clearLocalStorage(),
-        deletePrivateKey().catch(err => { throw tagIndexedDBError(err); })
-      ]);
+      return clearLocalStorage();
     })
-    .then(() => crypt.generateKeys())
-    .then(keys => Promise.all([
-      crypt.exportKey('spki', keys.publicKey),
-      // Tag an IndexedDB private-key store failure so the catch can treat it as a
-      // transient/retryable condition rather than a terminal error-28.
-      savePrivateKey(keys.privateKey).catch(err => { throw tagIndexedDBError(err); })
-    ]))
-    .then(data => {
-      const keys = {
-        publicKey: crypt.ArrayBufferToString(data[0])
-      };
-
-      return saveToLocalStorage({
-        configured: false,
-        browserInfo,
-        keys,
-        contextMenu: true,
-        logging: false,
-        incognito: false,
-        nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
-        pinInfo: false,
-        extensionVersion: config.ExtensionVersion,
-        autoSubmitEnabled: false,
-        autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
-        attempt: attempt + 1,
-        extIcon: 0, // 0 - default
-        storageSchemaVersion: CURRENT_SCHEMA_VERSION
-      });
-    })
+    .then(() => generateKeyMaterial(crypt))
+    .then(keys => saveToLocalStorage({
+      configured: false,
+      browserInfo,
+      keys,
+      contextMenu: true,
+      logging: false,
+      incognito: false,
+      nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
+      pinInfo: false,
+      extensionVersion: config.ExtensionVersion,
+      autoSubmitEnabled: false,
+      autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
+      attempt: attempt + 1,
+      extIcon: 0, // 0 - default
+      storageSchemaVersion: CURRENT_SCHEMA_VERSION
+    }))
     .then(storage => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
@@ -113,15 +147,6 @@ const generateDefaultStorage = browserInfo => {
 
       if (hasKeys && !hasExtID && isRetryable(classifyError(err))) {
         return enqueueBrowserRegistration({ op: 'create', payload: s.browserInfo || browserInfo });
-      }
-
-      if (err?.isIndexedDBError) {
-        // The private-key store (IndexedDB) was unavailable — disabled by policy,
-        // transiently evicted, or over quota — so generation could not persist the
-        // key. Treat it like a transient failure rather than a terminal error-28
-        // flood: the next startup / verifyStorageIntegrity re-attempts generation,
-        // and a transient failure then succeeds. Surface once, at 'warning'.
-        return storeLog('warning', 28, err, 'generateDefaultStorage - IndexedDB unavailable, will retry on next startup');
       }
 
       return storeLog('error', 28, err, 'generateDefaultStorage');
