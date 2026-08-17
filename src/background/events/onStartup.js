@@ -19,6 +19,7 @@
 
 import { initContextMenu } from '@background/contextMenu/index.js';
 import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
+import { markBrowserSession } from '@background/functions/privateKeyStore.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -32,6 +33,15 @@ import storeLog from '@partials/storeLog.js';
  * @return {Promise<void>}
  */
 const onStartup = async () => {
+  // Mint the session marker for the private-key promotion durability check —
+  // onStartup is its only minting point (fires solely on a true browser start).
+  // Best-effort: without it the check just stays conservative (no strip).
+  try {
+    await markBrowserSession();
+  } catch (err) {
+    console.error('onStartup - markBrowserSession', err);
+  }
+
   try {
     await initContextMenu();
   } catch (err) {

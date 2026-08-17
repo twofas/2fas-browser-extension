@@ -24,9 +24,13 @@ vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(und
 vi.mock('@background/functions/generateDefaultStorage.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/openInstallPage.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 
+const notificationShow = vi.fn().mockResolvedValue(undefined);
+vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
+
 import checkSafariStorage from './checkSafariStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import openInstallPage from '@background/functions/openInstallPage.js';
+import storeLog from '@partials/storeLog.js';
 import { savePrivateKey, getPrivateKey } from '@background/functions/privateKeyStore.js';
 import { saveToLocalStorage, loadFromLocalStorage } from '@localStorage/index.js';
 import Crypt from '@background/functions/Crypt.js';
@@ -60,8 +64,9 @@ describe('checkSafariStorage', () => {
 
     expect(generateDefaultStorage).not.toHaveBeenCalled();
     expect(await getPrivateKey()).toBeDefined();
+    // The plaintext stays until a later session proves the IndexedDB copy durable.
     const after = await loadFromLocalStorage(['keys']);
-    expect(after.keys.privateKey).toBeUndefined();
+    expect(after.keys.privateKey).toBeDefined();
   });
 
   it('regenerates storage and opens the install page when storage is missing', async () => {
@@ -69,5 +74,25 @@ describe('checkSafariStorage', () => {
 
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
     expect(openInstallPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT silently regenerate when registered but the private key is gone — same policy as verifyStorageIntegrity', async () => {
+    // Registered install (base storage intact), IndexedDB key lost. Silent
+    // regeneration would orphan every paired device without any trace.
+    await saveToLocalStorage({ browserInfo: { name: 'Safari' }, keys: { publicKey: 'pub' }, extensionID: 'id' });
+
+    await checkSafariStorage({ name: 'Safari' });
+    await checkSafariStorage({ name: 'Safari' });
+
+    expect(generateDefaultStorage).not.toHaveBeenCalled();
+    expect(openInstallPage).not.toHaveBeenCalled();
+    // Reported once (log 57 + re-pair prompt), deduped on the repeat call.
+    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'checkSafariStorage');
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    // Storage untouched — recovery is the user's explicit reset/re-pair.
+    const after = await loadFromLocalStorage(['keys', 'extensionID']);
+    expect(after.keys.publicKey).toBe('pub');
+    expect(after.extensionID).toBe('id');
   });
 });

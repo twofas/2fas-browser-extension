@@ -100,7 +100,8 @@ const contentScriptProdConfig = {
     }),
     new StyleLintPlugin({
       configFile: config.SCSSLintConfigFile,
-      failOnError: false
+      failOnError: false,
+      extensions: ['scss']
     }),
     new MiniCssExtractPlugin({
       filename: '../content/content_script.css'

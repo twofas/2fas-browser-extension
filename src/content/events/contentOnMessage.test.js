@@ -122,3 +122,23 @@ describe('contentOnMessage — inputToken delivery', () => {
     expect(mocks.tokenNotification).not.toHaveBeenCalled();
   });
 });
+
+describe('contentOnMessage — showTokenNotification', () => {
+  it('shows the notification and responds ok', () => {
+    const sendResponse = vi.fn();
+
+    contentOnMessage({ action: 'showTokenNotification', token: '123456', token_request_id: REQ }, {}, sendResponse, { id: TAB }, true);
+
+    expect(mocks.tokenNotification).toHaveBeenCalledWith('123456', REQ);
+    expect(sendResponse).toHaveBeenCalledWith({ status: 'ok' });
+  });
+
+  it('responds with an error status instead of throwing when the renderer throws (would otherwise masquerade as log 58)', () => {
+    mocks.tokenNotification.mockImplementation(() => { throw new Error('DOM exploded'); });
+    const sendResponse = vi.fn();
+
+    contentOnMessage({ action: 'showTokenNotification', token: '123456', token_request_id: REQ }, {}, sendResponse, { id: TAB }, true);
+
+    expect(sendResponse).toHaveBeenCalledWith({ status: 'error', message: 'DOM exploded' });
+  });
+});

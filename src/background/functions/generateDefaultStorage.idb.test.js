@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const storeLog = vi.fn().mockResolvedValue(undefined);
 vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
@@ -25,10 +25,8 @@ vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
 const enqueueBrowserRegistration = vi.fn().mockResolvedValue(undefined);
 vi.mock('@background/functions/update/enqueueBrowserRegistration.js', () => ({ default: (...a) => enqueueBrowserRegistration(...a) }));
 
-// Simulate the private-key store (IndexedDB) being ENTIRELY unavailable: every op
-// that opens the DB rejects — both delete (which runs first) and save.
-const savePrivateKey = vi.fn().mockRejectedValue(new Error('IDB open failed'));
-const deletePrivateKey = vi.fn().mockRejectedValue(new Error('IDB open failed'));
+const savePrivateKey = vi.fn();
+const deletePrivateKey = vi.fn();
 vi.mock('@background/functions/privateKeyStore.js', () => ({
   savePrivateKey: (...a) => savePrivateKey(...a),
   deletePrivateKey: (...a) => deletePrivateKey(...a),
@@ -45,21 +43,64 @@ vi.mock('@sdk/index.js', () => ({
 }));
 
 import generateDefaultStorage from './generateDefaultStorage.js';
+import { loadFromLocalStorage } from '@localStorage/index.js';
+import Crypt from './Crypt.js';
 
 const BROWSER_INFO = { name: 'Chrome', browser_name: 'Chrome', browser_version: '120' };
 
+// The exact rejection Firefox produces when IndexedDB is unavailable for
+// extension pages (permanent private browsing / corrupted profile storage).
+const IDB_ERR = new Error('A mutation operation was attempted on a database that did not allow mutations.');
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  savePrivateKey.mockResolvedValue(undefined);
+  deletePrivateKey.mockResolvedValue(undefined);
+});
+
 describe('generateDefaultStorage — IndexedDB unavailable (Z3)', () => {
-  it('classifies an IndexedDB failure as retryable (warning) even when the FIRST op (deletePrivateKey) fails', async () => {
+  it('completes registration with a storage.local fallback key when the FIRST op (deletePrivateKey) fails', async () => {
+    deletePrivateKey.mockRejectedValue(IDB_ERR);
+    savePrivateKey.mockRejectedValue(IDB_ERR);
+
     await generateDefaultStorage(BROWSER_INFO);
 
-    // deletePrivateKey fails first (before generateKeys/savePrivateKey ever run);
-    // it must still be tagged so this is a retryable 'warning' 28, NOT terminal 'error' 28.
-    expect(deletePrivateKey).toHaveBeenCalledTimes(1);
-    expect(savePrivateKey).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('warning', 28, expect.any(Error), expect.stringContaining('IndexedDB unavailable'));
-    expect(storeLog).not.toHaveBeenCalledWith('error', 28, expect.anything(), expect.anything());
+    // Registration went through — the extension is usable despite broken IndexedDB.
+    const storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    expect(storage.extensionID).toBe('ext-123');
+    expect(typeof storage.keys.publicKey).toBe('string');
+    expect(typeof storage.keys.privateKey).toBe('string');
 
-    const call = storeLog.mock.calls.find(c => c[0] === 'warning' && c[1] === 28);
-    expect(call[2].isIndexedDBError).toBe(true);
+    // The fallback key is real, importable pkcs8.
+    const crypt = new Crypt();
+    const imported = await crypt.importKey(crypt.stringToArrayBuffer(storage.keys.privateKey), 'pkcs8', ['decrypt']);
+    expect(imported.type).toBe('private');
+
+    // Surfaced once as a warning under its own ID — not the error-28 flood, and
+    // not the old warning-28 retry loop that never converged.
+    expect(storeLog).toHaveBeenCalledWith('warning', 60, expect.any(Error), expect.stringContaining('IndexedDB unavailable'));
+    expect(storeLog).not.toHaveBeenCalledWith('error', 28, expect.anything(), expect.anything());
+  });
+
+  it('falls back when the delete succeeds but savePrivateKey fails', async () => {
+    savePrivateKey.mockRejectedValue(IDB_ERR);
+
+    await generateDefaultStorage(BROWSER_INFO);
+
+    const storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    expect(storage.extensionID).toBe('ext-123');
+    expect(typeof storage.keys.privateKey).toBe('string');
+    expect(storeLog).toHaveBeenCalledWith('warning', 60, expect.any(Error), expect.stringContaining('IndexedDB unavailable'));
+  });
+
+  it('does NOT persist a private key in storage.local when IndexedDB works', async () => {
+    await generateDefaultStorage(BROWSER_INFO);
+
+    const storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    expect(storage.extensionID).toBe('ext-123');
+    expect(typeof storage.keys.publicKey).toBe('string');
+    expect(storage.keys.privateKey).toBeUndefined();
+    expect(savePrivateKey).toHaveBeenCalledTimes(1);
+    expect(storeLog).not.toHaveBeenCalled();
   });
 });

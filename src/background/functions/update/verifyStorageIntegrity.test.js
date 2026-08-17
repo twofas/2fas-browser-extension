@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global crypto */
+/* global crypto, DOMException */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
@@ -59,8 +59,10 @@ describe('verifyStorageIntegrity', () => {
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(true);
     expect(generateDefaultStorage).not.toHaveBeenCalled();
     expect(await getPrivateKey()).toBeDefined();
+    // The plaintext stays in storage.local until a later session proves the
+    // IndexedDB copy survived a restart (see privateKeyStore durability tests).
     const after = await loadFromLocalStorage(['keys']);
-    expect(after.keys.privateKey).toBeUndefined();
+    expect(after.keys.privateKey).toBeDefined();
   });
 
   it('regenerates default storage when storage is corrupt', async () => {
@@ -77,13 +79,88 @@ describe('verifyStorageIntegrity', () => {
 
     // Crucially: no silent regeneration (which would orphan every paired device).
     expect(generateDefaultStorage).not.toHaveBeenCalled();
-    // A re-pair prompt is shown and the state is logged under its own ID.
+    // A re-pair prompt is shown and the state is logged under its own ID, with a
+    // diagnostic cause telling an empty IndexedDB apart from a corrupt fallback key.
     expect(notificationShow).toHaveBeenCalledTimes(1);
     expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'verifyStorageIntegrity');
+    expect(storeLog.mock.calls[0][2].cause).toEqual({ corruptFallbackKey: false });
 
     // Storage is left untouched — recovery is an explicit reset/re-pair.
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
     expect(after.keys.publicKey).toBe('pub');
     expect(after.extensionID).toBe('id');
+  });
+
+  it('reports the missing private key only ONCE across repeated update events', async () => {
+    await saveToLocalStorage({ keys: { publicKey: 'pub' }, extensionID: 'id' });
+
+    // Three onInstalled(update/browser_update) events in a row.
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+
+    // One log + one notification total — the flood collapses to one report per incident.
+    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    const after = await loadFromLocalStorage(['privateKeyMissingReported']);
+    expect(after.privateKeyMissingReported).toBe(true);
+  });
+
+  it('persists the reported flag even when the notification fails, so the dedup still holds', async () => {
+    await saveToLocalStorage({ keys: { publicKey: 'pub' }, extensionID: 'id' });
+    notificationShow.mockRejectedValueOnce(new Error('no notification surface'));
+
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+
+    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBe(true);
+  });
+
+  it('clears the reported flag once the private key is usable again, so a new incident reports anew', async () => {
+    await saveToLocalStorage({ keys: { publicKey: 'pub' }, extensionID: 'id' });
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+    expect(storeLog).toHaveBeenCalledTimes(1);
+
+    // The key comes back (e.g. the user re-imported / storage recovered).
+    const pair = await crypto.subtle.generateKey(GEN_PARAMS, false, ['encrypt', 'decrypt']);
+    await savePrivateKey(pair.privateKey);
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(true);
+    expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBeUndefined();
+
+    // A second, separate loss is reported again.
+    const { deletePrivateKey } = await import('@background/functions/privateKeyStore.js');
+    await deletePrivateKey();
+    expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
+    expect(storeLog).toHaveBeenCalledTimes(2);
+  });
+
+  it('becomes valid via the storage.local fallback key when IndexedDB is unavailable (fresh install)', async () => {
+    // Firefox permanent private browsing: indexedDB.open throws for extension pages.
+    globalThis.indexedDB = {
+      open: () => {
+        throw new DOMException('A mutation operation was attempted on a database that did not allow mutations.', 'InvalidStateError');
+      }
+    };
+
+    // Simulate generateDefaultStorage's fallback outcome: registration completed,
+    // private key persisted as pkcs8 base64 in storage.local instead of IndexedDB.
+    generateDefaultStorage.mockImplementationOnce(async () => {
+      const crypt = new Crypt();
+      const pair = await crypto.subtle.generateKey(GEN_PARAMS, true, ['encrypt', 'decrypt']);
+      await saveToLocalStorage({
+        keys: {
+          publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)),
+          privateKey: crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey))
+        },
+        extensionID: 'id'
+      });
+    });
+
+    expect(await verifyStorageIntegrity({ name: 'Firefox' })).toBe(true);
+    expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+    // The fallback key must survive in storage.local — it is the only copy.
+    const after = await loadFromLocalStorage(['keys']);
+    expect(after.keys.privateKey).toBeDefined();
   });
 });

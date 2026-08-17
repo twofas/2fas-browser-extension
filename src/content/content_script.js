@@ -28,6 +28,7 @@ let isTopFrame = false;
 let onMessageListener = null;
 
 const LISTENER_KEY = '__2fasMessageListener';
+const LIFECYCLE_KEY = '__2fasLifecycleHandlers';
 
 const ensureTabData = () => {
   if (tabData) {
@@ -51,14 +52,6 @@ const contentScriptRun = () => {
 
   isTopFrame = !isInFrame();
 
-  if (window[LISTENER_KEY]) {
-    try {
-      browser.runtime.onMessage.removeListener(window[LISTENER_KEY]);
-    } catch (e) {}
-
-    window[LISTENER_KEY] = null;
-  }
-
   onMessageListener = (request, sender, sendResponse) => {
     if (!browser?.runtime?.id) {
       try {
@@ -79,22 +72,62 @@ const contentScriptRun = () => {
     return contentOnMessage(request, sender, sendResponse, tabData, isTopFrame);
   };
 
-  browser.runtime.onMessage.addListener(onMessageListener);
-  window[LISTENER_KEY] = onMessageListener;
-
-  window.addEventListener('beforeunload', () => {
-    if (onMessageListener) {
-      try {
-        browser.runtime.onMessage.removeListener(onMessageListener);
-      } catch (e) {}
+  const registerOnMessageListener = () => {
+    if (window[LISTENER_KEY] || !onMessageListener || !browser?.runtime?.id) {
+      return;
     }
 
+    browser.runtime.onMessage.addListener(onMessageListener);
+    window[LISTENER_KEY] = onMessageListener;
+  };
+
+  const removeOnMessageListener = () => {
+    if (!window[LISTENER_KEY]) {
+      return;
+    }
+
+    try {
+      browser.runtime.onMessage.removeListener(window[LISTENER_KEY]);
+    } catch (e) {}
+
+    window[LISTENER_KEY] = null;
+  };
+
+  // Replace a stale listener and lifecycle handlers from a previous injection
+  // of this script, then register the fresh ones — otherwise an old injection's
+  // pageshow handler could resurrect its own stale message listener.
+  removeOnMessageListener();
+
+  if (window[LIFECYCLE_KEY]) {
+    window.removeEventListener('pagehide', window[LIFECYCLE_KEY].pagehide);
+    window.removeEventListener('pageshow', window[LIFECYCLE_KEY].pageshow);
+  }
+
+  registerOnMessageListener();
+
+  // Detach on pagehide, NOT beforeunload: beforeunload also fires for
+  // navigations that never commit (cancelled navigation, a link that becomes a
+  // download, "Stay on page") where the document stays alive and no pageshow
+  // ever follows — removing there would leave the tab permanently deaf to token
+  // delivery (log 58). pagehide fires only when the document really unloads or
+  // enters the back/forward cache, and the bfcache case is undone by pageshow.
+  const onPagehide = () => {
+    removeOnMessageListener();
     tabData = null;
     tabDataPromise = null;
-    isTopFrame = false;
-    onMessageListener = null;
-    window[LISTENER_KEY] = null;
-  }, { once: true });
+  };
+
+  // Content scripts are NOT re-executed when a document is restored from the
+  // back/forward cache — pageshow is the only signal to re-attach the listener
+  // removed at pagehide. Idempotent on the initial load.
+  const onPageshow = () => {
+    registerOnMessageListener();
+    ensureTabData();
+  };
+
+  window.addEventListener('pagehide', onPagehide);
+  window.addEventListener('pageshow', onPageshow);
+  window[LIFECYCLE_KEY] = { pagehide: onPagehide, pageshow: onPageshow };
 
   ensureTabData();
 };

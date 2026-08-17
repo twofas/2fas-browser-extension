@@ -26,6 +26,7 @@ import storeLog from '@partials/storeLog.js';
 import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFrame.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import isTabError from '@background/functions/isTabError.js';
+import reportMissingPrivateKey from '@background/functions/reportMissingPrivateKey.js';
 import decryptToken from '@background/functions/decryptToken.js';
 import isDevicePaired from '@background/functions/isDevicePaired.js';
 import deliverTokenNotificationFallback from '@background/functions/deliverTokenNotificationFallback.js';
@@ -64,7 +65,15 @@ const handleLoginRequest = async (tabID, data) => {
     const privateKey = await getOrMigratePrivateKey(storage);
 
     if (!privateKey) {
-      throw new Error('Private key not found in storage');
+      // Permanent broken state (key lost while registration stays valid) — not a
+      // per-request failure. Route into the deduped log-57 reporter instead of
+      // flooding bucket 8 on every token request, and show the actionable re-pair
+      // notification here (per request — the user actively awaited this token)
+      // rather than the reporter's once-per-incident one.
+      await reportMissingPrivateKey(storage, 'handleLoginRequest', { notify: false });
+      await closeRequest(tabID, data.token_request_id);
+
+      return TwoFasNotification.show(config.Texts.Error.StorageIntegrity, tabID);
     }
 
     const token = await decryptToken(data.token, privateKey);
@@ -102,7 +111,8 @@ const handleLoginRequest = async (tabID, data) => {
     // Whenever the token wasn't autofilled — no safe target frame (the recorded
     // sub-frame navigated away, Z2), or the fill did not complete — surface the
     // token so the user can copy it, but only after re-validating the top frame
-    // (Z1) and with a native-notification last resort (N4).
+    // (Z1); an unsafe top frame drops the token (silently after a post-login
+    // redirect, with an "Outdated request" notification for a superseded request).
     if (!completed) {
       await deliverTokenNotificationFallback(tabID, token, data.token_request_id);
     }

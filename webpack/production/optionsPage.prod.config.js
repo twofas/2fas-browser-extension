@@ -159,7 +159,8 @@ const optionsPageProdConfig = {
     }),
     new StyleLintPlugin({
       configFile: config.SCSSLintConfigFile,
-      failOnError: false
+      failOnError: false,
+      extensions: ['scss']
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css'
