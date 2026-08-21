@@ -39,9 +39,6 @@ const generateShortcutLink = () => {
     case 'Edge':
       link = 'edge://extensions/shortcuts';
       break;
-    case 'Opera':
-      link = 'opera://extensions/shortcuts';
-      break;
     case 'Firefox':
       link = 'about:addons';
       break;

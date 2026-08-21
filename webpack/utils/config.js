@@ -80,27 +80,6 @@ const config = {
         ]
       }
     },
-    opera: {
-      optionsPageTemplate: './src/optionsPage/optionsPage.html',
-      filesList: {
-        patterns: [
-          {
-            from: './src/manifest/opera.json',
-            to: '../manifest.json'
-          },
-          {
-            context: './src/images/icons',
-            from: '**/*',
-            to: '../images/icons/'
-          },
-          {
-            context: './src/fonts',
-            from: '**/*',
-            to: '../fonts/'
-          }
-        ]
-      }
-    },
     edge: {
       optionsPageTemplate: './src/optionsPage/optionsPage.html',
       filesList: {
