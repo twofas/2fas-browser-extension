@@ -515,6 +515,22 @@
     "message": "We could not verify your paired devices. Please check your connection and try again.",
     "description": ""
   },
+  "errorSigningRequiredTitle": {
+    "message": "Connection needs to be renewed",
+    "description": ""
+  },
+  "errorSigningRequiredMessage": {
+    "message": "This browser extension can no longer securely connect to 2FAS. Please reinstall it and pair it with your device again.",
+    "description": ""
+  },
+  "errorSigningKeyConflictTitle": {
+    "message": "Re-pairing required",
+    "description": ""
+  },
+  "errorSigningKeyConflictMessage": {
+    "message": "This browser extension could not register its security key with 2FAS. Please reinstall it and pair it with your device again.",
+    "description": ""
+  },
   "warningTooSoonTitle": {
     "message": "Wait a moment",
     "description": ""
