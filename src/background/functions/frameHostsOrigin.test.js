@@ -40,11 +40,24 @@ describe('frameHostsOrigin', () => {
     expect(storeLog).not.toHaveBeenCalled();
   });
 
-  it('is false and logs 51 when the frame navigated to a different origin', async () => {
+  it('is false and logs 51 as info when the frame navigated to a different origin', async () => {
     vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://evil.test/x' });
 
     expect(await frameHostsOrigin(TAB, 2, 'https://site.test')).toBe(false);
-    expect(storeLog).toHaveBeenCalledWith('warning', 51, expect.any(Error), 'resolveTokenTargetFrame');
+    expect(storeLog).toHaveBeenCalledWith('info', 51, expect.any(Error), 'resolveTokenTargetFrame');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.cause).toEqual({ wasTopFrame: false, currentOriginNull: false });
+  });
+
+  it('marks a gone frame (getFrame resolves null) as currentOriginNull in the 51 cause', async () => {
+    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue(null);
+
+    expect(await frameHostsOrigin(TAB, 0, 'https://site.test')).toBe(false);
+    expect(storeLog).toHaveBeenCalledWith('info', 51, expect.any(Error), 'resolveTokenTargetFrame');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.cause).toEqual({ wasTopFrame: true, currentOriginNull: true });
   });
 
   it('is false when the frame URL cannot be parsed (opaque)', async () => {
@@ -59,10 +72,10 @@ describe('frameHostsOrigin', () => {
     expect(await frameHostsOrigin(TAB, 0, 'null')).toBe(false);
   });
 
-  it('is false and logs 51 when the frame lookup throws', async () => {
+  it('is false and logs 68 when the frame lookup throws', async () => {
     vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(new Error('no frame'));
 
     expect(await frameHostsOrigin(TAB, 0, 'https://site.test')).toBe(false);
-    expect(storeLog).toHaveBeenCalledWith('warning', 51, expect.any(Error), 'resolveTokenTargetFrame - frame lookup failed');
+    expect(storeLog).toHaveBeenCalledWith('warning', 68, expect.any(Error), 'resolveTokenTargetFrame - frame lookup failed');
   });
 });

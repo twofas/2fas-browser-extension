@@ -40,11 +40,14 @@ describe('frameHostsUrl', () => {
     expect(storeLog).not.toHaveBeenCalled();
   });
 
-  it('is false and logs 51 when the frame URL changed', async () => {
+  it('is false and logs 51 as info when the frame URL changed', async () => {
     vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'data:text/html,b' });
 
     expect(await frameHostsUrl(TAB, 5, 'data:text/html,a')).toBe(false);
-    expect(storeLog).toHaveBeenCalledWith('warning', 51, expect.any(Error), 'resolveTokenTargetFrame');
+    expect(storeLog).toHaveBeenCalledWith('info', 51, expect.any(Error), 'resolveTokenTargetFrame');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.cause).toEqual({ wasTopFrame: false, currentUrlEmpty: false });
   });
 
   it('is false when the frame has no URL', async () => {
@@ -53,10 +56,10 @@ describe('frameHostsUrl', () => {
     expect(await frameHostsUrl(TAB, 5, 'about:srcdoc')).toBe(false);
   });
 
-  it('is false and logs 51 when the frame lookup throws', async () => {
+  it('is false and logs 68 when the frame lookup throws', async () => {
     vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(new Error('no frame'));
 
     expect(await frameHostsUrl(TAB, 5, 'about:srcdoc')).toBe(false);
-    expect(storeLog).toHaveBeenCalledWith('warning', 51, expect.any(Error), 'resolveTokenTargetFrame - opaque frame lookup failed');
+    expect(storeLog).toHaveBeenCalledWith('warning', 68, expect.any(Error), 'resolveTokenTargetFrame - opaque frame lookup failed');
   });
 });

@@ -52,10 +52,17 @@ const frameHostsUrl = async (tabID, frameId, expectedUrl) => {
       return true;
     }
 
-    await storeLog('warning', 51, new Error('Target opaque frame URL changed since request'), 'resolveTokenTargetFrame');
+    // Info, not warning — see frameHostsOrigin: guard working as designed, benign
+    // causes dominate. currentUrlEmpty=true marks frame-gone / Safari-withheld-URL
+    // rather than an actual document change.
+    await storeLog('info', 51, new Error('Target opaque frame URL changed since request', {
+      cause: { wasTopFrame: frameId === 0, currentUrlEmpty: !frame?.url }
+    }), 'resolveTokenTargetFrame');
     return false;
   } catch (err) {
-    await storeLog('warning', 51, err, 'resolveTokenTargetFrame - opaque frame lookup failed');
+    // Real API failure (Firefox/Safari reject for a missing frame/tab) — own
+    // warning ID, apart from the benign changed-traffic in 51.
+    await storeLog('warning', 68, err, 'resolveTokenTargetFrame - opaque frame lookup failed');
     return false;
   }
 };

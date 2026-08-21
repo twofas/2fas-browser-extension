@@ -44,7 +44,7 @@
 48 - updateBrowserExtension - storage load / enqueue
 49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
 50 - handleLoginRequest - inputToken delivery to recorded frame failed [warning]
-51 - resolveTokenTargetFrame - target frame origin changed / lookup failed, fallback to top frame [warning]
+51 - resolveTokenTargetFrame - target frame origin / opaque URL changed since request, token withheld (no fill anywhere; cause: wasTopFrame + currentOriginNull/currentUrlEmpty separate real navigation from frame-gone/Safari-withheld-URL) [info] [was warning + "fallback to top frame" before 1.9.0 — since 2026-07-13 mismatch withholds instead of falling back, and lookup failures moved to 68]
 53 - updateList (onMessage) - list mutation failed [error]
 54 - runStorageMigrations - storage migration failed [error]
 *56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning] [deprecated in 1.8.4 — split into 61 (superseded) and 62 (lookup failed); origin-change after a successful login redirect is no longer logged]
@@ -58,6 +58,7 @@
 65 - getSigningHeaders - request signing failed while signing active (request sent unsigned; works only inside migration window) [error]
 66 - signingState - backend rejects requests as unsigned/invalid (post-migration-window 401 threshold reached), re-registration required [error]
 67 - signingKeyStore - IndexedDB unavailable, ECDSA signing key stored in storage.local fallback [warning]
+68 - resolveTokenTargetFrame - frame lookup failed (webNavigation.getFrame rejected — Firefox/Safari missing frame or tab; Chromium resolves null instead and lands in 51), token withheld [warning]
 
 // CONTENT
 33 - content_script

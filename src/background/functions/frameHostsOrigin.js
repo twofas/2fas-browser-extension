@@ -42,10 +42,20 @@ const frameHostsOrigin = async (tabID, frameId, expectedOrigin) => {
       return true;
     }
 
-    await storeLog('warning', 51, new Error('Target frame origin changed since request'), 'resolveTokenTargetFrame');
+    // Info, not warning: the guard working as designed, dominated by benign causes
+    // (login finished manually, SSO redirect, frame torn down). currentOriginNull
+    // separates a real cross-origin navigation (false) from frame-gone/mid-navigation/
+    // Safari-withheld-URL (true) — Chromium resolves getFrame with null for a dead
+    // frame instead of rejecting, so those land here, not in the catch.
+    await storeLog('info', 51, new Error('Target frame origin changed since request', {
+      cause: { wasTopFrame: frameId === 0, currentOriginNull: !isUsableOrigin(currentOrigin) }
+    }), 'resolveTokenTargetFrame');
     return false;
   } catch (err) {
-    await storeLog('warning', 51, err, 'resolveTokenTargetFrame - frame lookup failed');
+    // A rejected lookup is a real API failure (Firefox/Safari reject for a missing
+    // frame or tab; Chromium never rejects here) — its own warning ID, apart from
+    // the benign origin-changed traffic in 51.
+    await storeLog('warning', 68, err, 'resolveTokenTargetFrame - frame lookup failed');
     return false;
   }
 };
