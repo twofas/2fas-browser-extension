@@ -72,10 +72,15 @@ describe('frameHostsOrigin', () => {
     expect(await frameHostsOrigin(TAB, 0, 'null')).toBe(false);
   });
 
-  it('is false and logs 68 when the frame lookup throws', async () => {
-    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(new Error('no frame'));
+  it('is false and logs 68 when the frame lookup throws — constant message, raw rejection in cause', async () => {
+    const boom = new Error('Invalid call to webNavigation.getFrame(). Tab not found.');
+    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
 
     expect(await frameHostsOrigin(TAB, 0, 'https://site.test')).toBe(false);
     expect(storeLog).toHaveBeenCalledWith('warning', 68, expect.any(Error), 'resolveTokenTargetFrame - frame lookup failed');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.message).toBe('Frame lookup failed');
+    expect(err.cause).toBe(boom);
   });
 });

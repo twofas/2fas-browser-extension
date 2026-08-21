@@ -98,16 +98,34 @@ describe('deliverTokenNotificationFallback', () => {
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
-  it('lookupFailed: withholds the token and logs warning 62 with the real error', async () => {
-    const boom = new Error('session storage read failed');
-    topFrameStillHostsRequest.mockResolvedValue({ safe: false, reason: 'lookupFailed', error: boom });
+  it('lookupFailed: withholds the token and logs warning 62 — constant staged message, real error in cause', async () => {
+    const boom = new Error('Invalid call to webNavigation.getFrame(). Tab not found.');
+    topFrameStillHostsRequest.mockResolvedValue({ safe: false, reason: 'lookupFailed', stage: 'frameLookup', error: boom });
     const sendMessage = vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue({ status: 'ok' });
 
     await deliverTokenNotificationFallback(TAB, TOKEN, REQ);
 
     expect(sendMessage).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('warning', 62, boom, 'handleLoginRequest');
+    expect(storeLog).toHaveBeenCalledWith('warning', 62, expect.any(Error), 'handleLoginRequest');
     expect(notificationShow).not.toHaveBeenCalled();
+
+    const err = storeLog.mock.calls[0][2];
+    // The raw browser text stays in `cause`, out of the message — storeLog's
+    // global filters (e.g. "Tab not found") must not swallow the entry.
+    expect(err.message).toBe('Top-frame safety lookup failed (frameLookup); token withheld');
+    expect(err.cause).toBe(boom);
+  });
+
+  it('lookupFailed: a sessionRead-stage failure is named in the 62 message', async () => {
+    const boom = new Error('session storage read failed');
+    topFrameStillHostsRequest.mockResolvedValue({ safe: false, reason: 'lookupFailed', stage: 'sessionRead', error: boom });
+    vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue({ status: 'ok' });
+
+    await deliverTokenNotificationFallback(TAB, TOKEN, REQ);
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.message).toBe('Top-frame safety lookup failed (sessionRead); token withheld');
+    expect(err.cause).toBe(boom);
   });
 
   it('F1: never surfaces the token via a native notification — logs 58 (real failure in cause) and shows a token-free recovery push', async () => {

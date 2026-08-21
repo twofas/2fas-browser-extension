@@ -54,8 +54,10 @@ const frameHostsOrigin = async (tabID, frameId, expectedOrigin) => {
   } catch (err) {
     // A rejected lookup is a real API failure (Firefox/Safari reject for a missing
     // frame or tab; Chromium never rejects here) — its own warning ID, apart from
-    // the benign origin-changed traffic in 51.
-    await storeLog('warning', 68, err, 'resolveTokenTargetFrame - frame lookup failed');
+    // the benign origin-changed traffic in 51. Constant message, raw rejection in
+    // `cause`: Safari's dead-tab text ("… Tab not found.") would otherwise be
+    // swallowed by storeLog's global message filters.
+    await storeLog('warning', 68, new Error('Frame lookup failed', { cause: err }), 'resolveTokenTargetFrame - frame lookup failed');
     return false;
   }
 };

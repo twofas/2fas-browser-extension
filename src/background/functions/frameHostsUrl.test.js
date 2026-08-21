@@ -56,10 +56,15 @@ describe('frameHostsUrl', () => {
     expect(await frameHostsUrl(TAB, 5, 'about:srcdoc')).toBe(false);
   });
 
-  it('is false and logs 68 when the frame lookup throws', async () => {
-    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(new Error('no frame'));
+  it('is false and logs 68 when the frame lookup throws — constant message, raw rejection in cause', async () => {
+    const boom = new Error('no frame');
+    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
 
     expect(await frameHostsUrl(TAB, 5, 'about:srcdoc')).toBe(false);
     expect(storeLog).toHaveBeenCalledWith('warning', 68, expect.any(Error), 'resolveTokenTargetFrame - opaque frame lookup failed');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.message).toBe('Opaque frame lookup failed');
+    expect(err.cause).toBe(boom);
   });
 });

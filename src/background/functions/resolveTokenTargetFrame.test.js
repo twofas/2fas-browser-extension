@@ -23,6 +23,7 @@ import { saveToSessionStorage } from '@sessionStorage/index.js';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 
+import storeLog from '@partials/storeLog.js';
 import resolveTokenTargetFrame from './resolveTokenTargetFrame.js';
 
 const TAB = 7;
@@ -31,12 +32,18 @@ const setTabData = data => saveToSessionStorage({ [`tabData-${TAB}`]: data });
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  storeLog.mockClear();
 });
 
 describe('resolveTokenTargetFrame — focus-less request (no recorded frame)', () => {
-  it('delivers to the top frame unverified when the request origin is unknown (legacy)', async () => {
+  it('withholds (null) and logs info 51 when the request record was wiped mid-flight', async () => {
     await setTabData({});
-    expect(await resolveTokenTargetFrame(TAB)).toBe(0);
+
+    expect(await resolveTokenTargetFrame(TAB)).toBeNull();
+    expect(storeLog).toHaveBeenCalledWith('info', 51, expect.any(Error), 'resolveTokenTargetFrame');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.cause).toEqual({ hadRecordedFrame: false });
   });
 
   it('delivers to the top frame while it still hosts the request origin', async () => {
@@ -81,8 +88,13 @@ describe('resolveTokenTargetFrame — opaque-origin sub-frame (Z7)', () => {
     expect(await resolveTokenTargetFrame(TAB)).toBeNull();
   });
 
-  it('falls back to the top frame for a legacy record with no stored URL', async () => {
+  it('withholds (null) and logs info 51 for a recorded frame with neither origin nor URL', async () => {
     await setTabData({ lastFocusedFrameId: 4, lastFocusedFrameOrigin: 'null' });
-    expect(await resolveTokenTargetFrame(TAB)).toBe(0);
+
+    expect(await resolveTokenTargetFrame(TAB)).toBeNull();
+    expect(storeLog).toHaveBeenCalledWith('info', 51, expect.any(Error), 'resolveTokenTargetFrame');
+
+    const err = storeLog.mock.calls[0][2];
+    expect(err.cause).toEqual({ hadRecordedFrame: true });
   });
 });

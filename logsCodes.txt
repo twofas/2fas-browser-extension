@@ -44,7 +44,7 @@
 48 - updateBrowserExtension - storage load / enqueue
 49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
 50 - handleLoginRequest - inputToken delivery to recorded frame failed [warning]
-51 - resolveTokenTargetFrame - target frame origin / opaque URL changed since request, token withheld (no fill anywhere; cause: wasTopFrame + currentOriginNull/currentUrlEmpty separate real navigation from frame-gone/Safari-withheld-URL) [info] [was warning + "fallback to top frame" before 1.9.0 — since 2026-07-13 mismatch withholds instead of falling back, and lookup failures moved to 68]
+51 - resolveTokenTargetFrame - target frame origin / opaque URL changed since request, OR request record missing at delivery (wiped mid-flight by cross-origin invalidation); token withheld (no fill anywhere; cause: wasTopFrame + currentOriginNull/currentUrlEmpty separate real navigation from frame-gone/Safari-withheld-URL, hadRecordedFrame on the record-missing variant) [info] [was warning + "fallback to top frame" before 1.9.0 — since 2026-07-13 mismatch withholds instead of falling back, lookup failures moved to 68, and the record-missing case no longer delivers to the top frame unverified]
 53 - updateList (onMessage) - list mutation failed [error]
 54 - runStorageMigrations - storage migration failed [error]
 *56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning] [deprecated in 1.8.4 — split into 61 (superseded) and 62 (lookup failed); origin-change after a successful login redirect is no longer logged]
@@ -52,13 +52,13 @@
 58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
 60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback [warning]
 61 - handleLoginRequest - token withheld: request superseded by a newer one (user approved an outdated push), user notified via Outdated request notification [info]
-62 - handleLoginRequest - token fallback blocked: top-frame safety lookup failed (session storage read / webNavigation.getFrame error) [warning]
+62 - handleLoginRequest - token fallback blocked: top-frame safety lookup failed; constant message names the failed stage (sessionRead = storage.session read, any engine / frameLookup = webNavigation.getFrame rejection, Firefox+Safari only — Chromium resolves null and goes silent), raw error in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
 63 - ensureSigningKeyRegistration - signing keypair generation/registration setup failed (retried on next startup/update) [error]
 64 - signingState - signing key conflict: backend already holds a different public signing key, re-pairing required [warning]
 65 - getSigningHeaders - request signing failed while signing active (request sent unsigned; works only inside migration window) [error]
 66 - signingState - backend rejects requests as unsigned/invalid (post-migration-window 401 threshold reached), re-registration required [error]
 67 - signingKeyStore - IndexedDB unavailable, ECDSA signing key stored in storage.local fallback [warning]
-68 - resolveTokenTargetFrame - frame lookup failed (webNavigation.getFrame rejected — Firefox/Safari missing frame or tab; Chromium resolves null instead and lands in 51), token withheld [warning]
+68 - resolveTokenTargetFrame - frame lookup failed (webNavigation.getFrame rejected — Firefox/Safari missing frame or tab; Chromium resolves null instead and lands in 51), token withheld; constant message ("Frame lookup failed" / "Opaque frame lookup failed"), raw rejection in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
 
 // CONTENT
 33 - content_script

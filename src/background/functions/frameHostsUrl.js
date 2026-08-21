@@ -61,8 +61,9 @@ const frameHostsUrl = async (tabID, frameId, expectedUrl) => {
     return false;
   } catch (err) {
     // Real API failure (Firefox/Safari reject for a missing frame/tab) — own
-    // warning ID, apart from the benign changed-traffic in 51.
-    await storeLog('warning', 68, err, 'resolveTokenTargetFrame - opaque frame lookup failed');
+    // warning ID, apart from the benign changed-traffic in 51. Constant message,
+    // raw rejection in `cause` (see frameHostsOrigin — storeLog's filters).
+    await storeLog('warning', 68, new Error('Opaque frame lookup failed', { cause: err }), 'resolveTokenTargetFrame - opaque frame lookup failed');
     return false;
   }
 };
