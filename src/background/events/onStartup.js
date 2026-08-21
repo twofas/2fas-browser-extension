@@ -19,7 +19,8 @@
 
 import { initContextMenu } from '@background/contextMenu/index.js';
 import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
-import { markBrowserSession } from '@background/functions/privateKeyStore.js';
+import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
+import { markBrowserSession } from '@background/functions/keyPromotionDurability.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -46,6 +47,14 @@ const onStartup = async () => {
     await initContextMenu();
   } catch (err) {
     await storeLog('error', 1, err, 'onStartup');
+  }
+
+  // v1.9.0: re-attempt a not-yet-registered signing key on every browser
+  // start (it enqueues + flushes the durable PUT itself); no-op once active.
+  try {
+    await ensureSigningKeyRegistration();
+  } catch (err) {
+    console.error('onStartup - ensureSigningKeyRegistration', err);
   }
 
   flushBrowserRegistration();

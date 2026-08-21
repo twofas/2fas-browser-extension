@@ -1,0 +1,15 @@
+{
+  "Name": "post_without_body",
+  "Method": "POST",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "",
+  "Body": "",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLXBvc3Rfd2l0aG91dF9ib2R5LXBhZCE=",
+    "X-2fas-Signature": "MEQCIAxjRAEvGksdwrnaclG8j4Kq1VBFySOuScwOXGpX1B-TAiAKyiJuRUCr1rXr5k27i8UkA2aRgHK8u1WNz3VN5BMMCA==",
+    "X-2fas-Body-Sha256": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="
+  }
+}
+

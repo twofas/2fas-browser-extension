@@ -17,9 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '../localStorage/index.js';
 import config from '../config.js';
 import SDK from '../sdk/index.js';
+import isContentScriptContext from './isContentScriptContext.js';
 
 const logDebounceMap = new Map();
 const DEBOUNCE_TIME_MS = 30000;
@@ -250,7 +252,25 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   try {
     m = sanitizeLogValue(m);
     c.errorInfo = sanitizeLogValue(c.errorInfo);
-    await new SDK().storeLog(storage.extensionID, level, m, c);
+
+    if (isContentScriptContext()) {
+      // Proxy through the background worker: it signs the request (the
+      // signing key lives in the extension-origin IndexedDB, unreachable
+      // here) and the fetch runs from the extension origin instead of the
+      // page's (no host CORS surprises). Fallback to a direct — unsigned —
+      // call only when messaging itself fails.
+      try {
+        const response = await browser.runtime.sendMessage({ action: 'storeLogEvent', level, message: m, context: c });
+
+        if (response?.status !== 'ok') {
+          throw new Error(`storeLogEvent proxy failed: ${response?.status || 'no response'}`);
+        }
+      } catch (proxyErr) {
+        await new SDK().storeLog(storage.extensionID, level, m, c);
+      }
+    } else {
+      await new SDK().storeLog(storage.extensionID, level, m, c);
+    }
   } catch (err) {
     console.error('Failed to send log:', err);
   } finally {

@@ -25,6 +25,7 @@ import generateDefaultStorage from '@background/functions/generateDefaultStorage
 import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import runStorageMigrations from '@background/functions/storageMigrations.js';
+import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
 
 /**
  * Handles extension installation and update events.
@@ -47,7 +48,11 @@ const onInstalled = async details => {
     await runStorageMigrations();
 
     const browserInfo = await getBrowserInfo();
-    return updateBrowserInfo(browserInfo);
+    await updateBrowserInfo(browserInfo);
+
+    // v1.9.0: installs migrated from ≤1.8.4 register their signing key here
+    // (durable PUT); no-op once signing is active/conflicted.
+    return ensureSigningKeyRegistration();
   }
 
   const browserInfo = await getBrowserInfo({ force: true });

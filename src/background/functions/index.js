@@ -29,6 +29,8 @@ export { default as closeWSChannel } from './closeWSChannel.js';
 export { default as Crypt } from './Crypt.js';
 export { default as dummyGetLocalStorage } from './dummyGetLocalStorage.js';
 export { default as generateDefaultStorage } from './generateDefaultStorage.js';
+export { default as generateKeyMaterial } from './generateKeyMaterial.js';
+export { default as generateRSAKeyMaterial } from './generateRSAKeyMaterial.js';
 export { default as getBrowserInfo } from './getBrowserInfo.js';
 export { default as getBrowserVersion } from './getBrowserVersion.js';
 export { default as getOSName } from './getOSName.js';

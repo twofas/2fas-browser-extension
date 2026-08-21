@@ -21,5 +21,6 @@ export { default as updateBrowserExtension } from './updateBrowserExtension.js';
 export { default as updateIncognitoAccess } from './updateIncognitoAccess.js';
 export { default as verifyStorageIntegrity } from './verifyStorageIntegrity.js';
 export { default as enqueueBrowserRegistration } from './enqueueBrowserRegistration.js';
+export { default as ensureSigningKeyRegistration } from './ensureSigningKeyRegistration.js';
 export { default as flushBrowserRegistration } from './flushBrowserRegistration.js';
 export { REGISTRATION_ALARM_NAME } from './registrationRetryPolicy.js';

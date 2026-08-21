@@ -21,7 +21,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import browser from 'webextension-polyfill';
 import { IDBFactory } from 'fake-indexeddb';
-import { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey, markBrowserSession, __resetSessionIDCacheForTests } from './privateKeyStore.js';
+import { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey } from './privateKeyStore.js';
+import { markBrowserSession, __resetSessionIDCacheForTests } from './keyPromotionDurability.js';
 import Crypt from './Crypt.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 

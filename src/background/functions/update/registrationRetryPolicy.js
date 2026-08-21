@@ -80,6 +80,31 @@ export const classifyError = err => {
 };
 
 /**
+ * Detects the backend's signing-key conflict rejection: a 400 on PUT whose
+ * body carries ErrBrowserExtensionAlreadyHasSigningKey ("browser extension
+ * already has public signing key ..."). It means the server holds a DIFFERENT
+ * public signing key for this extensionID — key replacement is not supported,
+ * so retrying with the same payload is futile; the caller flips the conflict
+ * state and re-sends without the key.
+ *
+ * @param {{status?: number, content?: *}|null|undefined} err - Normalized SDK error.
+ * @returns {boolean}
+ */
+export const isSigningKeyConflictError = err => {
+  if (!err || err.status !== 400) {
+    return false;
+  }
+
+  try {
+    const content = typeof err.content === 'string' ? err.content : JSON.stringify(err.content ?? '');
+
+    return content.toLowerCase().includes('already has public signing key');
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
  * Whether a classification should be retried with backoff.
  * `notFound` is intentionally NOT retryable here — the caller handles it by
  * switching an update into a re-registration.

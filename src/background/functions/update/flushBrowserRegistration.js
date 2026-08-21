@@ -24,6 +24,8 @@ import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js
 import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
+import ensureUsableSigningKeyMaterial from '@background/functions/signing/ensureUsableSigningKeyMaterial.js';
+import { activateSigning, markSigningConflict } from '@background/functions/signing/signingState.js';
 import {
   REGISTRATION_STORAGE_KEY,
   REGISTRATION_ALARM_NAME,
@@ -31,6 +33,7 @@ import {
   BASE_DELAY_MS,
   classifyError,
   isRetryable,
+  isSigningKeyConflictError,
   computeBackoffMs,
   shouldEscalate
 } from './registrationRetryPolicy.js';
@@ -147,7 +150,7 @@ const registrationErrorInfo = (record, err, now, attempts) => ({
  * @returns {Promise<void>}
  */
 const sendUpdate = async record => {
-  const storage = await loadFromLocalStorage(['extensionID', 'browserInfo']);
+  const storage = await loadFromLocalStorage(['extensionID', 'browserInfo', 'signing']);
   const extID = storage?.extensionID;
 
   if (!extID || typeof extID !== 'string') {
@@ -162,10 +165,37 @@ const sendUpdate = async record => {
     browser_name: record.payload?.browser_name || storage?.browserInfo?.browser_name,
     browser_version: record.payload?.browser_version || storage?.browserInfo?.browser_version
   };
+  const committedBrowserInfo = { ...payload };
+
+  // v1.9.0 migration: piggyback the first public-signing-key registration on
+  // this PUT (legacy-allowed during the backend's migration window). Skipped
+  // once active (key already registered) or in conflict (server holds a
+  // different key — sending ours again would 400 forever). The private half
+  // is verified usable first; regenerating is safe while unregistered. A
+  // transient IndexedDB error throws → normal retry/backoff.
+  const signing = storage?.signing;
+  let includesSigningKey = false;
+
+  if (!signing?.active && !signing?.conflict) {
+    const { signingPublicKey } = await ensureUsableSigningKeyMaterial();
+    payload.public_signing_key = signingPublicKey;
+    includesSigningKey = true;
+  }
 
   await new SDK().updateBrowserExtension(extID, payload, { timeoutMs: REGISTRATION_TIMEOUT_MS });
 
-  await clearRecord({ browserInfo: payload, extensionVersion: config.ExtensionVersion });
+  await clearRecord({ browserInfo: committedBrowserInfo, extensionVersion: config.ExtensionVersion });
+
+  if (includesSigningKey) {
+    // The server accepted (first key set, or same-key no-op) — signing is
+    // active from now on. Written through the serialized signing-state queue
+    // so a concurrent SDK response tap can never overwrite the activation
+    // with a stale snapshot. If the worker dies between clearRecord and this
+    // write, ensureSigningKeyRegistration re-enqueues on the next startup and
+    // the same-key PUT is a server-side no-op — self-healing.
+    await activateSigning();
+  }
+
   await clearAlarm();
 };
 
@@ -220,6 +250,14 @@ const sendCreate = async record => {
     public_key: publicKey
   };
 
+  // v1.9.0: a fresh registration always carries a usable signing key — the
+  // backend stores it at create time and requires signed requests from then
+  // on. Regeneration here is safe: the record being created has no key
+  // server-side yet (new registration, or a dead-ID reregister). A transient
+  // IndexedDB error throws → normal retry/backoff.
+  const { signingPublicKey } = await ensureUsableSigningKeyMaterial();
+  body.public_signing_key = signingPublicKey;
+
   const data = await new SDK().createExtensionInstance(body, { timeoutMs: REGISTRATION_TIMEOUT_MS });
 
   if (!data?.id) {
@@ -228,6 +266,9 @@ const sendCreate = async record => {
   }
 
   await clearRecord({ extensionID: data.id });
+  // Serialized signing-state write (see sendUpdate); a death between the two
+  // writes self-heals via ensureSigningKeyRegistration + same-key no-op PUT.
+  await activateSigning();
   await clearAlarm();
 
   if (process.env.EXT_PLATFORM !== 'Safari') {
@@ -250,6 +291,20 @@ const sendCreate = async record => {
  */
 const handleFailure = async (record, err, now) => {
   const classification = classifyError(err);
+
+  if (record.op === 'update' && isSigningKeyConflictError(err)) {
+    // The server already holds a DIFFERENT public signing key for this
+    // extensionID and never replaces keys — mark the conflict (log 64 +
+    // one-shot re-pair notification) and retry the PUT WITHOUT the key so the
+    // browser-info update itself still lands. Attempts reset: the keyless
+    // retry is a fresh episode, not a continuation of a doomed one.
+    await markSigningConflict(err);
+
+    const next = now + computeBackoffMs(1);
+    await persistRecord({ ...record, attempts: 0, nextAttemptAt: next, reported: false });
+    await scheduleAlarm(next);
+    return;
+  }
 
   if (record.op === 'update' && classification === 'notFound') {
     // Server no longer knows this extension — switch to re-registration. The

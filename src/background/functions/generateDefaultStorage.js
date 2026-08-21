@@ -21,66 +21,13 @@ import config from '@/config.js';
 import browser from 'webextension-polyfill';
 import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
-import Crypt from '@background/functions/Crypt.js';
-import { savePrivateKey, deletePrivateKey } from '@background/functions/privateKeyStore.js';
+import generateKeyMaterial from '@background/functions/generateKeyMaterial.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
-
-/**
- * Generates the RSA keypair and persists the private key. Preferred: a
- * non-extractable CryptoKey in IndexedDB. When IndexedDB is unavailable —
- * Firefox with "Never remember history" (permanent private browsing) makes
- * indexedDB.open throw for extension pages too (Bugzilla 1841806), and a
- * corrupted profile storage behaves the same; neither is cleared by
- * reinstalling the extension — falls back to the legacy scheme: an extractable
- * key exported as pkcs8 base64, persisted in storage.local via the returned
- * keys object. getOrMigratePrivateKey treats that copy as authoritative and
- * promotes it into IndexedDB automatically if IndexedDB recovers.
- *
- * @async
- * @param {Crypt} crypt - Crypt instance used for key generation and export.
- * @returns {Promise<{publicKey: string, privateKey?: string}>} The keys object for storage.local.
- */
-const generateKeyMaterial = async crypt => {
-  let idbError = null;
-
-  // Reset clears storage.local; wipe any stale IndexedDB key too, so a
-  // regeneration is fully clean. A failing delete means IndexedDB is
-  // unavailable — switch to the fallback instead of aborting.
-  try {
-    await deletePrivateKey();
-  } catch (err) {
-    idbError = err;
-  }
-
-  if (!idbError) {
-    const pair = await crypt.generateKeys();
-
-    try {
-      await savePrivateKey(pair.privateKey);
-
-      return { publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)) };
-    } catch (err) {
-      idbError = err;
-    }
-  }
-
-  const pair = await crypt.generateKeys(true);
-  const [spki, pkcs8] = await Promise.all([
-    crypt.exportKey('spki', pair.publicKey),
-    crypt.exportKey('pkcs8', pair.privateKey)
-  ]);
-
-  await storeLog('warning', 60, idbError, 'generateDefaultStorage - IndexedDB unavailable, private key stored in storage.local fallback');
-
-  return {
-    publicKey: crypt.ArrayBufferToString(spki),
-    privateKey: crypt.ArrayBufferToString(pkcs8)
-  };
-};
+import { defaultSigningState } from '@background/functions/signing/signingState.js';
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
@@ -89,7 +36,6 @@ const generateKeyMaterial = async crypt => {
  * @returns {Promise<void>} A promise that resolves when storage is initialized and extension is registered
  */
 const generateDefaultStorage = browserInfo => {
-  const crypt = new Crypt();
   let attempt = 0;
 
   return loadFromLocalStorage('attempt')
@@ -100,7 +46,7 @@ const generateDefaultStorage = browserInfo => {
 
       return clearLocalStorage();
     })
-    .then(() => generateKeyMaterial(crypt))
+    .then(() => generateKeyMaterial())
     .then(keys => saveToLocalStorage({
       configured: false,
       browserInfo,
@@ -115,15 +61,19 @@ const generateDefaultStorage = browserInfo => {
       autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
       attempt: attempt + 1,
       extIcon: 0, // 0 - default
+      signing: defaultSigningState(),
       storageSchemaVersion: CURRENT_SCHEMA_VERSION
     }))
     .then(storage => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
+      extensionInstanceBody.public_signing_key = storage.keys.signingPublicKey;
 
       return new SDK().createExtensionInstance(extensionInstanceBody, { timeoutMs: REGISTRATION_TIMEOUT_MS });
     })
-    .then(data => saveToLocalStorage({ extensionID: data.id }))
+    // Registration succeeded with the signing key in the payload — signing is
+    // active from the first request. One atomic write with the extensionID.
+    .then(data => saveToLocalStorage({ extensionID: data.id, signing: { ...defaultSigningState(), active: true } }))
     .then(storage => {
       if (process.env.EXT_PLATFORM === 'Safari') {
         return Promise.resolve();

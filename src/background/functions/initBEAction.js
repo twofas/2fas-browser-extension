@@ -25,6 +25,7 @@ import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
 import sendMessageToAllFrames from '@background/functions/sendMessageToAllFrames.js';
 import handleFrontElement from '@background/functions/handleFrontElement.js';
+import { getSigningState } from '@background/functions/signing/signingState.js';
 
 /**
  * Initiates browser extension action for 2FA token request.
@@ -107,6 +108,17 @@ const initBEAction = async (url, tab, storageData) => {
         // the backend for a duplicate token.
         tabData.lastAction = previousLastAction;
         await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData }).catch(() => {});
+      }
+
+      // Backend rejected the request as unsigned/invalid and the classifier
+      // already concluded re-registration is required — tell the user what to
+      // actually do (reinstall/re-pair) instead of a generic error.
+      if (err?.status === 401) {
+        const signingState = await getSigningState();
+
+        if (signingState.registrationRequired) {
+          return TwoFasNotification.show(config.Texts.Error.SigningRequired, tab.id);
+        }
       }
 
       await storeLog('error', 5, err, url);

@@ -17,102 +17,46 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global indexedDB, crypto, TextEncoder */
 import Crypt from '@background/functions/Crypt.js';
 import { loadFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
-import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
+import { saveKeyRecord, getKeyRecord, deleteKeyRecord } from '@background/functions/cryptoKeyStore.js';
+import { checkPromotionDurability, stampPromotion } from '@background/functions/keyPromotionDurability.js';
 
-// The RSA private key is persisted as a non-extractable CryptoKey object in
-// IndexedDB rather than as exportable base64 in storage.local. IndexedDB stores
-// it through the structured clone algorithm, which preserves the [[extractable]]
-// slot — so the raw key material can never be read back through exportKey/wrapKey
-// (they throw InvalidAccessError), is not returned by storage.local.get(null),
-// and is not present in a plaintext profile file on disk.
-//
-// The key lives in a dedicated object store fetched by primary key only — never
-// through a secondary index — to avoid WebKit bug 177350 (a CryptoKey in an
-// indexed record breaks IndexedDB queries on Safari). The background context is
-// a service worker on Chromium and a page on Firefox/Safari; IndexedDB and this
-// approach work in all of them.
-const DB_NAME = 'twofas';
-const DB_VERSION = 1;
-const STORE_NAME = 'cryptoKeys';
+// The RSA-OAEP token-decryption private key. Persisted as a non-extractable
+// CryptoKey in the shared cryptoKeyStore (IndexedDB) rather than as
+// exportable base64 in storage.local; the storage.local pkcs8 fallback
+// (legacy installs, or IndexedDB unavailable — Firefox permanent private
+// browsing) is promoted back into IndexedDB with restart-proven durability
+// (keyPromotionDurability) before the plaintext copy is stripped.
 const PRIVATE_KEY_ID = 'privateKey';
-
-// Durability bookkeeping for the storage.local → IndexedDB promotion. A put that
-// resolves proves nothing about persistence (ephemeral private-browsing databases
-// accept writes that vanish on restart), so the plaintext copy in storage.local is
-// stripped only after the promoted key is observed in IndexedDB in a LATER browser
-// session. The stamp ({ fingerprint, sessionID }) lives in storage.local; the
-// session marker lives in storage.session, which the browser clears on restart.
 const IDB_STAMP_KEY = 'privateKeyIdbStamp';
-const SESSION_ID_KEY = 'privateKeySessionID';
 
 /**
- * Opens (and lazily creates) the key IndexedDB database.
+ * Strips the legacy plaintext private key from storage.local, keeping every
+ * other field of the keys object (public keys, the signing-key fallback).
+ * Re-reads keys at write time so a stale caller snapshot cannot resurrect a
+ * field another strip just removed. Idempotent — safe when nothing lingers.
  *
  * @async
- * @returns {Promise<IDBDatabase>} The opened database connection.
- */
-const openKeyDB = () => new Promise((resolve, reject) => {
-  let request;
-
-  try {
-    request = indexedDB.open(DB_NAME, DB_VERSION);
-  } catch (err) {
-    reject(err);
-    return;
-  }
-
-  request.onupgradeneeded = () => {
-    const db = request.result;
-
-    if (!db.objectStoreNames.contains(STORE_NAME)) {
-      db.createObjectStore(STORE_NAME);
-    }
-  };
-
-  request.onsuccess = () => resolve(request.result);
-  request.onerror = () => reject(request.error);
-  request.onblocked = () => reject(new Error('privateKeyStore: IndexedDB open blocked'));
-});
-
-/**
- * Runs a single request against the key object store inside its own transaction,
- * resolving with the request result and always closing the connection.
- *
- * @async
- * @param {IDBTransactionMode} mode - 'readonly' or 'readwrite'.
- * @param {function(IDBObjectStore): IDBRequest} run - Issues the request on the store.
- * @returns {Promise<*>} The request result.
- */
-const withStore = async (mode, run) => {
-  const db = await openKeyDB();
-
-  try {
-    return await new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, mode);
-      const request = run(transaction.objectStore(STORE_NAME));
-
-      transaction.oncomplete = () => resolve(request?.result);
-      transaction.onerror = () => reject(transaction.error);
-      transaction.onabort = () => reject(transaction.error || new Error('privateKeyStore: transaction aborted'));
-    });
-  } finally {
-    db.close();
-  }
-};
-
-/**
- * Strips the legacy plaintext private key from storage.local, keeping the
- * (non-secret) public key. Idempotent — safe to call when nothing lingers.
- *
- * @async
- * @param {Object} storage - Storage object holding keys.publicKey.
+ * @param {Object} storage - Fallback storage snapshot (used only if the fresh read fails).
  * @returns {Promise<void>}
  */
 const stripLegacyPrivateKey = async storage => {
-  await saveToLocalStorage({ keys: { publicKey: storage?.keys?.publicKey } });
+  let current = storage?.keys;
+
+  try {
+    const fresh = await loadFromLocalStorage(['keys']);
+
+    current = fresh?.keys || current;
+  } catch (e) {
+    // Fall back to the caller's snapshot.
+  }
+
+  const keys = { ...(current || {}) };
+
+  delete keys.privateKey;
+
+  await saveToLocalStorage({ keys });
 };
 
 /**
@@ -122,7 +66,7 @@ const stripLegacyPrivateKey = async storage => {
  * @param {CryptoKey} privateKey - A non-extractable RSA-OAEP private key.
  * @returns {Promise<void>}
  */
-const savePrivateKey = privateKey => withStore('readwrite', store => store.put(privateKey, PRIVATE_KEY_ID));
+const savePrivateKey = privateKey => saveKeyRecord(PRIVATE_KEY_ID, privateKey);
 
 /**
  * Reads the stored private CryptoKey, if any.
@@ -130,7 +74,7 @@ const savePrivateKey = privateKey => withStore('readwrite', store => store.put(p
  * @async
  * @returns {Promise<CryptoKey|undefined>} The key, or undefined when absent.
  */
-const getPrivateKey = () => withStore('readonly', store => store.get(PRIVATE_KEY_ID));
+const getPrivateKey = () => getKeyRecord(PRIVATE_KEY_ID);
 
 /**
  * Removes the stored private CryptoKey (used when storage is reset/regenerated).
@@ -138,120 +82,7 @@ const getPrivateKey = () => withStore('readonly', store => store.get(PRIVATE_KEY
  * @async
  * @returns {Promise<void>}
  */
-const deletePrivateKey = () => withStore('readwrite', store => store.delete(PRIVATE_KEY_ID));
-
-// Memoized so concurrent callers within one background instance agree on a single
-// session marker; after a service-worker restart the marker is re-read from
-// storage.session.
-let sessionIDPromise = null;
-
-/** Test-only: drops the memoized session marker to simulate a browser restart. */
-const __resetSessionIDCacheForTests = () => {
-  sessionIDPromise = null;
-};
-
-/**
- * Mints the session marker for the promotion durability check. Called from
- * runtime.onStartup ONLY: that event fires solely on a true browser start,
- * while storage.session is also cleared when the extension itself reloads or
- * updates mid-session — minting a marker there would fake the restart-survival
- * proof and allow a premature strip.
- *
- * @async
- * @returns {Promise<void>}
- */
-const markBrowserSession = async () => {
-  sessionIDPromise = null;
-  await saveToSessionStorage({ [SESSION_ID_KEY]: crypto.randomUUID() });
-};
-
-/**
- * Returns the current session marker, or null when none was minted yet (browser
- * session started before this build, or the extension reloaded mid-session).
- * Absence is never cached — onStartup may mint a marker later.
- *
- * @async
- * @returns {Promise<?string>} The session marker, or null.
- */
-const getSessionID = async () => {
-  if (!sessionIDPromise) {
-    sessionIDPromise = loadFromSessionStorage(SESSION_ID_KEY)
-      .then(stored => stored?.[SESSION_ID_KEY] || null)
-      .catch(() => null);
-  }
-
-  const id = await sessionIDPromise;
-
-  if (!id) {
-    sessionIDPromise = null;
-  }
-
-  return id;
-};
-
-/**
- * SHA-256 hex fingerprint of the base64 key string, identifying WHICH key a
- * promotion stamp refers to without storing the key material anywhere new.
- *
- * @async
- * @param {string} legacy - The base64 pkcs8 key from storage.local.
- * @returns {Promise<string>} Hex digest.
- */
-const fingerprintKey = async legacy => {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(legacy));
-
-  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-};
-
-/**
- * Determines whether the storage.local key's promotion into IndexedDB has proven
- * durable: the stamp shows THIS key was saved to IndexedDB in a DIFFERENT browser
- * session, and the caller confirmed a key is present in IndexedDB now. Any failure
- * (storage.session unavailable, digest error) degrades to "not durable", which
- * only means the plaintext copy is kept — never data loss.
- *
- * @async
- * @param {string} legacy - The base64 key currently in storage.local.
- * @returns {Promise<{fingerprint: ?string, sessionID: ?string, durable: boolean, samePromotion: boolean}>}
- */
-const checkPromotionDurability = async legacy => {
-  try {
-    const [fingerprint, sessionID, stored] = await Promise.all([
-      fingerprintKey(legacy),
-      getSessionID(),
-      loadFromLocalStorage(IDB_STAMP_KEY)
-    ]);
-    const stamp = stored?.[IDB_STAMP_KEY];
-    const sameKey = Boolean(stamp?.fingerprint && stamp.fingerprint === fingerprint && stamp?.sessionID);
-
-    return {
-      fingerprint,
-      sessionID,
-      // Without a minted marker (sessionID null) the current session is unknown —
-      // that must never count as "a different session than the stamp's".
-      durable: Boolean(sessionID) && sameKey && stamp.sessionID !== sessionID,
-      samePromotion: Boolean(sessionID) && sameKey && stamp.sessionID === sessionID
-    };
-  } catch (err) {
-    return { fingerprint: null, sessionID: null, durable: false, samePromotion: false };
-  }
-};
-
-/**
- * Records that the given key was written to IndexedDB in the current session.
- * Skipped (best-effort) when the durability bookkeeping itself is unavailable.
- *
- * @async
- * @param {{fingerprint: ?string, sessionID: ?string}} durability
- * @returns {Promise<void>}
- */
-const stampPromotion = async ({ fingerprint, sessionID }) => {
-  if (!fingerprint || !sessionID) {
-    return;
-  }
-
-  await saveToLocalStorage({ [IDB_STAMP_KEY]: { fingerprint, sessionID } });
-};
+const deletePrivateKey = () => deleteKeyRecord(PRIVATE_KEY_ID);
 
 /**
  * Returns the private CryptoKey. A valid base64 key in storage.local (a legacy
@@ -291,7 +122,7 @@ const getOrMigratePrivateKey = async storage => {
     idbError = err; // IndexedDB unavailable — storage.local stays authoritative
   }
 
-  const durability = await checkPromotionDurability(legacy);
+  const durability = await checkPromotionDurability(legacy, IDB_STAMP_KEY);
 
   if (existing && durability.durable) {
     // The promoted copy survived a browser restart — safe to drop the plaintext
@@ -320,7 +151,7 @@ const getOrMigratePrivateKey = async storage => {
   if (imported) {
     try {
       await savePrivateKey(imported);
-      await stampPromotion(durability);
+      await stampPromotion(durability, IDB_STAMP_KEY);
     } catch (err) {
       // IndexedDB unavailable — the storage.local copy stays authoritative.
     }
@@ -342,4 +173,4 @@ const getOrMigratePrivateKey = async storage => {
   return null;
 };
 
-export { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey, markBrowserSession, __resetSessionIDCacheForTests };
+export { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey, PRIVATE_KEY_ID, IDB_STAMP_KEY };

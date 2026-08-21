@@ -120,6 +120,14 @@ const config = {
       DevicesUnavailable: {
         Title: browser.i18n.getMessage('errorDevicesUnavailableTitle') || t.errorDevicesUnavailableTitle,
         Message: browser.i18n.getMessage('errorDevicesUnavailableMessage') || t.errorDevicesUnavailableMessage
+      },
+      SigningRequired: {
+        Title: browser.i18n.getMessage('errorSigningRequiredTitle') || t.errorSigningRequiredTitle,
+        Message: browser.i18n.getMessage('errorSigningRequiredMessage') || t.errorSigningRequiredMessage
+      },
+      SigningKeyConflict: {
+        Title: browser.i18n.getMessage('errorSigningKeyConflictTitle') || t.errorSigningKeyConflictTitle,
+        Message: browser.i18n.getMessage('errorSigningKeyConflictMessage') || t.errorSigningKeyConflictMessage
       }
     },
     Warning: {

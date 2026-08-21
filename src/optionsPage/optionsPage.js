@@ -51,6 +51,15 @@ const init = async storage => {
     }, 5300);
   }
 
+  // v1.9.0: the backend rejects this extension's requests (no registered
+  // signing key after the migration window, or a key conflict escalated) —
+  // storage itself is intact, but only a reinstall/re-pair can recover.
+  if (storage?.signing?.registrationRequired) {
+    showIntegrityError();
+    hidePreloader();
+    return false;
+  }
+
   const devicesTbody = document.querySelector(S.optionsPage.devicesList);
   let devicesList = null;
   let devicesErrorReason = null;
@@ -117,7 +126,7 @@ const optionsPageError = pageError(21, 'optionsPage', config.Texts.Error.Undefin
 
 window.onload = async () => {
   try {
-    const data = await loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt', 'autoSubmitExcludedDomains']);
+    const data = await loadFromLocalStorage(['extensionID', 'keys', 'browserInfo', 'attempt', 'autoSubmitExcludedDomains', 'signing']);
     await init(data);
   } catch (err) {
     await optionsPageError(err);

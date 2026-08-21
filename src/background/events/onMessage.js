@@ -23,6 +23,8 @@ import generateDefaultStorage from '@background/functions/generateDefaultStorage
 import handleUpdateList from '@background/functions/updateListAction.js';
 import storeLog from '@partials/storeLog.js';
 import TwoFasNotification from '@notification/index.js';
+import SDK, { LOG_LEVELS } from '@sdk/index.js';
+import { loadFromLocalStorage } from '@localStorage/index.js';
 import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 
 /**
@@ -114,6 +116,36 @@ const onMessage = (request, sender, sendResponse) => {
               .finally(() => {
                 sendResponse({ status: 'error' });
               });
+          });
+
+        break;
+      }
+
+      case 'storeLogEvent': {
+        // Backend log proxied from a content script (storeLog partial): the
+        // background signs the store_log request with the extension's signing
+        // key — content scripts cannot. The payload arrives pre-sanitized and
+        // pre-debounced by the sender's storeLog.
+        if (!LOG_LEVELS.includes(request?.level) || typeof request?.message !== 'string') {
+          sendResponse({ status: 'error', message: 'Invalid storeLogEvent request' });
+          return true;
+        }
+
+        loadFromLocalStorage(['extensionID', 'logging'])
+          .then(storage => {
+            if (!storage?.logging || !storage?.extensionID) {
+              return null;
+            }
+
+            return new SDK().storeLog(storage.extensionID, request.level, request.message, request.context);
+          })
+          .then(() => {
+            sendResponse({ status: 'ok' });
+          })
+          .catch(err => {
+            // Never route this failure back into storeLog — it would loop.
+            console.error('onMessage - storeLogEvent', err);
+            sendResponse({ status: 'error' });
           });
 
         break;

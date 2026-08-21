@@ -27,7 +27,11 @@ vi.mock('@background/functions/update/enqueueBrowserRegistration.js', () => ({ d
 
 const savePrivateKey = vi.fn();
 const deletePrivateKey = vi.fn();
-vi.mock('@background/functions/privateKeyStore.js', () => ({
+vi.mock('@background/functions/privateKeyStore.js', async importOriginal => ({
+  // Keep the real generic record/stamp helpers (the ECDSA signingKeyStore
+  // uses them against fake-indexeddb); only the RSA-specific entry points are
+  // stubbed to simulate the broken-IndexedDB scenarios.
+  ...(await importOriginal()),
   savePrivateKey: (...a) => savePrivateKey(...a),
   deletePrivateKey: (...a) => deletePrivateKey(...a),
   getPrivateKey: vi.fn().mockResolvedValue(undefined),

@@ -19,13 +19,14 @@
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import { defaultSigningState, SIGNING_STORAGE_KEY } from '@background/functions/signing/signingState.js';
 
 /**
  * Current storage schema version. Bump this and append a migration whenever the
  * shape of stored data changes in a way existing installs must be upgraded to.
  * @type {number}
  */
-const CURRENT_SCHEMA_VERSION = 1;
+const CURRENT_SCHEMA_VERSION = 2;
 
 /**
  * Ordered list of schema migrations. Each entry's `version` is the schema version
@@ -43,6 +44,20 @@ const migrations = [
 
       if (!Array.isArray(data.autoSubmitExcludedDomains)) {
         await saveToLocalStorage({ autoSubmitExcludedDomains: [] });
+      }
+    }
+  },
+  {
+    version: 2,
+    migrate: async () => {
+      // v1.9.0 request signing: seed the signing lifecycle state for existing
+      // installs. Offline-only — the ECDSA keypair generation and its backend
+      // registration are network/crypto work owned by
+      // ensureSigningKeyRegistration + the durable registration queue.
+      const data = await loadFromLocalStorage([SIGNING_STORAGE_KEY]);
+
+      if (!data?.[SIGNING_STORAGE_KEY] || typeof data[SIGNING_STORAGE_KEY] !== 'object') {
+        await saveToLocalStorage({ [SIGNING_STORAGE_KEY]: defaultSigningState() });
       }
     }
   }

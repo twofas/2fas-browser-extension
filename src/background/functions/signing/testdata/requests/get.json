@@ -1,0 +1,15 @@
+{
+  "Name": "get",
+  "Method": "GET",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "limit=10",
+  "Body": "",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLWdldC1wYWQh",
+    "X-2fas-Signature": "MEUCIQDQWboDGSayCBAIEWQbL9aZD8sP8jBBQCENxEkoq6_7bgIgWYqsNj-grhGK1T3OIS7zFU5XNNue5BOg_NIx1Eu8d60=",
+    "X-2fas-Body-Sha256": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="
+  }
+}
+

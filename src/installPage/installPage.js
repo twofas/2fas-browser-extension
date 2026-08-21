@@ -48,6 +48,14 @@ const init = async storage => {
     }, 5300);
   }
 
+  // v1.9.0: backend rejects this extension's requests — pairing cannot
+  // proceed; only a reinstall/re-pair (fresh registration) can recover.
+  if (storage?.signing?.registrationRequired) {
+    hidePreloader(true);
+    showIntegrityError();
+    return false;
+  }
+
   const channel = await subscribeChannel(storage, null, {
     action: false,
     timeout: false,

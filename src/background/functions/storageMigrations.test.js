@@ -72,6 +72,29 @@ describe('runStorageMigrations', () => {
     setSpy.mockRestore();
   });
 
+  it('seeds the signing lifecycle state (v1→v2) without touching an existing one', async () => {
+    await saveToLocalStorage({ storageSchemaVersion: 1, autoSubmitExcludedDomains: [] });
+
+    await runStorageMigrations();
+
+    const stored = await loadFromLocalStorage(['signing', 'storageSchemaVersion']);
+    expect(stored.signing).toEqual({ active: false, conflict: false, registrationRequired: false, auth401Count: 0 });
+    expect(stored.storageSchemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+  });
+
+  it('keeps an already-present signing state intact when re-running from v1', async () => {
+    await saveToLocalStorage({
+      storageSchemaVersion: 1,
+      autoSubmitExcludedDomains: [],
+      signing: { active: true, conflict: false, registrationRequired: false, auth401Count: 0 }
+    });
+
+    await runStorageMigrations();
+
+    const stored = await loadFromLocalStorage(['signing']);
+    expect(stored.signing).toMatchObject({ active: true });
+  });
+
   it('does not downgrade a storage whose version is newer than this build', async () => {
     await saveToLocalStorage({ storageSchemaVersion: CURRENT_SCHEMA_VERSION + 5 });
 

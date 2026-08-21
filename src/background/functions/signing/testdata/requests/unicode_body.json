@@ -1,0 +1,14 @@
+{
+  "Name": "unicode_body",
+  "Method": "POST",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "lang=en",
+  "Body": "{\"emoji\":\"✅\",\"cjk\":\"こんにちは\",\"escaped\":\"\\\"quoted\\\"\"}",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLXVuaWNvZGUtcGFkISE=",
+    "X-2fas-Signature": "MEUCIQCuT_53SNThRg2N6MSgepn5GAunDlpnq9UHaSMJQnKd6QIgcL7GA1kZr0SUqHM4v202sgm42H5Kn3Fj-3hDtpJKnLc=",
+    "X-2fas-Body-Sha256": "QO0bLezFouXxF5CcA_PXoEpyPKQaZudFKTNDuWqln98="
+  }
+}

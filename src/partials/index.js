@@ -30,6 +30,7 @@ export { default as i18n } from './i18n.js';
 export { default as ignoreButtonSelectors } from './ignoreButtonSelectors.js';
 export { default as ignoreButtonTexts } from './ignoreButtonTexts.js';
 export { default as inputsSelectors } from './inputsSelectors.js';
+export { default as isContentScriptContext } from './isContentScriptContext.js';
 export { default as months } from './months.js';
 export { default as onTabFocused } from './onTabFocused.js';
 export { default as openShortcutEdit } from './openShortcutEdit.js';
