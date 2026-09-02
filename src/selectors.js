@@ -25,6 +25,7 @@ const selectors = {
   installPage: {
     configured: '.twofas-install-page-configured',
     newDevice: '.twofas-install-page-new-device',
+    recoveredInfo: '.js-twofas-recovered-info',
     welcomeHeader: 'h1.twofas-js-welcome-header',
     container: {
       app: '.twofas-install-page-container-blocks-app',
@@ -95,7 +96,8 @@ const selectors = {
     content: '.js-twofas-options-content',
     toggle: '.twofas-toggle',
     safariReset: '.js-twofas-safari-reset',
-    integrityError: '.js-twofas-integrity-error'
+    integrityError: '.js-twofas-integrity-error',
+    integrityReset: '.js-twofas-integrity-reset'
   },
   notification: {
     container: 'div.twofas-be-notifications',

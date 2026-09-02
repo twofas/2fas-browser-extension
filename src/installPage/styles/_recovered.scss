@@ -17,16 +17,29 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import S from '@/selectors.js';
+@use "../../global-styles/variables" as v;
 
-/**
- * Displays the storage integrity error message on the install page.
- *
- * @returns {void}
- */
-const showIntegrityError = () => {
-  const el = document.querySelector(S.optionsPage.integrityError);
-  el.classList.add('show-integrity-error');
-};
+// Banner shown on installPage.html?reason=recovered (Safari self-heal after a
+// private-key loss): explains why the device has to be paired again.
+.twofas-install-page-recovered {
+  border-left: 4px solid v.$theme-color;
+  margin: 0 auto 32px;
+  max-width: 760px;
+  padding: 16px 20px;
 
-export default showIntegrityError;
+  &.hidden {
+    display: none;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+  }
+}

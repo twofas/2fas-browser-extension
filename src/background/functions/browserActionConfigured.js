@@ -45,6 +45,25 @@ const shouldProceedWithAction = (lastActionTime, currentTime) => {
 };
 
 /**
+ * Whether a tab URL is one the extension can act on at all.
+ *
+ * Pure and string-based so callers earlier in the flow can gate on it before doing
+ * anything expensive or destructive — a click on chrome://extensions, a PDF viewer
+ * or the extension's own pages can never become a token request, and it also has no
+ * content script, so any explanatory notification there would be invisible.
+ *
+ * @param {string} url - The tab URL.
+ * @returns {boolean}
+ */
+const isSupportedTabURL = url => {
+  try {
+    return SUPPORTED_PROTOCOLS.includes(new URL(url).protocol);
+  } catch (err) {
+    return false;
+  }
+};
+
+/**
  * Validates that the URL protocol is supported by the extension.
  *
  * @param {URL} url - The URL object to validate
@@ -97,3 +116,4 @@ const browserActionConfigured = async (tab, data) => {
 };
 
 export default browserActionConfigured;
+export { isSupportedTabURL };

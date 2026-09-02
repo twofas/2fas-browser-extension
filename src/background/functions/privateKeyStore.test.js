@@ -18,34 +18,11 @@
 //
 
 /* global crypto, TextEncoder, TextDecoder, DOMException */
-import { describe, it, expect, beforeEach } from 'vitest';
-import browser from 'webextension-polyfill';
+import { describe, it, expect } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey } from './privateKeyStore.js';
-import { markBrowserSession, __resetSessionIDCacheForTests } from './keyPromotionDurability.js';
 import Crypt from './Crypt.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
-
-beforeEach(async () => {
-  __resetSessionIDCacheForTests();
-  // runtime.onStartup minted a session marker when the browser started.
-  await markBrowserSession();
-});
-
-// A browser restart clears storage.session while storage.local and — on a
-// healthy profile — IndexedDB survive; onStartup then mints a new marker.
-const simulateBrowserRestart = async () => {
-  await browser.storage.session.clear();
-  __resetSessionIDCacheForTests();
-  await markBrowserSession();
-};
-
-// An extension reload/update mid-session also wipes storage.session, but
-// runtime.onStartup does NOT fire — no new marker is minted.
-const simulateExtensionReload = async () => {
-  await browser.storage.session.clear();
-  __resetSessionIDCacheForTests();
-};
 
 const GEN_PARAMS = { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-512' } };
 
@@ -58,6 +35,18 @@ const keyMaterial = async ({ extractable }) => {
   const pair = await crypto.subtle.generateKey(GEN_PARAMS, extractable, ['encrypt', 'decrypt']);
   const ciphertext = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pair.publicKey, new TextEncoder().encode('123456'));
   return { pair, ciphertext };
+};
+
+// Exports a pair as the storage.local (pkcs8 base64) tier would hold it.
+const localMaterial = async () => {
+  const crypt = new Crypt();
+  const { pair, ciphertext } = await keyMaterial({ extractable: true });
+
+  return {
+    ciphertext,
+    publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)),
+    privateKey: crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey))
+  };
 };
 
 describe('privateKeyStore', () => {
@@ -86,12 +75,12 @@ describe('privateKeyStore', () => {
     });
   });
 
-  describe('getOrMigratePrivateKey', () => {
-    it('returns null when there is neither an IDB key nor a legacy key', async () => {
+  describe('getOrMigratePrivateKey — read rule', () => {
+    it('returns null when there is neither an IndexedDB key nor a storage.local key', async () => {
       expect(await getOrMigratePrivateKey({ keys: { publicKey: 'pub' } })).toBeNull();
     });
 
-    it('returns the key already stored in IndexedDB', async () => {
+    it('returns the key stored in IndexedDB', async () => {
       const { pair, ciphertext } = await keyMaterial({ extractable: false });
       await savePrivateKey(pair.privateKey);
 
@@ -100,128 +89,63 @@ describe('privateKeyStore', () => {
       expect(await decrypt(key, ciphertext)).toBe('123456');
     });
 
-    it('migrates a legacy base64 private key into IndexedDB as non-extractable but keeps the plaintext until proven durable', async () => {
-      const crypt = new Crypt();
-      const { pair, ciphertext } = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey));
+    it('uses a storage.local key in place — imported non-extractable, never promoted, never stripped', async () => {
+      const { publicKey, privateKey, ciphertext } = await localMaterial();
       await saveToLocalStorage({ keys: { publicKey, privateKey }, extensionID: 'id' });
 
-      const storage = await loadFromLocalStorage(['keys', 'extensionID']);
-      const migrated = await getOrMigratePrivateKey(storage);
+      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
 
-      // Same key (decrypts a ciphertext made with the legacy public key) ...
-      expect(await decrypt(migrated, ciphertext)).toBe('123456');
-      // ... now non-extractable, living in IndexedDB ...
-      expect(migrated.extractable).toBe(false);
-      expect(await getPrivateKey()).toBeDefined();
-      // ... but the plaintext copy is NOT stripped yet — an IndexedDB put that
-      // resolves proves nothing about persistence across a restart.
+      expect(await decrypt(key, ciphertext)).toBe('123456');
+      expect(key.extractable).toBe(false);
+      // No promotion into IndexedDB ...
+      expect(await getPrivateKey()).toBeUndefined();
+      // ... and the storage.local copy is untouched, on this and every later read.
+      await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
       const after = await loadFromLocalStorage(['keys']);
       expect(after.keys.privateKey).toBe(privateKey);
       expect(after.keys.publicKey).toBe(publicKey);
-
-      // A repeat call in the SAME session must not strip either.
-      await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
-      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe(privateKey);
     });
 
-    it('strips the plaintext only in a LATER session, once the IndexedDB copy survived a restart', async () => {
-      const crypt = new Crypt();
-      const { pair, ciphertext } = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey));
-      await saveToLocalStorage({ keys: { publicKey, privateKey }, extensionID: 'id' });
+    it('prefers the storage.local key over a stale IndexedDB key and leaves the stale record alone', async () => {
+      // A reset that ran while IndexedDB was unavailable leaves the OLD key in
+      // IndexedDB and the NEW (registered) key in storage.local.
+      const stale = await keyMaterial({ extractable: false });
+      await savePrivateKey(stale.pair.privateKey);
+      const fresh = await localMaterial();
+      await saveToLocalStorage({ keys: { publicKey: fresh.publicKey, privateKey: fresh.privateKey } });
 
-      // Session 1: promotes into IndexedDB, keeps the plaintext.
-      await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
+      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys']));
 
-      // Session 2: the IndexedDB copy is still there — now the strip is safe.
-      await simulateBrowserRestart();
-      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
+      expect(await decrypt(key, fresh.ciphertext)).toBe('123456');
+      // The read path never writes: the stale record is still the old key.
+      expect(await decrypt(await getPrivateKey(), stale.ciphertext)).toBe('123456');
+      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe(fresh.privateKey);
+    });
+
+    it('falls through to the IndexedDB key when the storage.local copy is corrupt, without touching it', async () => {
+      const { pair, ciphertext } = await keyMaterial({ extractable: false });
+      await savePrivateKey(pair.privateKey);
+      await saveToLocalStorage({ keys: { publicKey: 'pub', privateKey: 'not-a-key' } });
+
+      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys']));
 
       expect(await decrypt(key, ciphertext)).toBe('123456');
-      const after = await loadFromLocalStorage(['keys']);
-      expect(after.keys.privateKey).toBeUndefined();
-      expect(after.keys.publicKey).toBe(publicKey);
+      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe('not-a-key');
     });
 
-    it('does not strip after an extension reload mid-session (storage.session wiped, no onStartup)', async () => {
-      const crypt = new Crypt();
-      const { pair, ciphertext } = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey));
-      await saveToLocalStorage({ keys: { publicKey, privateKey }, extensionID: 'id' });
-
-      // Session 1: promotes and stamps.
-      await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
-
-      // A hot extension update wipes storage.session WITHOUT a browser restart —
-      // the IndexedDB copy has not proven it survives a restart, so no strip.
-      await simulateExtensionReload();
-      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
-
-      expect(await decrypt(key, ciphertext)).toBe('123456');
-      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe(privateKey);
+    it('resolves null (a reportable missing state) when the storage.local copy is corrupt and IndexedDB is empty', async () => {
+      expect(await getOrMigratePrivateKey({ keys: { publicKey: 'pub', privateKey: 'not-a-key' } })).toBeNull();
     });
 
-    it('never strips when IndexedDB silently loses the key between sessions (ephemeral storage)', async () => {
-      const crypt = new Crypt();
-      const { pair, ciphertext } = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey));
+    it('survives an IndexedDB wipe between sessions when a storage.local copy exists', async () => {
+      const { publicKey, privateKey, ciphertext } = await localMaterial();
       await saveToLocalStorage({ keys: { publicKey, privateKey }, extensionID: 'id' });
-
-      // Session 1: promotion "succeeds" ...
       await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
 
-      // ... but the browser wiped IndexedDB across the restart (e.g. an
-      // ephemeral private-browsing database).
-      await simulateBrowserRestart();
       globalThis.indexedDB = new IDBFactory();
 
       const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
-
-      // The storage.local copy carried the key across the loss — and stays put.
       expect(await decrypt(key, ciphertext)).toBe('123456');
-      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe(privateKey);
-    });
-
-    it('is idempotent and re-strips a lingering plaintext key when the IDB key already exists', async () => {
-      const { pair } = await keyMaterial({ extractable: false });
-      await savePrivateKey(pair.privateKey);
-      await saveToLocalStorage({ keys: { publicKey: 'pub', privateKey: 'legacy-leftover' } });
-
-      const storage = await loadFromLocalStorage(['keys']);
-      const key = await getOrMigratePrivateKey(storage);
-
-      expect(key.extractable).toBe(false);
-      const after = await loadFromLocalStorage(['keys']);
-      expect(after.keys.privateKey).toBeUndefined();
-      expect(after.keys.publicKey).toBe('pub');
-    });
-
-    it('prefers a valid storage.local key over a stale IndexedDB key and promotes it', async () => {
-      // A reset that ran while IndexedDB was unavailable can leave the OLD key in
-      // IndexedDB and the NEW (registered) key in storage.local. The storage.local
-      // key is always the freshest when present — it must win and overwrite.
-      const stale = await keyMaterial({ extractable: false });
-      await savePrivateKey(stale.pair.privateKey);
-
-      const crypt = new Crypt();
-      const fresh = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', fresh.pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', fresh.pair.privateKey));
-      await saveToLocalStorage({ keys: { publicKey, privateKey } });
-
-      const storage = await loadFromLocalStorage(['keys']);
-      const key = await getOrMigratePrivateKey(storage);
-
-      expect(await decrypt(key, fresh.ciphertext)).toBe('123456');
-      expect(await decrypt(await getPrivateKey(), fresh.ciphertext)).toBe('123456');
-      // The fresh key stays in storage.local until the overwrite proves durable.
-      const after = await loadFromLocalStorage(['keys']);
-      expect(after.keys.privateKey).toBe(privateKey);
     });
   });
 
@@ -238,29 +162,29 @@ describe('privateKeyStore', () => {
       };
     };
 
-    it('falls back to the storage.local key and keeps it there', async () => {
-      const crypt = new Crypt();
-      const { pair, ciphertext } = await keyMaterial({ extractable: true });
-      const publicKey = crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey));
-      const privateKey = crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', pair.privateKey));
+    it('uses the storage.local key without touching IndexedDB at all', async () => {
+      const { publicKey, privateKey, ciphertext } = await localMaterial();
       await saveToLocalStorage({ keys: { publicKey, privateKey }, extensionID: 'id' });
 
       breakIndexedDB();
 
-      const storage = await loadFromLocalStorage(['keys', 'extensionID']);
-      const key = await getOrMigratePrivateKey(storage);
+      const key = await getOrMigratePrivateKey(await loadFromLocalStorage(['keys', 'extensionID']));
 
       expect(await decrypt(key, ciphertext)).toBe('123456');
       expect(key.extractable).toBe(false);
-      // NOT stripped — storage.local stays the source of truth while IndexedDB is broken.
-      const after = await loadFromLocalStorage(['keys']);
-      expect(after.keys.privateKey).toBe(privateKey);
+      expect((await loadFromLocalStorage(['keys'])).keys.privateKey).toBe(privateKey);
     });
 
     it('still throws (transient, never "missing") when there is no storage.local key either', async () => {
       breakIndexedDB();
 
       await expect(getOrMigratePrivateKey({ keys: { publicKey: 'pub' } })).rejects.toThrow();
+    });
+
+    it('throws (never null) when the storage.local copy is corrupt AND IndexedDB is broken', async () => {
+      breakIndexedDB();
+
+      await expect(getOrMigratePrivateKey({ keys: { publicKey: 'pub', privateKey: 'not-a-key' } })).rejects.toThrow();
     });
   });
 });

@@ -132,7 +132,23 @@
     "description": ""
   },
   "errorStorageIntegrityMessage": {
-    "message": "Please reinstall the browser extension or contact 2FAS Community Support on Discord",
+    "message": "Please reset or reinstall the browser extension and pair it with your device again, or contact 2FAS Community Support on Discord",
+    "description": ""
+  },
+  "errorStorageRecoveredTitle": {
+    "message": "Browser Extension data lost",
+    "description": ""
+  },
+  "errorStorageRecoveredMessage": {
+    "message": "The extension's encryption key was lost, so the extension has been reset. Please pair it with your device again.",
+    "description": ""
+  },
+  "errorResetPendingTitle": {
+    "message": "Waiting for connection",
+    "description": ""
+  },
+  "errorResetPendingMessage": {
+    "message": "The extension was reset, but it could not reach the 2FAS servers yet. It will finish registering as soon as you are back online — this page will refresh by itself.",
     "description": ""
   },
   "errorOldRequestTitle": {
@@ -229,14 +245,6 @@
   },
   "successDeviceDisconnectedMessage": {
     "message": "Device disconnected",
-    "description": ""
-  },
-  "successSafariResetTitle": {
-    "message": "Success",
-    "description": ""
-  },
-  "successSafariResetMessage": {
-    "message": "Browser Extension configuration removed",
     "description": ""
   },
   "successDomainExcludedTitle": {

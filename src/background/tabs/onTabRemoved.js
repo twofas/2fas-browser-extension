@@ -19,7 +19,6 @@
 
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import { loadFromSessionStorage, removeFromSessionStorage } from '@sessionStorage/index.js';
-import storeLog from '@partials/storeLog.js';
 import SDK from '@sdk/index.js';
 
 /**
@@ -38,7 +37,9 @@ const onTabRemoved = async tabID => {
   } catch (err) {
     // `sessionData` is always null here (the load above threw) and onRemoved
     // gives us no URL, so there is no tab URL context to log.
-    await storeLog('error', 2, err);
+    // Console only: a session/local storage read failure while a tab closes is a
+    // browser-internal condition with no extension-side fix and no user impact.
+    console.error('onTabRemoved - storage load', err);
     storage = null;
     sessionData = null;
     return;
@@ -52,7 +53,7 @@ const onTabRemoved = async tabID => {
     try {
       await removeFromSessionStorage(`tabData-${tabID}`);
     } catch (err) {
-      await storeLog('error', 2, err, sessionData[`tabData-${tabID}`]?.origin);
+      console.error('onTabRemoved - session cleanup', err);
     }
   }
 

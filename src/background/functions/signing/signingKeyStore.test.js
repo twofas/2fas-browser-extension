@@ -108,7 +108,7 @@ describe('getOrMigrateSigningKey', () => {
     expect(await getOrMigrateSigningKey({ keys: {} })).toBeNull();
   });
 
-  it('imports and promotes a storage.local pkcs8 fallback as non-extractable, keeping the plaintext until durability is proven', async () => {
+  it('uses a storage.local pkcs8 copy in place — imported non-extractable, never promoted, never stripped', async () => {
     const legacy = await makeLegacyPkcs8();
     await saveToLocalStorage({ keys: { publicKey: 'rsa-pub', signingPrivateKey: legacy } });
 
@@ -116,12 +116,23 @@ describe('getOrMigrateSigningKey', () => {
 
     expect(key).toBeTruthy();
     expect(key.extractable).toBe(false);
-    // Promoted into IndexedDB…
-    expect(await getSigningKey()).toBeTruthy();
-    // …but the plaintext survives (a put that resolves proves nothing about
-    // persistence — see privateKeyStore's durability contract).
+    await expect(signSomething(key)).resolves.toBeTruthy();
+    // Not promoted into IndexedDB, plaintext untouched.
+    expect(await getSigningKey()).toBeUndefined();
     const stored = await loadFromLocalStorage(['keys']);
     expect(stored.keys.signingPrivateKey).toBe(legacy);
+  });
+
+  it('prefers the storage.local copy over a stale IndexedDB record', async () => {
+    const stale = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']);
+    await saveSigningKey(stale.privateKey);
+    const legacy = await makeLegacyPkcs8();
+
+    const key = await getOrMigrateSigningKey({ keys: { signingPrivateKey: legacy } });
+
+    // Different key object than the stale record (it came from the pkcs8 import).
+    expect(key).not.toBe(await getSigningKey());
+    await expect(signSomething(key)).resolves.toBeTruthy();
   });
 
   it('throws (never null) when the fallback is corrupt AND IndexedDB is broken', async () => {

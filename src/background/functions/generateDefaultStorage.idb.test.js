@@ -25,17 +25,15 @@ vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
 const enqueueBrowserRegistration = vi.fn().mockResolvedValue(undefined);
 vi.mock('@background/functions/update/enqueueBrowserRegistration.js', () => ({ default: (...a) => enqueueBrowserRegistration(...a) }));
 
-const savePrivateKey = vi.fn();
-const deletePrivateKey = vi.fn();
-vi.mock('@background/functions/privateKeyStore.js', async importOriginal => ({
-  // Keep the real generic record/stamp helpers (the ECDSA signingKeyStore
-  // uses them against fake-indexeddb); only the RSA-specific entry points are
-  // stubbed to simulate the broken-IndexedDB scenarios.
+// Both keys (RSA + ECDSA) persist through cryptoKeyStore; failing it at the
+// module boundary simulates an unavailable IndexedDB for the whole generation.
+const saveKeyRecord = vi.fn();
+const deleteKeyRecord = vi.fn();
+vi.mock('@background/functions/cryptoKeyStore.js', async importOriginal => ({
   ...(await importOriginal()),
-  savePrivateKey: (...a) => savePrivateKey(...a),
-  deletePrivateKey: (...a) => deletePrivateKey(...a),
-  getPrivateKey: vi.fn().mockResolvedValue(undefined),
-  getOrMigratePrivateKey: vi.fn().mockResolvedValue(null)
+  saveKeyRecord: (...a) => saveKeyRecord(...a),
+  deleteKeyRecord: (...a) => deleteKeyRecord(...a),
+  getKeyRecord: vi.fn().mockResolvedValue(undefined)
 }));
 
 vi.mock('@sdk/index.js', () => ({
@@ -58,14 +56,14 @@ const IDB_ERR = new Error('A mutation operation was attempted on a database that
 
 beforeEach(() => {
   vi.clearAllMocks();
-  savePrivateKey.mockResolvedValue(undefined);
-  deletePrivateKey.mockResolvedValue(undefined);
+  saveKeyRecord.mockResolvedValue(undefined);
+  deleteKeyRecord.mockResolvedValue(undefined);
 });
 
 describe('generateDefaultStorage — IndexedDB unavailable (Z3)', () => {
-  it('completes registration with a storage.local fallback key when the FIRST op (deletePrivateKey) fails', async () => {
-    deletePrivateKey.mockRejectedValue(IDB_ERR);
-    savePrivateKey.mockRejectedValue(IDB_ERR);
+  it('completes registration with a storage.local fallback key when the FIRST op (delete) fails', async () => {
+    deleteKeyRecord.mockRejectedValue(IDB_ERR);
+    saveKeyRecord.mockRejectedValue(IDB_ERR);
 
     await generateDefaultStorage(BROWSER_INFO);
 
@@ -83,11 +81,14 @@ describe('generateDefaultStorage — IndexedDB unavailable (Z3)', () => {
     // Surfaced once as a warning under its own ID — not the error-28 flood, and
     // not the old warning-28 retry loop that never converged.
     expect(storeLog).toHaveBeenCalledWith('warning', 60, expect.any(Error), expect.stringContaining('IndexedDB unavailable'));
+    // The signing key took the same fallback.
+    expect(typeof storage.keys.signingPrivateKey).toBe('string');
+    expect(storeLog).toHaveBeenCalledWith('warning', 67, expect.any(Error), expect.stringContaining('IndexedDB unavailable'));
     expect(storeLog).not.toHaveBeenCalledWith('error', 28, expect.anything(), expect.anything());
   });
 
-  it('falls back when the delete succeeds but savePrivateKey fails', async () => {
-    savePrivateKey.mockRejectedValue(IDB_ERR);
+  it('falls back when the delete succeeds but the save fails', async () => {
+    saveKeyRecord.mockRejectedValue(IDB_ERR);
 
     await generateDefaultStorage(BROWSER_INFO);
 
@@ -104,7 +105,9 @@ describe('generateDefaultStorage — IndexedDB unavailable (Z3)', () => {
     expect(storage.extensionID).toBe('ext-123');
     expect(typeof storage.keys.publicKey).toBe('string');
     expect(storage.keys.privateKey).toBeUndefined();
-    expect(savePrivateKey).toHaveBeenCalledTimes(1);
+    expect(storage.keys.signingPrivateKey).toBeUndefined();
+    // One record per key: RSA token key + ECDSA signing key.
+    expect(saveKeyRecord).toHaveBeenCalledTimes(2);
     expect(storeLog).not.toHaveBeenCalled();
   });
 });

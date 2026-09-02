@@ -25,6 +25,7 @@ import storeLog from '@partials/storeLog.js';
 import removeDeviceFromDOM from '@optionsPage/functions/removeDeviceFromDOM.js';
 import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
 import TwoFasNotification from '@notification';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Handles the device removal process with confirmation modal and API call.
@@ -66,7 +67,11 @@ const removeDevice = function (e) {
         })
         .then(() => TwoFasNotification.show(config.Texts.Success.DeviceDisconnected))
         .catch(async err => {
-          await storeLog('error', 22, err, 'removeDevice');
+          // A failed unpair over a dead connection is not ours to fix; the
+          // "updateList remove device failed" protocol error below still is.
+          if (!isTransportError(err)) {
+            await storeLog('error', 22, err, 'removeDevice');
+          }
           return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
         });
     }

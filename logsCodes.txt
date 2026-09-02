@@ -21,25 +21,25 @@
 0 - Undefined Error
 
 // BACKGROUND
-1 - onStartup
-2 - onTabRemoved
-3 - onTabUpdated
-4 - browserAction
-5 - initBEAction
-6 - updateBrowserInfo
+1 - onStartup - initContextMenu failed [error]
+*2 - onTabRemoved [retired in 1.9.0 — session/local storage failures during tab teardown are browser-internal and unfixable; console only]
+*3 - onTabUpdated [retired in 1.9.0 — same reasoning as 2; console only]
+4 - browserAction (also the pre-flight key check: a transient IndexedDB failure throws here rather than being mistaken for key loss)
+5 - initBEAction (transport failures filtered out since 1.9.0; a 401 with registrationRequired shows the re-pair prompt instead)
+*6 - updateBrowserInfo [retired in 1.9.0 — every step of the chain logs its own failure (29 / 48 / updateIncognitoAccess), so this only duplicated one of them with less context]
 7 - handleConfigurationRequest
-8 - handleLoginRequest
+8 - handleLoginRequest (transport failures filtered out since 1.9.0)
 9 - onInstalled
 *10 - sendNotificationInfo [deprecated]
-11 - subscribeChannel - channel.onerror
-12 - subscribeChannel - browser_extensions.pairing.failure
+11 - subscribeChannel - WebSocket CONSTRUCTION failed (bad URL / CSP / resource exhaustion — ours) [error]. Since 1.9.0 the ws.onerror handler no longer logs: its Event carries no diagnostics and every cause (flaky Wi-Fi, captive portal, proxy, offline) is environment; reconnect is driven from onclose
+12 - subscribeChannel - browser_extensions.pairing.failure — backend rejected a pairing the user started (expired QR, declined on the phone); downgraded error -> info in 1.9.0, kept as a product signal [info]
 13 - subscribeChannel - subscribeChannel event default
-26 - updateIncognitoAccess
+*26 - updateIncognitoAccess [retired in 1.9.0 — browser API / storage hiccup with no user-visible effect and no extension-side fix; console only]
 27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]
 28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST)
 29 - verifyStorageIntegrity
-30 - closeRequest
-35 - checkSafariStorage
+30 - closeRequest - close2FARequest / session write failed; transport failures (offline, 5xx, timeout) are filtered out since 1.9.0, and the storage-load variant is console only [error]
+35 - checkSafariStorage (Safari: on install AND on every browser start, no pre-check delay since 1.9.0) — the catch is dominated by IndexedDB open failures, which also mean the self-heal can never fire (classifyKeyMaterial throws instead of reporting 'missing'), so a persistently broken profile is a dead end worth seeing [error]
 37 - storageReset
 48 - updateBrowserExtension - storage load / enqueue
 49 - resolveTokenTargetFrame - session load failed, fallback to top frame [warning]
@@ -48,52 +48,60 @@
 53 - updateList (onMessage) - list mutation failed [error]
 54 - runStorageMigrations - storage migration failed [error]
 *56 - handleLoginRequest - top-frame token fallback blocked (requestID / origin mismatch), token withheld [warning] [deprecated in 1.8.4 — split into 61 (superseded) and 62 (lookup failed); origin-change after a successful login redirect is no longer logged]
-57 - verifyStorageIntegrity - private key missing while public key + extensionID valid: re-pairing required, regeneration skipped [error]
+57 - verifyStorageIntegrity / checkSafariStorage / browserAction / handleLoginRequest - private key missing while public key + extensionID valid (cause.key: 'rsa' = token key, 'signing' = ECDSA signing key while signing active — logged only, no notification): re-pairing required, regeneration skipped (Safari ≥1.9.0: regenerated automatically right after — cause.selfHealed=true; deduped per incident, so an install that already reported 57 under 1.8.4 emits only 69 on the healing update) [error]
 58 - handleLoginRequest - native token fallback shown (front-end token notification could not be delivered) [warning]
-60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback [warning]
+60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback; NOT logged when keyStoragePolicy chooses storage.local for the platform (Safari since 1.9.0 — never emitted there) [warning]
 61 - handleLoginRequest - token withheld: request superseded by a newer one (user approved an outdated push), user notified via Outdated request notification [info]
 62 - handleLoginRequest - token fallback blocked: top-frame safety lookup failed; constant message names the failed stage (sessionRead = storage.session read, any engine / frameLookup = webNavigation.getFrame rejection, Firefox+Safari only — Chromium resolves null and goes silent), raw error in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
 63 - ensureSigningKeyRegistration - signing keypair generation/registration setup failed (retried on next startup/update) [error]
 64 - signingState - signing key conflict: backend already holds a different public signing key, re-pairing required [warning]
 65 - getSigningHeaders - request signing failed while signing active (request sent unsigned; works only inside migration window) [error]
 66 - signingState - backend rejects requests as unsigned/invalid (post-migration-window 401 threshold reached), re-registration required [error]
-67 - signingKeyStore - IndexedDB unavailable, ECDSA signing key stored in storage.local fallback [warning]
+67 - signingKeyStore - IndexedDB unavailable, ECDSA signing key stored in storage.local fallback; NOT logged when keyStoragePolicy chooses storage.local for the platform (Safari since 1.9.0 — never emitted there) [warning]
 68 - resolveTokenTargetFrame - frame lookup failed (webNavigation.getFrame rejected — Firefox/Safari missing frame or tab; Chromium resolves null instead and lands in 51), token withheld; constant message ("Frame lookup failed" / "Opaque frame lookup failed"), raw rejection in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
+69 - selfHealMissingPrivateKey - private key lost while registration valid (cause.key: 'rsa' | 'signing'; extension-origin IndexedDB gone, storage.local intact — reinstall cannot clear it), storage regenerated + install page opened for re-pairing; logged before the wipe; can appear without a paired 57 when the incident was already reported (dedupe) [warning].
+     SINCE 1.9.0 THIS ALSO FIRES ON CHROME/EDGE/FIREFOX, but only for a request the user is waiting on (browserAction's pre-flight check, or handleLoginRequest) — those platforms stay report-only for the background integrity check on browser update. So 69 volume splits two ways: Safari = any trigger, others = user-initiated only.
+     Before the wipe the heal calls DELETE /browser_extensions/{oldID}/devices (best effort, never logged) so the dead pairing disappears from the user's 2FAS app — the backend has no way to delete the extension row itself, and the app lists extensions by their pairing rows.
+     ONLY for cause.key='rsa'. A signing-only gap is never healed on any platform (the RSA key resolved, so that pairing still decrypts tokens); it stays log 57 with cause.key='signing' and the 401 -> registrationRequired path (66) owns the recovery.
+70 - selfHealMissingPrivateKey - Safari self-heal step failed; context names the stage: plain context = heal aborted before/while regenerating, caller fell back to the report-only path [error]; "<context> - openInstallPage" = storage already regenerated, only the install-page tab could not be opened (user reaches it via the toolbar icon) [warning]; context "flushBrowserRegistration - openInstallPage" = same, but for the deferred page of an OFFLINE heal, opened once the durable create committed the extensionID (recoveredInstallPagePending marker)
+71 - onMessage - storageReset accepted through the tab-url fallback (sender.url absent — a bridge without MessageSender.url, older Safari?); bounded telemetry for the sender guard, deduped once per install since 1.9.0 (storageResetTabUrlFallbackReported). Delete after one release cycle if the bucket stays empty [warning]
+73 - selfHealMissingPrivateKey - self-heal REFUSED: the private key was lost again within the brake window (MAX_HEALS_PER_WINDOW regenerations per HEAL_WINDOW_MS, counter carried through the regeneration in selfHealHistory, dropped only by a manual Reset). cause: key, count, firstAt, userInitiated. Once per window; the caller falls back to report-only (57 + re-pair notification). This is the actionable signal for an environment that keeps losing keys — the loss itself is 57/69 [warning]
+72 - syncDevicesWithAPI - paired-device sync failed for a reason that is NOT transport (a shape/logic error from reconcileDevices, an unexpected API payload); offline/5xx/timeout are filtered out. Was logged as 39 before 1.9.0, colliding with a retired content-script code [error]
 
 // CONTENT
-33 - content_script
+*33 - content_script [dead — content_script.js no longer calls storeLog; no emitter since before 1.9.0]
 14 - getTabData
-15 - createObserver
-16 - inputFocus
+*15 - createObserver [dead — the file no longer exists; no emitter since before 1.9.0]
+*16 - inputFocus [dead — the file no longer exists; no emitter since before 1.9.0]
 17 - contentOnMessage
 *18 - neverShowNotificationInfo [deprecated]
 *19 - openOptionsPage [deprecated]
-*39 - removedNodes - loadFromLocalStorage [deprecated]
+*39 - removedNodes - loadFromLocalStorage [deprecated] — NOTE: 1.8.x–1.9.0-pre also emitted 39 from syncDevicesWithAPI (background); that path moved to 72 in 1.9.0, so pre-1.9.0 volume in this bucket is device-sync, not content script
 *40 - removedNodes - saveToLocalStorage [deprecated]
 *41 - hiddenNodes - loadFromLocalStorage [deprecated]
 *42 - hiddenNodes - saveToLocalStorage [deprecated]
 *43 - pageLoadComplete - loadFromLocalStorage [deprecated]
 *44 - pageLoadComplete - saveToLocalStorage [deprecated]
 46 - clickSubmit - loadFromLocalStorage
-59 - tokenNotification - clipboard copy failed (no secure context / execCommand fallback failed) [warning]
+*59 - tokenNotification - clipboard copy failed [retired in 1.9.0 — no secure context or the site/user denied clipboard access; the token stays on screen to copy by hand and there is nothing to fix; console only]
 
 // INSTALL PAGE
 20 - installPage
-34 - regenerate QR
+*34 - regenerate QR [dead — generateQRCode.js no longer logs; no emitter since before 1.9.0]
 
 // OPTIONS PAGE
-21 - optionsPage
-22 - removeDevice
+21 - optionsPage (bootstrap via pageError, and the device-list fetch — transport failures filtered out since 1.9.0)
+22 - removeDevice (transport failures filtered out since 1.9.0 — the 'updateList remove device failed' protocol error still logs)
 31 - removeDevice - wrong deviceID or deviceName
-36 - handleSafariReset
-38 - storageValidationReload
-45 - domainModalFormSubmit
-47 - handleImportDefaultExcludedDomains
-52 - removeDomain
+36 - handleSafariReset (Danger Zone reset, every platform since 1.9.0) / integrityReset (Reset button in the storage-integrity overlay, options + install page) — both via resetExtensionStorage: background refused or failed the storageReset, nothing wiped page-side
+38 - storageValidationReload (storageReset message itself rejected — background restarting / port closed; page shows the integrity overlay with its Reset button instead of reloading)
+45 - domainModalFormSubmit (transport failures filtered out since 1.9.0)
+47 - handleImportDefaultExcludedDomains (transport failures filtered out since 1.9.0)
+52 - removeDomain (transport failures filtered out since 1.9.0)
 55 - removeDomain - wrong domain
 
 // PARTIALS
 *23 - openShortcutEdit [redundant]
 32 - openShortcutEdit - empty URL
 *24 - handleTargetBlank [redundant]
-25 - extNameUpdate
+25 - extNameUpdate (transport failures filtered out since 1.9.0)

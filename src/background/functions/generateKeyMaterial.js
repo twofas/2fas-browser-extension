@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import generateRSAKeyMaterial from '@background/functions/generateRSAKeyMaterial.js';
+import { generateRSAKeyMaterial } from '@background/functions/privateKeyStore.js';
 import { generateSigningKeyMaterial } from '@background/functions/signing/signingKeyStore.js';
 
 /**

@@ -31,7 +31,14 @@ vi.mock('@sdk/index.js', () => ({
   }
 }));
 
+const openInstallPage = vi.fn().mockResolvedValue(undefined);
+vi.mock('@background/functions/openInstallPage.js', () => ({ default: (...a) => openInstallPage(...a) }));
+
+const notificationShow = vi.fn().mockResolvedValue(undefined);
+vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
+
 import flushBrowserRegistration from './flushBrowserRegistration.js';
+import { RECOVERED_PAGE_PENDING_KEY } from '@partials/installPageReasons.js';
 import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
 import { savePrivateKey } from '@background/functions/privateKeyStore.js';
 import { saveToLocalStorage, loadFromLocalStorage } from '@localStorage/index.js';
@@ -155,5 +162,53 @@ describe('flushBrowserRegistration — 404 re-registration', () => {
     expect(record).toMatchObject({ op: 'create', reregister: true, attempts: 0 });
     // The dead ID is only replaced once the re-registration succeeds.
     expect((await loadFromLocalStorage(['extensionID'])).extensionID).toBe('dead-id');
+  });
+});
+
+describe('flushBrowserRegistration — deferred pairing page after an OFFLINE self-heal', () => {
+  const healedOffline = async () => {
+    const pair = await crypto.subtle.generateKey(GEN_PARAMS, false, ['encrypt', 'decrypt']);
+    await savePrivateKey(pair.privateKey);
+    await saveToLocalStorage({ keys: { publicKey: 'pub' }, [RECOVERED_PAGE_PENDING_KEY]: true });
+    await seedRecord({ op: 'create' });
+    createExtensionInstance.mockResolvedValue({ id: 'new-id' });
+  };
+
+  it('opens the recovered pairing page, in the background, once the create commits', async () => {
+    await healedOffline();
+
+    await flushBrowserRegistration();
+
+    // No user gesture behind an alarm / 'online' / startup flush — never raise the window.
+    expect(openInstallPage).toHaveBeenCalledWith('recovered', { focusWindow: false });
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    // One-shot: the marker is consumed, so later flushes do not reopen the page.
+    expect((await loadFromLocalStorage(RECOVERED_PAGE_PENDING_KEY))[RECOVERED_PAGE_PENDING_KEY]).toBeUndefined();
+  });
+
+  it('consumes the marker even when the page cannot be opened, and logs 70 with the flush stage', async () => {
+    await healedOffline();
+    openInstallPage.mockRejectedValueOnce(new Error('no windows'));
+    const storeLog = (await import('@partials/storeLog.js')).default;
+
+    await flushBrowserRegistration();
+
+    expect(storeLog).toHaveBeenCalledWith('warning', 70, expect.any(Error), 'flushBrowserRegistration - openInstallPage');
+    expect((await loadFromLocalStorage(RECOVERED_PAGE_PENDING_KEY))[RECOVERED_PAGE_PENDING_KEY]).toBeUndefined();
+    // The registration itself still landed.
+    expect((await loadFromLocalStorage(['extensionID'])).extensionID).toBe('new-id');
+  });
+
+  it('opens nothing for an ordinary create (no heal behind it)', async () => {
+    const pair = await crypto.subtle.generateKey(GEN_PARAMS, false, ['encrypt', 'decrypt']);
+    await savePrivateKey(pair.privateKey);
+    await saveToLocalStorage({ keys: { publicKey: 'pub' } });
+    await seedRecord({ op: 'create' });
+    createExtensionInstance.mockResolvedValue({ id: 'new-id' });
+
+    await flushBrowserRegistration();
+
+    expect(openInstallPage).not.toHaveBeenCalled();
+    expect(notificationShow).not.toHaveBeenCalled();
   });
 });

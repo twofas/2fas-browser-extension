@@ -21,6 +21,7 @@ import SDK from '@sdk/index.js';
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Closes a 2FA request for a specific tab.
@@ -37,7 +38,9 @@ const closeRequest = async (tabID, requestID) => {
     storage = await loadFromLocalStorage(['extensionID']);
     sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
   } catch (err) {
-    await storeLog('error', 30, err);
+    // Console only: storage read failure while closing a request. The request is
+    // abandoned either way and the backend times it out.
+    console.error('closeRequest - storage load', err);
     storage = null;
     sessionData = null;
     return false;
@@ -57,7 +60,9 @@ const closeRequest = async (tabID, requestID) => {
 
     await saveToSessionStorage({ [`tabData-${tabID}`]: tabObject });
   } catch (err) {
-    await storeLog('error', 30, err, sessionData[`tabData-${tabID}`]?.origin);
+    if (!isTransportError(err)) {
+      await storeLog('error', 30, err, sessionData[`tabData-${tabID}`]?.origin);
+    }
   } finally {
     storage = null;
     sessionData = null;

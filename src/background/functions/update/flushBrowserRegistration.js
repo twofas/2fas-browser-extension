@@ -20,9 +20,12 @@
 /* global navigator */
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import { loadFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
+import TwoFasNotification from '@notification/index.js';
+import openInstallPage from '@background/functions/openInstallPage.js';
+import { INSTALL_PAGE_REASON_RECOVERED, RECOVERED_PAGE_PENDING_KEY } from '@partials/installPageReasons.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import ensureUsableSigningKeyMaterial from '@background/functions/signing/ensureUsableSigningKeyMaterial.js';
 import { activateSigning, markSigningConflict } from '@background/functions/signing/signingState.js';
@@ -278,6 +281,40 @@ const sendCreate = async record => {
       console.error('flushBrowserRegistration - setUninstallURL', err);
     }
   }
+
+  await openRecoveredPageIfPending();
+};
+
+/**
+ * Finishes an OFFLINE self-heal. The heal regenerated the identity but could not
+ * register it, so it left a marker instead of opening the pairing page (the page
+ * needs an extensionID). Now that the registration landed — from an alarm, the
+ * 'online' event or a startup flush, with no user in front of the browser — open
+ * that page with the explanation, in the background, and tell the user once.
+ * Without this the next toolbar click landed on a bare pairing screen.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
+const openRecoveredPageIfPending = async () => {
+  const pending = await loadFromLocalStorage(RECOVERED_PAGE_PENDING_KEY).catch(() => null);
+
+  if (!pending?.[RECOVERED_PAGE_PENDING_KEY]) {
+    return;
+  }
+
+  // Cleared first: a failure below must not reopen the page on every later flush.
+  await removeFromLocalStorage(RECOVERED_PAGE_PENDING_KEY).catch(() => {});
+
+  try {
+    await openInstallPage(INSTALL_PAGE_REASON_RECOVERED, { focusWindow: false });
+  } catch (err) {
+    await storeLog('warning', 70, err, 'flushBrowserRegistration - openInstallPage').catch(() => {});
+  }
+
+  // Best effort: reaches the user only as a native notification (no tab to render
+  // a front-end one in), which is the default everywhere but Safari.
+  await TwoFasNotification.show(config.Texts.Error.StorageRecovered).catch(() => {});
 };
 
 /**

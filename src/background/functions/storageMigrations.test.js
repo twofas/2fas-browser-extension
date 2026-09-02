@@ -95,6 +95,27 @@ describe('runStorageMigrations', () => {
     expect(stored.signing).toMatchObject({ active: true });
   });
 
+  it('drops the retired key-promotion stamps (v2→v3) and leaves everything else alone', async () => {
+    await saveToLocalStorage({
+      storageSchemaVersion: 2,
+      autoSubmitExcludedDomains: [],
+      signing: { active: true, conflict: false, registrationRequired: false, auth401Count: 0 },
+      keys: { publicKey: 'pub', privateKey: 'legacy-plaintext' },
+      privateKeyIdbStamp: { fingerprint: 'f', sessionID: 's' },
+      signingKeyIdbStamp: { fingerprint: 'g', sessionID: 's' }
+    });
+
+    await runStorageMigrations();
+
+    const stored = await loadFromLocalStorage(null);
+    expect(stored.privateKeyIdbStamp).toBeUndefined();
+    expect(stored.signingKeyIdbStamp).toBeUndefined();
+    // A leftover plaintext key is NOT stripped — storage.local keys are used in place.
+    expect(stored.keys.privateKey).toBe('legacy-plaintext');
+    expect(stored.signing.active).toBe(true);
+    expect(stored.storageSchemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+  });
+
   it('does not downgrade a storage whose version is newer than this build', async () => {
     await saveToLocalStorage({ storageSchemaVersion: CURRENT_SCHEMA_VERSION + 5 });
 

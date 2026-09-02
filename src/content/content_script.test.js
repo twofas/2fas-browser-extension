@@ -18,8 +18,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { describe, it, expect, vi } from 'vitest';
-import browser from 'webextension-polyfill';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   getTabData: vi.fn(() => Promise.resolve({ id: 1, url: 'https://x.test' })),
@@ -30,13 +29,34 @@ vi.mock('@content/events/contentOnMessage.js', () => ({ default: vi.fn() }));
 
 const LISTENER_KEY = '__2fasMessageListener';
 
-describe('content_script — onMessage listener lifecycle', () => {
-  it('stays attached through cancelled navigations and survives bfcache via pagehide/pageshow', async () => {
-    browser.runtime.id = 'ext-id';
-    browser.runtime.onMessage = { addListener: vi.fn(), removeListener: vi.fn() };
-    const { addListener, removeListener } = browser.runtime.onMessage;
+/**
+ * Loads a FRESH copy of the content script with fresh spies.
+ *
+ * `vi.resetModules()` is what makes the module body re-run: an ES import is cached,
+ * so without it a test that happens to run second sees no registration at all (the
+ * file used to pass only in declaration order). It also resets the polyfill stub,
+ * hence re-importing `browser` here rather than using the outer binding.
+ *
+ * @returns {Promise<{addListener: Function, removeListener: Function}>}
+ */
+const loadContentScript = async () => {
+  vi.resetModules();
+  const { default: freshBrowser } = await import('webextension-polyfill');
+  freshBrowser.runtime.id = 'ext-id';
+  freshBrowser.runtime.onMessage = { addListener: vi.fn(), removeListener: vi.fn() };
 
-    await import('./content_script.js');
+  await import('./content_script.js');
+
+  return freshBrowser.runtime.onMessage;
+};
+
+describe('content_script — onMessage listener lifecycle', () => {
+  beforeEach(() => {
+    delete window[LISTENER_KEY];
+  });
+
+  it('stays attached through cancelled navigations and survives bfcache via pagehide/pageshow', async () => {
+    const { addListener, removeListener } = await loadContentScript();
 
     // Initial load registers exactly once.
     expect(addListener).toHaveBeenCalledTimes(1);
@@ -75,16 +95,11 @@ describe('content_script — onMessage listener lifecycle', () => {
   });
 
   it('a second injection replaces the previous listener AND its lifecycle handlers', async () => {
+    // Establish a first injection, then inject again over it.
+    await loadContentScript();
     const staleListener = window[LISTENER_KEY];
-    // resetModules also resets the webextension-polyfill stub, so the re-imported
-    // content script sees a fresh browser instance — set the spies up on that one.
-    vi.resetModules();
-    const { default: freshBrowser } = await import('webextension-polyfill');
-    freshBrowser.runtime.id = 'ext-id';
-    freshBrowser.runtime.onMessage = { addListener: vi.fn(), removeListener: vi.fn() };
-    const { addListener, removeListener } = freshBrowser.runtime.onMessage;
 
-    await import('./content_script.js');
+    const { addListener, removeListener } = await loadContentScript();
 
     // The stale listener is replaced by the fresh one.
     expect(removeListener).toHaveBeenCalledWith(staleListener);

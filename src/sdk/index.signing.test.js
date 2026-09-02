@@ -99,19 +99,48 @@ describe('SDK request signing', () => {
     expect(headers[HEADER_SIGNATURE_VERSION]).toBeUndefined();
   });
 
-  it('signs updateBrowserExtension, removePairedDevice, close2FARequest and storeLog', async () => {
+  it('signs updateBrowserExtension, removePairedDevice, removeAllPairedDevices, close2FARequest and storeLog', async () => {
     await activateSigning();
     fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(200)));
 
     const sdk = new SDK();
     await sdk.updateBrowserExtension('ext-id', { name: 'n', browser_name: 'b', browser_version: '1' });
     await sdk.removePairedDevice('ext-id', 'dev-id');
+    await sdk.removeAllPairedDevices('ext-id');
     await sdk.close2FARequest('ext-id', 'req-id', true);
     await sdk.storeLog('ext-id', 'error', 'm', { logID: 1 });
 
     for (const call of fetchMock.mock.calls) {
       expect(sentHeaders(call)[HEADER_SIGNATURE]).toBeTruthy();
     }
+  });
+
+  it('removeAllPairedDevices hits DELETE /browser_extensions/{id}/devices', async () => {
+    await activateSigning();
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(200)));
+
+    await new SDK().removeAllPairedDevices('dead-id');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(String(url)).toMatch(/\/browser_extensions\/dead-id\/devices$/);
+    expect(options.method).toBe('DELETE');
+  });
+
+  it('a 401 on removeAllPairedDevices does NOT count toward registrationRequired (the identity is being wiped)', async () => {
+    await activateSigning();
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(401)));
+
+    // Control: an ordinary signed call's 401 is counted.
+    await new SDK().removePairedDevice('ext-id', 'dev-id').catch(() => {});
+    expect((await getSigningState()).auth401Count).toBe(1);
+
+    // The best-effort unpair before the wipe must leave the counter alone — three
+    // counted 401s would fire the "re-pair required" notification right on top of
+    // the heal's own "reset, pair again" message.
+    await new SDK().removeAllPairedDevices('ext-id').catch(() => {});
+    await new SDK().removeAllPairedDevices('ext-id').catch(() => {});
+    expect((await getSigningState()).auth401Count).toBe(1);
+    expect((await getSigningState()).registrationRequired).toBe(false);
   });
 
   it('re-signs every retry attempt of getAllPairedDevices with a fresh nonce', async () => {

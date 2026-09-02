@@ -20,7 +20,8 @@
 import { initContextMenu } from '@background/contextMenu/index.js';
 import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
 import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
-import { markBrowserSession } from '@background/functions/keyPromotionDurability.js';
+import checkSafariStorage from '@background/functions/checkSafariStorage.js';
+import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import storeLog from '@partials/storeLog.js';
 
 /**
@@ -34,19 +35,34 @@ import storeLog from '@partials/storeLog.js';
  * @return {Promise<void>}
  */
 const onStartup = async () => {
-  // Mint the session marker for the private-key promotion durability check —
-  // onStartup is its only minting point (fires solely on a true browser start).
-  // Best-effort: without it the check just stays conservative (no strip).
-  try {
-    await markBrowserSession();
-  } catch (err) {
-    console.error('onStartup - markBrowserSession', err);
-  }
-
   try {
     await initContextMenu();
   } catch (err) {
     await storeLog('error', 1, err, 'onStartup');
+  }
+
+  // Safari: the extension-origin IndexedDB is re-homed on every launch and can be
+  // lost on the way (issue #142), and a same-build reinstall fires no onInstalled
+  // there — so the key material is checked (and self-healed) on every start,
+  // before the user runs into it at token time. checkSafariStorage logs its own
+  // failures (35).
+  //
+  // No pre-check delay: WebKit cannot run extension JS while the origin rename is
+  // in flight. `WebExtensionContext::load()` calls `loadBackgroundWebViewDuringLoad()`
+  // only from the completion handler of `moveLocalStorageIfNeeded`, and
+  // `m_safeToLoadBackgroundContent` stays false until the `_renameOrigin` IPC reply
+  // lands, so onStartup/onInstalled/alarms all fire post-rename (verified against
+  // WebKit trunk and safari-7618…7624, 2026-08-31). A wait here only delayed the
+  // signing-key registration and the durable flush below — on a platform WebKit
+  // already reports as slow to load extensions (bug 320812) — while protecting a
+  // window that does not exist. It runs before them on purpose: a heal replaces the
+  // identity, so registering a signing key for the old one first would be wasted.
+  if (process.env.EXT_PLATFORM === 'Safari') {
+    try {
+      await checkSafariStorage(await getBrowserInfo());
+    } catch (err) {
+      console.error('onStartup - checkSafariStorage', err);
+    }
   }
 
   // v1.9.0: re-attempt a not-yet-registered signing key on every browser

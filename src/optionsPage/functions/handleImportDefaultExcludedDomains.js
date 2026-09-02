@@ -21,6 +21,7 @@ import browser from 'webextension-polyfill';
 import TwoFasNotification from '@notification';
 import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Handles import of default excluded domains for auto-submit feature.
@@ -43,7 +44,9 @@ const handleImportDefaultExcludedDomains = e => {
       return TwoFasNotification.show(config.Texts.Success.DomainExcluded);
     })
     .catch(async err => {
-      await storeLog('error', 47, err, 'handleImportDefaultExcludedDomains');
+      if (!isTransportError(err)) {
+        await storeLog('error', 47, err, 'handleImportDefaultExcludedDomains');
+      }
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
     });
 };

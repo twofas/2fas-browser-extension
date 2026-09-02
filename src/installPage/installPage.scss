@@ -35,6 +35,8 @@
 
 @use "styles/integrityError";
 
+@use "styles/recovered";
+
 .twofas-install-page {
   background-color: v.$bg;
   box-sizing: border-box;

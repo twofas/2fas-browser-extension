@@ -29,13 +29,59 @@ import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
 import { defaultSigningState } from '@background/functions/signing/signingState.js';
 
+// The only keys a caller may carry across a regeneration: user preferences, nothing
+// else. An allow-list rather than a "these are overridden anyway" convention — a
+// leaked `extensionID` would pair the OLD registration with the NEW keys (the catch
+// below then skips the durable create because an extensionID is present), producing
+// an install that classifies as healthy and can never decrypt a token.
+const OVERRIDABLE_PREFERENCES = [
+  'logging',
+  'nativePush',
+  'contextMenu',
+  'pinInfo',
+  'incognito',
+  'autoSubmitEnabled',
+  'autoSubmitExcludedDomains',
+  'extIcon',
+  // The one non-preference: the self-heal's repeat counter. It has to survive the
+  // regeneration precisely because the regeneration is what it counts (see
+  // selfHealMissingPrivateKey). A manual Reset passes no overrides, so it drops it.
+  'selfHealHistory'
+];
+
+/**
+ * Keeps only the preference keys a regeneration may carry over.
+ *
+ * @param {Object} [overrides] - Raw overrides from the caller.
+ * @returns {Object} The allowed subset.
+ */
+const pickPreferences = (overrides = {}) => {
+  const out = {};
+
+  if (!overrides || typeof overrides !== 'object') {
+    return out;
+  }
+
+  for (const key of OVERRIDABLE_PREFERENCES) {
+    if (overrides[key] !== undefined) {
+      out[key] = overrides[key];
+    }
+  }
+
+  return out;
+};
+
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
  *
  * @param {Object} browserInfo - The browser information object
+ * @param {Object} [overrides={}] - Preference values written atomically with the defaults
+ *   (e.g. settings carried across an automatic regeneration). Only the keys in
+ *   OVERRIDABLE_PREFERENCES are honoured; everything else — identity, pairing,
+ *   registration and reporting state — is dropped, never merged.
  * @returns {Promise<void>} A promise that resolves when storage is initialized and extension is registered
  */
-const generateDefaultStorage = browserInfo => {
+const runGeneration = (browserInfo, overrides = {}) => {
   let attempt = 0;
 
   return loadFromLocalStorage('attempt')
@@ -46,21 +92,28 @@ const generateDefaultStorage = browserInfo => {
 
       return clearLocalStorage();
     })
+    // Re-arm the attempt counter BEFORE the fallible work. `clearLocalStorage` has
+    // already dropped it, and everything after this point can throw (crypto,
+    // storage.local quota/corruption); leaving storage at `{}` would reset the
+    // pages' `attempt > 5` bound, so a failing reset could be retried forever.
+    .then(() => saveToLocalStorage({ attempt: attempt + 1 }))
     .then(() => generateKeyMaterial())
     .then(keys => saveToLocalStorage({
-      configured: false,
-      browserInfo,
-      keys,
       contextMenu: true,
       logging: false,
       incognito: false,
       nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
       pinInfo: false,
-      extensionVersion: config.ExtensionVersion,
       autoSubmitEnabled: false,
       autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
-      attempt: attempt + 1,
       extIcon: 0, // 0 - default
+      ...pickPreferences(overrides),
+      // Identity — never overridable.
+      configured: false,
+      browserInfo,
+      keys,
+      extensionVersion: config.ExtensionVersion,
+      attempt: attempt + 1,
       signing: defaultSigningState(),
       storageSchemaVersion: CURRENT_SCHEMA_VERSION
     }))
@@ -103,4 +156,28 @@ const generateDefaultStorage = browserInfo => {
     });
 };
 
+// Single-flight: reachable from onInstalled, onStartup (Safari), storageReset and
+// the Safari self-heal, which can overlap at a browser start. Two interleaved
+// runs (clear → keys → POST → extensionID) can register the keys of one run
+// under the extensionID of the other — a silently undecryptable install. A
+// concurrent caller joins the run in progress instead — and the FIRST caller's
+// arguments (browserInfo, overrides) win; the joiner's are dropped. The only
+// realistic overlap is the Safari self-heal (stored name, preserved preferences)
+// against a manual storageReset (fresh name, defaults): either outcome is a
+// valid fresh identity, so no queueing.
+let inFlight = null;
+
+const generateDefaultStorage = (browserInfo, overrides = {}) => {
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = runGeneration(browserInfo, overrides).finally(() => {
+    inFlight = null;
+  });
+
+  return inFlight;
+};
+
 export default generateDefaultStorage;
+export { OVERRIDABLE_PREFERENCES };

@@ -64,16 +64,19 @@ describe('tokenNotification', () => {
     expect(storeLog).not.toHaveBeenCalled();
   });
 
-  it('does NOT show "Copied" and logs when the copy fails', async () => {
+  it('does NOT show "Copied" when the copy fails, and does not report it to the backend', async () => {
     copyToClipboard.mockResolvedValue(false);
     tokenNotification('112233', 'req-3');
 
     const label = copyLabel();
     clickCopy();
-    await vi.waitFor(() => expect(storeLog).toHaveBeenCalledWith('warning', 59, expect.any(Error), 'tokenNotification'));
+    await new Promise(resolve => setTimeout(resolve, 20));
 
     // Label unchanged — never a false "Copied".
     expect(copyLabel()).toBe(label);
+    // No secure context, or the site/user denied clipboard access: environment, not
+    // a defect. The token stays on screen to copy by hand (log 59 retired).
+    expect(storeLog).not.toHaveBeenCalled();
   });
 
   it('deduplicates within one request id', () => {

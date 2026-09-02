@@ -27,9 +27,12 @@ import resolveTokenTargetFrame from '@background/functions/resolveTokenTargetFra
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import isTabError from '@background/functions/isTabError.js';
 import reportMissingPrivateKey from '@background/functions/reportMissingPrivateKey.js';
+import selfHealMissingPrivateKey, { HEAL_KEY_PRESENT, HEAL_REGENERATED, RECHECK_DELAY_MS } from '@background/functions/selfHealMissingPrivateKey.js';
 import decryptToken from '@background/functions/decryptToken.js';
 import isDevicePaired from '@background/functions/isDevicePaired.js';
 import deliverTokenNotificationFallback from '@background/functions/deliverTokenNotificationFallback.js';
+import isTransportError from '@partials/isTransportError.js';
+import wait from '@partials/wait.js';
 
 /**
  * Handles a 2FA login request by decrypting the token and sending it to the content script.
@@ -62,16 +65,69 @@ const handleLoginRequest = async (tabID, data) => {
       }
     }
 
-    const privateKey = await getOrMigratePrivateKey(storage);
+    let privateKey = await getOrMigratePrivateKey(storage);
+    let identityChanged = false;
+
+    if (!privateKey) {
+      // Re-read once before doing anything irreversible. A concurrent regeneration
+      // (a storageReset, another heal) leaves a brief window with no key, and this
+      // check must happen while the request is still OPEN: closeRequest retires the
+      // requestID the content script validates `inputToken` against, so a token that
+      // turns out to be decryptable could no longer be autofilled afterwards.
+      await wait(RECHECK_DELAY_MS);
+
+      const retried = await loadFromLocalStorage(['keys', 'extensionID', 'devices']);
+
+      // Only a key belonging to the SAME identity can decrypt this token — a
+      // regeneration that completed in the meantime minted a keypair the phone has
+      // never seen, so its key would only fail at decryptToken.
+      identityChanged = Boolean(retried?.keys?.publicKey) && retried.keys.publicKey !== storage?.keys?.publicKey;
+
+      if (!identityChanged) {
+        const retriedKey = await getOrMigratePrivateKey(retried);
+
+        if (retriedKey) {
+          storage = retried;
+          privateKey = retriedKey;
+        }
+      }
+    }
 
     if (!privateKey) {
       // Permanent broken state (key lost while registration stays valid) — not a
-      // per-request failure. Route into the deduped log-57 reporter instead of
-      // flooding bucket 8 on every token request, and show the actionable re-pair
-      // notification here (per request — the user actively awaited this token)
-      // rather than the reporter's once-per-incident one.
-      await reportMissingPrivateKey(storage, 'handleLoginRequest', { notify: false });
+      // per-request failure. Close the request now: it needs the CURRENT extensionID
+      // and signing key, both replaced by a self-heal.
       await closeRequest(tabID, data.token_request_id);
+
+      if (identityChanged) {
+        // The extension was reset while this token was in flight. Storage is healthy,
+        // so nothing to report — the token is simply undecryptable and the device has
+        // to be paired with the new identity.
+        return TwoFasNotification.show(config.Texts.Error.StorageRecovered, tabID);
+      }
+
+      // Regenerate + open the install page on every platform: the user actively
+      // awaited this token, so the same "user is waiting" rule as the pre-flight check
+      // in browserAction applies (the background integrity check stays report-only
+      // outside Safari). The tab gets the "data lost, pair again" notification.
+      const outcome = await selfHealMissingPrivateKey(storage, 'handleLoginRequest', { userInitiated: true });
+
+      if (outcome === HEAL_REGENERATED) {
+        return TwoFasNotification.show(config.Texts.Error.StorageRecovered, tabID);
+      }
+
+      if (outcome === HEAL_KEY_PRESENT) {
+        // The heal's own re-read found the key after ours did not. The request is
+        // already closed, so this token cannot be filled — ask for a fresh one rather
+        // than reporting a broken install that is not broken.
+        return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
+      }
+
+      // Not healed (every platform but Safari): route into the deduped log-57 reporter
+      // instead of flooding bucket 8 on every token request, and show the actionable
+      // re-pair notification here (per request) rather than the reporter's
+      // once-per-incident one.
+      await reportMissingPrivateKey(storage, 'handleLoginRequest', { notify: false });
 
       return TwoFasNotification.show(config.Texts.Error.StorageIntegrity, tabID);
     }
@@ -124,7 +180,9 @@ const handleLoginRequest = async (tabID, data) => {
       return TwoFasNotification.show(config.Texts.Error.LackOfTab, tabID);
     }
 
-    await storeLog('error', 8, err, 'handleLoginRequest');
+    if (!isTransportError(err)) {
+      await storeLog('error', 8, err, 'handleLoginRequest');
+    }
     return TwoFasNotification.show(config.Texts.Error.UndefinedError, tabID);
   } finally {
     storage = null;

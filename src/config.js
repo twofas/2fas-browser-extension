@@ -18,7 +18,28 @@
 //
 
 import browser from 'webextension-polyfill';
-import t from './_locales/en/notifications.json';
+import notificationTexts from './_locales/en/notifications.json';
+import tokenTexts from './_locales/en/token.json';
+
+// Bundled English fallback for every key this file resolves. Both catalogues are
+// needed: the four Token.* strings live in token.json, so a notifications-only
+// fallback silently produced `undefined` for them (rendered as the literal text
+// "undefined" wherever it reached the DOM).
+const fallbackTexts = { ...notificationTexts, ...tokenTexts };
+
+/**
+ * Resolves a localized string, falling back to the bundled English copy.
+ *
+ * The fallback must read `.message`: these are Chrome-i18n catalogues
+ * (`{ "key": { "message": "…", "description": "" } }`), so returning the entry
+ * directly handed an OBJECT to the notification APIs whenever
+ * `browser.i18n.getMessage` came back empty — `notifications.create` then rejects
+ * with "Invalid value for argument 1".
+ *
+ * @param {string} key - Message key.
+ * @returns {string} The localized text, the English fallback, or ''.
+ */
+const msg = key => browser.i18n.getMessage(key) || fallbackTexts[key]?.message || '';
 
 /**
  * Application configuration object containing timeouts, version, and localized text strings.
@@ -32,175 +53,179 @@ const config = {
   Texts: {
     Error: {
       General: {
-        Title: browser.i18n.getMessage('errorGeneralTitle') || t.errorGeneralTitle,
-        Message: browser.i18n.getMessage('errorGeneralMessage') || t.errorGeneralMessage
+        Title: msg('errorGeneralTitle'),
+        Message: msg('errorGeneralMessage')
       },
       UndefinedError: {
-        Title: browser.i18n.getMessage('errorUndefinedErrorTitle') || t.errorUndefinedErrorTitle,
-        Message: browser.i18n.getMessage('errorUndefinedErrorMessage') || t.errorUndefinedErrorMessage
+        Title: msg('errorUndefinedErrorTitle'),
+        Message: msg('errorUndefinedErrorMessage')
       },
       Timeout: {
-        Title: browser.i18n.getMessage('errorTimeoutTitle') || t.errorTimeoutTitle,
-        Message: browser.i18n.getMessage('errorTimeoutMessage') || t.errorTimeoutMessage
+        Title: msg('errorTimeoutTitle'),
+        Message: msg('errorTimeoutMessage')
       },
       PushExpired: domain => {
         return {
-          Title: (browser.i18n.getMessage('errorPushExpiredTitle') || t.errorPushExpiredTitle).replace('DOMAIN', domain),
-          Message: browser.i18n.getMessage('errorPushExpiredMessage') || t.errorPushExpiredMessage
+          Title: (msg('errorPushExpiredTitle')).replace('DOMAIN', domain),
+          Message: msg('errorPushExpiredMessage')
         };
       },
       WebSocket: {
-        Title: browser.i18n.getMessage('errorWebSocketTitle') || t.errorWebSocketTitle,
-        Message: browser.i18n.getMessage('errorWebSocketMessage') || t.errorWebSocketMessage
+        Title: msg('errorWebSocketTitle'),
+        Message: msg('errorWebSocketMessage')
       },
       OnInstallError: {
-        Title: browser.i18n.getMessage('errorOnInstallErrorTitle') || t.errorOnInstallErrorTitle,
-        Message: browser.i18n.getMessage('errorOnInstallErrorMessage') || t.errorOnInstallErrorMessage
+        Title: msg('errorOnInstallErrorTitle'),
+        Message: msg('errorOnInstallErrorMessage')
       },
       ExtNameRequired: {
-        Title: browser.i18n.getMessage('errorExtNameRequiredTitle') || t.errorExtNameRequiredTitle,
-        Message: browser.i18n.getMessage('errorExtNameRequiredMessage') || t.errorExtNameRequiredMessage
+        Title: msg('errorExtNameRequiredTitle'),
+        Message: msg('errorExtNameRequiredMessage')
       },
       ExtNameMinLength: {
-        Title: browser.i18n.getMessage('errorExtNameMinLengthTitle') || t.errorExtNameMinLengthTitle,
-        Message: browser.i18n.getMessage('errorExtNameMinLengthMessage') || t.errorExtNameMinLengthMessage
+        Title: msg('errorExtNameMinLengthTitle'),
+        Message: msg('errorExtNameMinLengthMessage')
       },
       ExtNameMaxLength: {
-        Title: browser.i18n.getMessage('errorExtNameMaxLengthTitle') || t.errorExtNameMaxLengthTitle,
-        Message: browser.i18n.getMessage('errorExtNameMaxLengthMessage') || t.errorExtNameMaxLengthMessage
+        Title: msg('errorExtNameMaxLengthTitle'),
+        Message: msg('errorExtNameMaxLengthMessage')
       },
       ConfigFirst: {
-        Title: browser.i18n.getMessage('errorConfigFirstTitle') || t.errorConfigFirstTitle,
-        Message: browser.i18n.getMessage('errorConfigFirstMessage') || t.errorConfigFirstMessage
+        Title: msg('errorConfigFirstTitle'),
+        Message: msg('errorConfigFirstMessage')
       },
       RemoveDeviceBadData: {
-        Title: browser.i18n.getMessage('errorRemoveDeviceBadDataTitle') || t.errorRemoveDeviceBadDataTitle,
-        Message: browser.i18n.getMessage('errorRemoveDeviceBadDataMessage') || t.errorRemoveDeviceBadDataMessage
+        Title: msg('errorRemoveDeviceBadDataTitle'),
+        Message: msg('errorRemoveDeviceBadDataMessage')
       },
       RemoveDomainBadData: {
-        Title: browser.i18n.getMessage('errorRemoveDomainBadDataTitle') || t.errorRemoveDomainBadDataTitle,
-        Message: browser.i18n.getMessage('errorRemoveDomainBadDataMessage') || t.errorRemoveDomainBadDataMessage
+        Title: msg('errorRemoveDomainBadDataTitle'),
+        Message: msg('errorRemoveDomainBadDataMessage')
       },
       StorageCorrupted: {
-        Title: browser.i18n.getMessage('errorStorageCorruptedTitle') || t.errorStorageCorruptedTitle,
-        Message: browser.i18n.getMessage('errorStorageCorruptedMessage') || t.errorStorageCorruptedMessage
+        Title: msg('errorStorageCorruptedTitle'),
+        Message: msg('errorStorageCorruptedMessage')
       },
       InactiveTab: {
-        Title: browser.i18n.getMessage('errorInactiveTabTitle') || t.errorInactiveTabTitle,
-        Message: browser.i18n.getMessage('errorInactiveTabMessage') || t.errorInactiveTabMessage
+        Title: msg('errorInactiveTabTitle'),
+        Message: msg('errorInactiveTabMessage')
       },
       LackOfTab: {
-        Title: browser.i18n.getMessage('errorLackOfTabTitle') || t.errorLackOfTabTitle,
-        Message: browser.i18n.getMessage('errorLackOfTabMessage') || t.errorLackOfTabMessage
+        Title: msg('errorLackOfTabTitle'),
+        Message: msg('errorLackOfTabMessage')
       },
       InputNotExist: {
-        Title: browser.i18n.getMessage('errorInputNotExistTitle') || t.errorInputNotExistTitle,
-        Message: browser.i18n.getMessage('errorInputNotExistMessage') || t.errorInputNotExistMessage
+        Title: msg('errorInputNotExistTitle'),
+        Message: msg('errorInputNotExistMessage')
       },
       StorageIntegrity: {
-        Title: browser.i18n.getMessage('errorStorageIntegrityTitle') || t.errorStorageIntegrityTitle,
-        Message: browser.i18n.getMessage('errorStorageIntegrityMessage') || t.errorStorageIntegrityMessage
+        Title: msg('errorStorageIntegrityTitle'),
+        Message: msg('errorStorageIntegrityMessage')
+      },
+      StorageRecovered: {
+        Title: msg('errorStorageRecoveredTitle'),
+        Message: msg('errorStorageRecoveredMessage')
+      },
+      ResetPending: {
+        Title: msg('errorResetPendingTitle'),
+        Message: msg('errorResetPendingMessage')
       },
       OldRequest: {
-        Title: browser.i18n.getMessage('errorOldRequestTitle') || t.errorOldRequestTitle,
-        Message: browser.i18n.getMessage('errorOldRequestMessage') || t.errorOldRequestMessage
+        Title: msg('errorOldRequestTitle'),
+        Message: msg('errorOldRequestMessage')
       },
       TokenNotDelivered: {
-        Title: browser.i18n.getMessage('errorTokenNotDeliveredTitle') || t.errorTokenNotDeliveredTitle,
-        Message: browser.i18n.getMessage('errorTokenNotDeliveredMessage') || t.errorTokenNotDeliveredMessage
+        Title: msg('errorTokenNotDeliveredTitle'),
+        Message: msg('errorTokenNotDeliveredMessage')
       },
       DeviceUnpaired: {
-        Title: browser.i18n.getMessage('errorDeviceUnpairedTitle') || t.errorDeviceUnpairedTitle,
-        Message: browser.i18n.getMessage('errorDeviceUnpairedMessage') || t.errorDeviceUnpairedMessage
+        Title: msg('errorDeviceUnpairedTitle'),
+        Message: msg('errorDeviceUnpairedMessage')
       },
       NoInternet: {
-        Title: browser.i18n.getMessage('errorNoInternetTitle') || t.errorNoInternetTitle,
-        Message: browser.i18n.getMessage('errorNoInternetMessage') || t.errorNoInternetMessage
+        Title: msg('errorNoInternetTitle'),
+        Message: msg('errorNoInternetMessage')
       },
       DevicesUnavailable: {
-        Title: browser.i18n.getMessage('errorDevicesUnavailableTitle') || t.errorDevicesUnavailableTitle,
-        Message: browser.i18n.getMessage('errorDevicesUnavailableMessage') || t.errorDevicesUnavailableMessage
+        Title: msg('errorDevicesUnavailableTitle'),
+        Message: msg('errorDevicesUnavailableMessage')
       },
       SigningRequired: {
-        Title: browser.i18n.getMessage('errorSigningRequiredTitle') || t.errorSigningRequiredTitle,
-        Message: browser.i18n.getMessage('errorSigningRequiredMessage') || t.errorSigningRequiredMessage
+        Title: msg('errorSigningRequiredTitle'),
+        Message: msg('errorSigningRequiredMessage')
       },
       SigningKeyConflict: {
-        Title: browser.i18n.getMessage('errorSigningKeyConflictTitle') || t.errorSigningKeyConflictTitle,
-        Message: browser.i18n.getMessage('errorSigningKeyConflictMessage') || t.errorSigningKeyConflictMessage
+        Title: msg('errorSigningKeyConflictTitle'),
+        Message: msg('errorSigningKeyConflictMessage')
       }
     },
     Warning: {
       TooSoon: diff => {
         return {
-          Title: browser.i18n.getMessage('warningTooSoonTitle') || t.warningTooSoonTitle,
-          Message: (browser.i18n.getMessage('warningTooSoonMessage') || t.warningTooSoonMessage).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
+          Title: msg('warningTooSoonTitle'),
+          Message: (msg('warningTooSoonMessage')).replace('DIFF', config.ResendPushTimeout - Math.round(diff))
         };
       },
       CrossDomain: (currentDomain, topDomain) => {
         if (topDomain) {
-          return (browser.i18n.getMessage('warningCrossDomainMessage') || t.warningCrossDomainMessage)
+          return (msg('warningCrossDomainMessage'))
             .replace('CURRENT_DOMAIN', currentDomain)
             .replace('TOP_DOMAIN', topDomain);
         }
 
-        return (browser.i18n.getMessage('warningCrossDomainNoAccessMessage') || t.warningCrossDomainNoAccessMessage)
+        return (msg('warningCrossDomainNoAccessMessage'))
           .replace('CURRENT_DOMAIN', currentDomain);
       }
     },
     Success: {
       PushSent: {
-        Title: browser.i18n.getMessage('successPushSentTitle') || t.successPushSentTitle,
-        Message: browser.i18n.getMessage('successPushSentMessage') || t.successPushSentMessage
+        Title: msg('successPushSentTitle'),
+        Message: msg('successPushSentMessage')
       },
       PushSentClipboard: {
-        Title: browser.i18n.getMessage('successPushSentClipboardTitle') || t.successPushSentClipboardTitle,
-        Message: browser.i18n.getMessage('successPushSentClipboardMessage') || t.successPushSentClipboardMessage
+        Title: msg('successPushSentClipboardTitle'),
+        Message: msg('successPushSentClipboardMessage')
       },
       ExtNameUpdated: {
-        Title: browser.i18n.getMessage('successExtNameUpdatedTitle') || t.successExtNameUpdatedTitle,
-        Message: browser.i18n.getMessage('successExtNameUpdatedMessage') || t.successExtNameUpdatedMessage
+        Title: msg('successExtNameUpdatedTitle'),
+        Message: msg('successExtNameUpdatedMessage')
       },
       DeviceDisconnected: {
-        Title: browser.i18n.getMessage('successDeviceDisconnectedTitle') || t.successDeviceDisconnectedTitle,
-        Message: browser.i18n.getMessage('successDeviceDisconnectedMessage') || t.successDeviceDisconnectedMessage
-      },
-      SafariReset: {
-        Title: browser.i18n.getMessage('successSafariResetTitle') || t.successSafariResetTitle,
-        Message: browser.i18n.getMessage('successSafariResetMessage') || t.successSafariResetMessage
+        Title: msg('successDeviceDisconnectedTitle'),
+        Message: msg('successDeviceDisconnectedMessage')
       },
       DomainExcluded: {
-        Title: browser.i18n.getMessage('successDomainExcludedTitle') || t.successDomainExcludedTitle,
-        Message: browser.i18n.getMessage('successDomainExcludedMessage') || t.successDomainExcludedMessage
+        Title: msg('successDomainExcludedTitle'),
+        Message: msg('successDomainExcludedMessage')
       },
       DomainExcludedRemoved: {
-        Title: browser.i18n.getMessage('successDomainExcludedRemovedTitle') || t.successDomainExcludedRemovedTitle,
-        Message: browser.i18n.getMessage('successDomainExcludedRemovedMessage') || t.successDomainExcludedRemovedMessage
+        Title: msg('successDomainExcludedRemovedTitle'),
+        Message: msg('successDomainExcludedRemovedMessage')
       }
     },
     Info: {
       UnsupportedProtocol: {
-        Title: browser.i18n.getMessage('infoUnsupportedProtocolTitle') || t.infoUnsupportedProtocolTitle,
-        Message: browser.i18n.getMessage('infoUnsupportedProtocolMessage') || t.infoUnsupportedProtocolMessage
+        Title: msg('infoUnsupportedProtocolTitle'),
+        Message: msg('infoUnsupportedProtocolMessage')
       },
       BrowserActionWithoutTab: {
-        Title: browser.i18n.getMessage('infoBrowserActionWithoutTabTitle') || t.infoBrowserActionWithoutTabTitle,
-        Message: browser.i18n.getMessage('infoBrowserActionWithoutTabMessage') || t.infoBrowserActionWithoutTabMessage
+        Title: msg('infoBrowserActionWithoutTabTitle'),
+        Message: msg('infoBrowserActionWithoutTabMessage')
       },
       CopiedToClipboard: {
-        Title: browser.i18n.getMessage('infoCopiedToClipboardTitle') || t.infoCopiedToClipboardTitle,
-        Message: browser.i18n.getMessage('infoCopiedToClipboardMessage') || t.infoCopiedToClipboardMessage
+        Title: msg('infoCopiedToClipboardTitle'),
+        Message: msg('infoCopiedToClipboardMessage')
       },
       Test: {
-        Title: browser.i18n.getMessage('infoTestTitle') || t.infoTestTitle,
-        Message: browser.i18n.getMessage('infoTestMessage') || t.infoTestMessage
+        Title: msg('infoTestTitle'),
+        Message: msg('infoTestMessage')
       }
     },
     Token: {
-      Header: browser.i18n.getMessage('tokenHeader') || t.tokenHeader,
-      Copy: browser.i18n.getMessage('tokenCopy') || t.tokenCopy,
-      Copied: browser.i18n.getMessage('tokenCopied') || t.tokenCopied,
-      Description: browser.i18n.getMessage('tokenDescription') || t.tokenDescription
+      Header: msg('tokenHeader'),
+      Copy: msg('tokenCopy'),
+      Copied: msg('tokenCopied'),
+      Description: msg('tokenDescription')
     }
   }
 };

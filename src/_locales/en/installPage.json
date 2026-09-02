@@ -7,6 +7,14 @@
     "message": "To start, you need to pair this extension with the 2FAS Auth mobile application.",
     "description": ""
   },
+  "installRecoveredTitle": {
+    "message": "Browser Extension data lost",
+    "description": ""
+  },
+  "installRecoveredMessage": {
+    "message": "The extension's encryption key was lost, so the extension has been reset and your previous pairing no longer works. Please pair it with your device again. The old pairing has been removed from your 2FAS app; if it is still listed there, you can remove it by hand.",
+    "description": ""
+  },
   "installAppInstalled": {
     "message": "I've installed the app",
     "description": ""

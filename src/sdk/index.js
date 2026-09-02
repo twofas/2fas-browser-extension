@@ -324,6 +324,43 @@ class SDK {
    * @param {string} deviceID - The device ID to remove
    * @returns {Promise<Object>} Promise resolving when device is removed
    */
+  /**
+   * Removes EVERY device pairing of an extension (DELETE /browser_extensions/{id}/devices).
+   *
+   * Used by the self-heal right before it discards a dead identity: the backend has
+   * no way to delete the browser_extension row itself, but the 2FAS app lists
+   * extensions by their pairing rows, so dropping the pairings is what makes the
+   * stale entry disappear from the user's phone. Signed whenever the signing key is
+   * still around — the backend, once it enforces signatures, is what stops anyone
+   * who merely knows the UUID from unpairing a user's devices, and a keyless
+   * extension is rightly indistinguishable from that. `skipLog` only silences log 65:
+   * a lost signing key here is the incident being healed, not a new one.
+   *
+   * Deliberately NOT routed through trackAuth. That hook counts 401s toward
+   * `registrationRequired` and its "re-pair required" notification — for the
+   * identity that is about to be wiped, a 401 on this best-effort call says nothing
+   * about the install, and counting it could fire that notification right on top of
+   * the heal's own "reset, pair again" one.
+   *
+   * @param {string} extID - The (dead) extension ID.
+   * @returns {Promise<Object>} Backend response.
+   */
+  removeAllPairedDevices (extID) {
+    const url = `${this.REST_API_URL}/browser_extensions/${extID}/devices`;
+
+    return getSigningHeaders('DELETE', url, '', { skipLog: true })
+      .then(signature => this.fetchWithTimeout(url, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          ...signature
+        },
+        method: 'DELETE'
+      }, DEFAULT_TIMEOUT_MS))
+      .then(this.onSuccess)
+      .catch(this.onError);
+  }
+
   removePairedDevice (extID, deviceID) {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/devices/${deviceID}`;
 

@@ -18,159 +18,80 @@
 //
 
 import Crypt from '@background/functions/Crypt.js';
-import { loadFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
-import { saveKeyRecord, getKeyRecord, deleteKeyRecord } from '@background/functions/cryptoKeyStore.js';
-import { checkPromotionDurability, stampPromotion } from '@background/functions/keyPromotionDurability.js';
+import createKeyStore from '@background/functions/keyStore.js';
+import storeLog from '@partials/storeLog.js';
 
-// The RSA-OAEP token-decryption private key. Persisted as a non-extractable
-// CryptoKey in the shared cryptoKeyStore (IndexedDB) rather than as
-// exportable base64 in storage.local; the storage.local pkcs8 fallback
-// (legacy installs, or IndexedDB unavailable — Firefox permanent private
-// browsing) is promoted back into IndexedDB with restart-proven durability
-// (keyPromotionDurability) before the plaintext copy is stripped.
+// The RSA-OAEP token-decryption private key. Persistence rules live in
+// keyStore.js: storage.local pkcs8 (`keys.privateKey`) wins when present and is
+// used in place; otherwise the non-extractable CryptoKey record in IndexedDB.
 const PRIVATE_KEY_ID = 'privateKey';
-const IDB_STAMP_KEY = 'privateKeyIdbStamp';
 
-/**
- * Strips the legacy plaintext private key from storage.local, keeping every
- * other field of the keys object (public keys, the signing-key fallback).
- * Re-reads keys at write time so a stale caller snapshot cannot resurrect a
- * field another strip just removed. Idempotent — safe when nothing lingers.
- *
- * @async
- * @param {Object} storage - Fallback storage snapshot (used only if the fresh read fails).
- * @returns {Promise<void>}
- */
-const stripLegacyPrivateKey = async storage => {
-  let current = storage?.keys;
+const withCrypt = options => options?.crypt || new Crypt();
 
-  try {
-    const fresh = await loadFromLocalStorage(['keys']);
+const rsaKeyStore = createKeyStore({
+  recordId: PRIVATE_KEY_ID,
+  storageField: 'privateKey',
+  publicField: 'publicKey',
+  importKey: base64 => {
+    const crypt = new Crypt();
 
-    current = fresh?.keys || current;
-  } catch (e) {
-    // Fall back to the caller's snapshot.
-  }
+    return crypt.importKey(crypt.stringToArrayBuffer(base64), 'pkcs8', ['decrypt']);
+  },
+  generatePair: (extractable, options) => withCrypt(options).generateKeys(extractable),
+  exportPublic: async (key, options) => {
+    const crypt = withCrypt(options);
 
-  const keys = { ...(current || {}) };
+    return crypt.ArrayBufferToString(await crypt.exportKey('spki', key));
+  },
+  exportPrivate: async (key, options) => {
+    const crypt = withCrypt(options);
 
-  delete keys.privateKey;
-
-  await saveToLocalStorage({ keys });
-};
+    return crypt.ArrayBufferToString(await crypt.exportKey('pkcs8', key));
+  },
+  logFallback: err => storeLog('warning', 60, err, 'generateDefaultStorage - IndexedDB unavailable, private key stored in storage.local fallback')
+});
 
 /**
  * Persists the private CryptoKey in IndexedDB, overwriting any previous one.
- *
- * @async
  * @param {CryptoKey} privateKey - A non-extractable RSA-OAEP private key.
  * @returns {Promise<void>}
  */
-const savePrivateKey = privateKey => saveKeyRecord(PRIVATE_KEY_ID, privateKey);
+const savePrivateKey = privateKey => rsaKeyStore.save(privateKey);
 
 /**
- * Reads the stored private CryptoKey, if any.
- *
- * @async
- * @returns {Promise<CryptoKey|undefined>} The key, or undefined when absent.
+ * Reads the IndexedDB private CryptoKey, if any.
+ * @returns {Promise<CryptoKey|undefined>}
  */
-const getPrivateKey = () => getKeyRecord(PRIVATE_KEY_ID);
+const getPrivateKey = () => rsaKeyStore.get();
 
 /**
- * Removes the stored private CryptoKey (used when storage is reset/regenerated).
- *
- * @async
+ * Removes the IndexedDB private CryptoKey (storage reset / regeneration).
  * @returns {Promise<void>}
  */
-const deletePrivateKey = () => deleteKeyRecord(PRIVATE_KEY_ID);
+const deletePrivateKey = () => rsaKeyStore.remove();
 
 /**
- * Returns the private CryptoKey. A valid base64 key in storage.local (a legacy
- * install, or the fallback written when IndexedDB is unavailable — e.g. Firefox
- * with "Never remember history", where indexedDB.open throws for extension pages
- * too) always wins over the IndexedDB copy: when both exist and differ, the
- * IndexedDB one is a stale leftover of a reset that could not wipe it. The
- * storage.local key is imported as non-extractable and promoted into IndexedDB
- * best-effort.
+ * Returns the usable private key: the storage.local pkcs8 copy (imported
+ * non-extractable, used in place — never promoted, never stripped) when present,
+ * otherwise the IndexedDB record. Throws on an IndexedDB failure when no
+ * storage.local copy exists, so a transient error never reads as "missing".
  *
- * The plaintext copy is stripped from storage.local only once the promoted key
- * is observed in IndexedDB in a LATER browser session (tracked via
- * checkPromotionDurability): a put that resolves proves nothing about
- * persistence, and the imported key is non-extractable, so stripping on put
- * success can destroy the only recoverable copy.
+ * The name is historical (it once migrated storage.local keys into IndexedDB);
+ * it is kept because every caller and test mock refers to it.
  *
- * With no storage.local key, an IndexedDB failure still throws (never returns
- * null), so a transient error cannot masquerade as 'missingPrivateKey'.
- *
- * @async
- * @param {Object} storage - Storage object that may hold a keys.privateKey.
- * @returns {Promise<CryptoKey|null>} The private key, or null when none exists.
+ * @param {Object} storage - Storage snapshot that may hold `keys.privateKey`.
+ * @returns {Promise<CryptoKey|null>}
  */
-const getOrMigratePrivateKey = async storage => {
-  const legacy = storage?.keys?.privateKey;
+const getOrMigratePrivateKey = storage => rsaKeyStore.resolve(storage);
 
-  if (!legacy) {
-    return (await getPrivateKey()) || null;
-  }
+/**
+ * Generates the RSA-OAEP token keypair and persists the private half per
+ * keyStoragePolicy (IndexedDB non-extractable, or the storage.local pkcs8
+ * fallback — also used, with warning 60, when IndexedDB is unavailable).
+ *
+ * @param {Crypt} [crypt] - Optional Crypt instance for generation/export.
+ * @returns {Promise<{publicKey: string, privateKey?: string}>} RSA fields of the keys object.
+ */
+const generateRSAKeyMaterial = crypt => rsaKeyStore.generateMaterial({ crypt });
 
-  let existing = null;
-  let idbError = null;
-
-  try {
-    existing = (await getPrivateKey()) || null;
-  } catch (err) {
-    idbError = err; // IndexedDB unavailable — storage.local stays authoritative
-  }
-
-  const durability = await checkPromotionDurability(legacy, IDB_STAMP_KEY);
-
-  if (existing && durability.durable) {
-    // The promoted copy survived a browser restart — safe to drop the plaintext
-    // (and the now-purposeless stamp).
-    await stripLegacyPrivateKey(storage);
-    await removeFromLocalStorage(IDB_STAMP_KEY);
-
-    return existing;
-  }
-
-  if (existing && durability.samePromotion) {
-    // Promoted earlier in this same session — keep both copies until a later
-    // session proves the IndexedDB write actually persisted.
-    return existing;
-  }
-
-  const crypt = new Crypt();
-  let imported = null;
-
-  try {
-    imported = await crypt.importKey(crypt.stringToArrayBuffer(legacy), 'pkcs8', ['decrypt']);
-  } catch (err) {
-    imported = null; // corrupt leftover — fall through to the IndexedDB key
-  }
-
-  if (imported) {
-    try {
-      await savePrivateKey(imported);
-      await stampPromotion(durability, IDB_STAMP_KEY);
-    } catch (err) {
-      // IndexedDB unavailable — the storage.local copy stays authoritative.
-    }
-
-    return imported;
-  }
-
-  if (idbError) {
-    throw idbError; // corrupt storage.local key AND broken IndexedDB — transient, never "missing"
-  }
-
-  if (existing) {
-    // Corrupt plaintext leftover shadowing a valid IndexedDB key — drop it.
-    await stripLegacyPrivateKey(storage);
-
-    return existing;
-  }
-
-  return null;
-};
-
-export { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey, PRIVATE_KEY_ID, IDB_STAMP_KEY };
+export { savePrivateKey, getPrivateKey, deletePrivateKey, getOrMigratePrivateKey, generateRSAKeyMaterial, PRIVATE_KEY_ID };

@@ -110,18 +110,32 @@ const browser = {
   storage: { local, session },
   alarms,
   runtime: {
+    id: 'test-extension-id',
     lastError: null,
     getManifest: () => ({ version: '0.0.0-test' }),
     setUninstallURL: async () => {},
     sendMessage: async () => ({}),
-    getURL: input => input
+    // Must look like a real extension URL: `getURL('')` returning '' made every
+    // `url.startsWith(base)` guard (the storageReset / updateList sender check,
+    // isContentScriptContext) vacuously true, so a test that did not stub this
+    // would have passed a hostile web-page sender.
+    getURL: (input = '') => `chrome-extension://test-extension-id/${String(input).replace(/^\/+/, '')}`
   },
   tabs: {
     get: async () => ({}),
+    query: async () => [],
+    create: async () => ({}),
+    update: async () => ({}),
     sendMessage: async () => ({}),
     onRemoved: makeEvent(),
     onUpdated: makeEvent(),
     onActivated: makeEvent()
+  },
+  windows: {
+    update: async () => ({})
+  },
+  extension: {
+    isAllowedIncognitoAccess: async () => false
   },
   // Frame lookups default to an empty result; tests spy on / override this.
   webNavigation: {

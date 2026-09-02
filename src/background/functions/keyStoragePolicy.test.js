@@ -17,16 +17,28 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import S from '@/selectors.js';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { preferIdb } from './keyStoragePolicy.js';
 
-/**
- * Shows the storage integrity error message on the options page.
- *
- * @returns {void}
- */
-const showIntegrityError = () => {
-  const el = document.querySelector(S.optionsPage.integrityError);
-  el.classList.add('show-integrity-error');
-};
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
-export default showIntegrityError;
+describe('keyStoragePolicy', () => {
+  it('prefers IndexedDB on Chromium and Firefox', () => {
+    for (const platform of ['Chrome', 'Edge', 'Firefox']) {
+      vi.stubEnv('EXT_PLATFORM', platform);
+      expect(preferIdb()).toBe(true);
+    }
+  });
+
+  it('keeps new Safari keys in storage.local (the extension-origin IndexedDB is structurally unreliable there)', () => {
+    vi.stubEnv('EXT_PLATFORM', 'Safari');
+    expect(preferIdb()).toBe(false);
+  });
+
+  it('defaults to IndexedDB for an unknown platform', () => {
+    vi.stubEnv('EXT_PLATFORM', 'Opera');
+    expect(preferIdb()).toBe(true);
+  });
+});
