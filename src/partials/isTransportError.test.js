@@ -67,3 +67,12 @@ describe('isTransportError — what must still be reported', () => {
     expect(isTransportError('boom')).toBe(false);
   });
 });
+
+describe('isTransportError — proxy authentication (407)', () => {
+  it('treats a 407 as environment: only a proxy between the user and the API can emit it', () => {
+    // RFC 9110 §15.5.8 — never our backend (verified against 2fas-server-priv)
+    // and never the ALB in front of it. Same decision as #1163 (2023), now
+    // enforced for every bucket that consults this guard.
+    expect(isTransportError({ status: 407, statusText: '', content: '' })).toBe(true);
+  });
+});

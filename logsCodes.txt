@@ -35,8 +35,8 @@
 12 - subscribeChannel - browser_extensions.pairing.failure — backend rejected a pairing the user started (expired QR, declined on the phone); downgraded error -> info in 1.9.0, kept as a product signal [info]
 13 - subscribeChannel - subscribeChannel event default
 *26 - updateIncognitoAccess [retired in 1.9.0 — browser API / storage hiccup with no user-visible effect and no extension-side fix; console only]
-27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]
-28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST)
+27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]; proxy 407 = retry with backoff, never logged (#1163)
+28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST); proxy 407 = retry with backoff, never logged (#1163)
 29 - verifyStorageIntegrity
 30 - closeRequest - close2FARequest / session write failed; transport failures (offline, 5xx, timeout) are filtered out since 1.9.0, and the storage-load variant is console only [error]
 35 - checkSafariStorage (Safari: on install AND on every browser start, no pre-check delay since 1.9.0) — the catch is dominated by IndexedDB open failures, which also mean the self-heal can never fire (classifyKeyMaterial throws instead of reporting 'missing'), so a persistently broken profile is a dead end worth seeing [error]

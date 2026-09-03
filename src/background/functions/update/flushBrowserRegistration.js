@@ -320,7 +320,8 @@ const openRecoveredPageIfPending = async () => {
 /**
  * Handles a failed attempt: re-registers on 404, gives up (logging once) on a
  * deterministic 4xx, or backs off + reschedules on a transient failure — escalating
- * to a single log only once the registration is genuinely stuck.
+ * to a single log only once the registration is genuinely stuck (a proxy 407 backs
+ * off but never escalates).
  * @param {Object} record
  * @param {Object} err - Normalized SDK error.
  * @param {number} now
@@ -379,7 +380,11 @@ const handleFailure = async (record, err, now) => {
   const next = now + computeBackoffMs(attempts);
   const updated = { ...record, attempts, nextAttemptAt: next };
 
-  if (shouldEscalate(updated, now)) {
+  // A proxy 407 is the user's environment (#1163): it backs off like any
+  // transient failure but never escalates — storeLog would drop the entry
+  // anyway, and consuming `reported` here would silence a later, real backend
+  // outage on the same record.
+  if (err?.status !== 407 && shouldEscalate(updated, now)) {
     await storeLog(
       'error',
       logIDForOp(record.op),

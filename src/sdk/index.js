@@ -100,7 +100,9 @@ class SDK {
    * Whether a raw fetch rejection is worth retrying for an idempotent request.
    * Network/abort errors (rejection is an Error, no Response) are transient; among
    * HTTP errors (rejection is the Response, from onSuccess) only 408/425/429/5xx are.
-   * Everything else (404 and other deterministic 4xx) must fail fast.
+   * Everything else (404 and other deterministic 4xx) must fail fast — including a
+   * proxy 407: its recovery is a user sign-in through a tab, which the durable
+   * registration retry covers; a 1-2 s in-flight backoff cannot.
    *
    * @param {Response|Error} err - The raw rejection.
    * @returns {boolean}

@@ -42,7 +42,9 @@ const NETWORK_MESSAGE_HINTS = [
  * Deliberately conservative: an error with no status and no network signature —
  * a TypeError from our own code, a thrown protocol assertion — is NOT a transport
  * error and keeps its log entry. A deterministic 4xx is ours too (bad payload,
- * dead extensionID), so only 408/425/429 and 5xx count as server-side.
+ * dead extensionID), so only 407/408/425/429 and 5xx count as server-side — 407 is
+ * never ours: only a proxy between the user and the API emits it (RFC 9110 §15.5.8),
+ * and ignoring it has been policy since #1163.
  *
  * @param {*} err - The caught error (SDK-normalized object, Error, or anything).
  * @returns {boolean}
@@ -54,7 +56,7 @@ const isTransportError = err => {
   }
 
   if (typeof err.status === 'number') {
-    return err.status === 408 || err.status === 425 || err.status === 429 || err.status >= 500;
+    return err.status === 407 || err.status === 408 || err.status === 425 || err.status === 429 || err.status >= 500;
   }
 
   const name = String(err.name || '');

@@ -212,3 +212,25 @@ describe('flushBrowserRegistration — deferred pairing page after an OFFLINE se
     expect(notificationShow).not.toHaveBeenCalled();
   });
 });
+
+describe('flushBrowserRegistration — proxy 407 on update', () => {
+  it('RETAINS the record with backoff and logs nothing', async () => {
+    const storeLog = (await import('@partials/storeLog.js')).default;
+    await saveToLocalStorage({
+      extensionID: 'ext-1',
+      browserInfo: { name: 'ext', browser_name: 'Chrome', browser_version: '1' },
+      signing: { active: true, conflict: false, registrationRequired: false, auth401Count: 0 }
+    });
+    await seedRecord({ op: 'update' });
+    updateBrowserExtension.mockRejectedValueOnce({ status: 407, statusText: '', content: '' });
+
+    await flushBrowserRegistration();
+
+    expect(updateBrowserExtension).toHaveBeenCalledTimes(1);
+    const record = await storedRecord();
+    expect(record).toMatchObject({ op: 'update', attempts: 1, reported: false });
+    expect(storeLog).not.toHaveBeenCalled();
+    // Nothing committed until the PUT actually lands.
+    expect((await loadFromLocalStorage(['extensionVersion'])).extensionVersion).toBeUndefined();
+  });
+});

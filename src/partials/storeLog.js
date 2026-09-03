@@ -209,10 +209,12 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   if (
     (c?.errorInfo?.message?.includes('FILE_ERROR_NO_SPACE')) ||
     (c?.errorInfo?.status === 407) ||
+    (c?.errorInfo?.backendStatus === 407) ||
     (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
     (c?.errorInfo?.message?.includes('Refused to run the JavaScript URL')) ||
     (c?.errorInfo?.message?.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) ||
     (c?.errorInfo?.statusText?.includes('Proxy Authentication Required')) ||
+    (c?.errorInfo?.backendStatusText?.includes('Proxy Authentication Required')) ||
     (c?.errorInfo?.message?.includes('Could not establish connection')) ||
     (c?.errorInfo?.message?.includes('Receiving end does not exist')) ||
     (c?.errorInfo?.message?.includes('Extension context invalidated')) ||

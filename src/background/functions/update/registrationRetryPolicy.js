@@ -57,7 +57,9 @@ const JITTER_RATIO = 0.2;
  * @param {{status?: number}|null|undefined} err - The normalized error.
  * @returns {'network'|'server'|'notFound'|'client'}
  *   - network : connection/DNS/TLS/abort failure (transient, retry)
- *   - server  : 5xx / 408 / 425 / 429 (transient, retry)
+ *   - server  : 5xx / 407 / 408 / 425 / 429 (transient, retry) — 407 is a proxy
+ *               between the user and the API demanding auth the background fetch
+ *               cannot supply; it clears once the user signs in through a tab
  *   - notFound: 404 (record gone server-side — re-register, do not blindly retry)
  *   - client  : other deterministic 4xx (do not retry)
  */
@@ -72,7 +74,7 @@ export const classifyError = err => {
     return 'notFound';
   }
 
-  if (status === 408 || status === 425 || status === 429 || status >= 500) {
+  if (status === 407 || status === 408 || status === 425 || status === 429 || status >= 500) {
     return 'server';
   }
 
