@@ -32,6 +32,16 @@ const APPLY_THRESHOLD_MS = 30000;
 /** Persist only meaningful changes to avoid a storage write per API response. */
 const STORE_DELTA_MS = 5000;
 
+/** The backend's signature-timestamp window (2fas-server `defaultMaxClockSkew`). */
+const SERVER_MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+/**
+ * The Date header is truncated to whole seconds and stamped after the backend's
+ * time check, so a timestamp the backend rejected can read up to ~1 s inside
+ * the window here. The allowance keeps such a rejection classified as skew.
+ */
+const DATE_HEADER_SLACK_MS = 2000;
+
 /**
  * Returns the clock offset (server minus local, ms) to apply when signing,
  * or 0 when none was observed / the offset is below the noise threshold.
@@ -60,17 +70,18 @@ const getClockOffsetMs = async () => {
  *
  * @async
  * @param {?string} dateHeader - The raw Date response header value.
- * @returns {Promise<void>}
+ * @returns {Promise<?number>} The observed offset (server minus local, ms) —
+ *   returned even when it could not be persisted — or null without a usable header.
  */
 const noteServerDate = async dateHeader => {
   if (!dateHeader) {
-    return;
+    return null;
   }
 
   const serverMs = Date.parse(dateHeader);
 
   if (Number.isNaN(serverMs)) {
-    return;
+    return null;
   }
 
   const offset = serverMs - Date.now();
@@ -83,8 +94,36 @@ const noteServerDate = async dateHeader => {
       await saveToSessionStorage({ [CLOCK_OFFSET_KEY]: offset });
     }
   } catch (err) {
-    // storage.session unavailable — signing falls back to the raw local clock.
+    // storage.session unavailable — later signing falls back to the raw local clock.
   }
+
+  return offset;
 };
 
-export { getClockOffsetMs, noteServerDate, CLOCK_OFFSET_KEY, APPLY_THRESHOLD_MS };
+/**
+ * Whether a 401 on a signed request is explained by clock skew: the signature
+ * timestamp sent lies outside the backend's window relative to the server clock
+ * in the response's Date header. The backend checks the timestamp before the
+ * signature, so such a 401 says nothing about the registration — the request
+ * only needs re-signing with a corrected clock.
+ *
+ * @param {?string} signedTimestamp - The signature timestamp header sent (absent when unsigned).
+ * @param {?string} dateHeader - The raw Date response header value.
+ * @returns {boolean}
+ */
+const isClockSkewRejection = (signedTimestamp, dateHeader) => {
+  if (!signedTimestamp || !dateHeader) {
+    return false;
+  }
+
+  const signedMs = Date.parse(signedTimestamp);
+  const serverMs = Date.parse(dateHeader);
+
+  if (Number.isNaN(signedMs) || Number.isNaN(serverMs)) {
+    return false;
+  }
+
+  return Math.abs(serverMs - signedMs) > SERVER_MAX_CLOCK_SKEW_MS - DATE_HEADER_SLACK_MS;
+};
+
+export { getClockOffsetMs, noteServerDate, isClockSkewRejection, CLOCK_OFFSET_KEY, APPLY_THRESHOLD_MS };

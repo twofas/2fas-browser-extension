@@ -31,9 +31,10 @@ vi.mock('@sdk/index.js', () => ({
   }
 }));
 
+import browser from 'webextension-polyfill';
 import storeLog from '@partials/storeLog.js';
 import flushBrowserRegistration from './flushBrowserRegistration.js';
-import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
+import { REGISTRATION_STORAGE_KEY, REGISTRATION_ALARM_NAME, MAX_ATTEMPTS_BEFORE_ESCALATE } from './registrationRetryPolicy.js';
 import { savePrivateKey } from '@background/functions/privateKeyStore.js';
 import { generateSigningKeyMaterial, getSigningKey } from '@background/functions/signing/signingKeyStore.js';
 import { saveToLocalStorage, loadFromLocalStorage } from '@localStorage/index.js';
@@ -191,6 +192,22 @@ describe('sendUpdate — signing key migration (≤1.8.4 → 1.9.0)', () => {
     expect(await storedRecord()).toBeNull();
   });
 
+  it('a 401 while signing is still inactive drops the record — the request was unsigned, no clock to blame', async () => {
+    await seedUpdateScenario();
+    updateBrowserExtension.mockRejectedValue({
+      status: 401,
+      statusText: 'Unauthorized',
+      url: 'https://api.example.test/browser_extensions/ext-1',
+      content: '',
+      signed: false
+    });
+
+    await flushBrowserRegistration();
+
+    expect(await storedRecord()).toBeNull();
+    expect(storeLog).toHaveBeenCalledWith('error', 27, expect.objectContaining({ backendStatus: 401 }), expect.stringContaining('non-retryable'));
+  });
+
   it('a transient signing-key IndexedDB failure retries with backoff instead of dropping', async () => {
     await saveToLocalStorage({
       extensionID: 'ext-1',
@@ -209,5 +226,84 @@ describe('sendUpdate — signing key migration (≤1.8.4 → 1.9.0)', () => {
 
     expect(updateBrowserExtension).not.toHaveBeenCalled();
     expect(await storedRecord()).toMatchObject({ op: 'update', attempts: 1 });
+  });
+});
+
+describe('sendUpdate — 401 on the signed PUT', () => {
+  // A signed 401 is not a verdict on the request: a clock the SDK could not
+  // correct, or a nonce-store hiccup, rejects it just the same. Dropping the
+  // record abandoned the browser-info update until the next browser update.
+  const UNAUTHORIZED = {
+    status: 401,
+    statusText: 'Unauthorized',
+    url: 'https://api.example.test/browser_extensions/ext-1',
+    content: '',
+    signed: true
+  };
+
+  beforeEach(async () => {
+    await saveToLocalStorage({
+      extensionID: 'ext-1',
+      browserInfo: { name: 'ext', browser_name: 'Chrome', browser_version: '139' },
+      keys: { publicKey: 'pub', signingPublicKey: 'registered-public' },
+      signing: { active: true, conflict: false, registrationRequired: false, auth401Count: 0 }
+    });
+    await seedRecord({ op: 'update', payload: { name: 'ext', browser_name: 'Chrome', browser_version: '140' } });
+  });
+
+  it('keeps the record and schedules a backoff retry without reporting it as stuck', async () => {
+    updateBrowserExtension.mockRejectedValue(UNAUTHORIZED);
+
+    await flushBrowserRegistration();
+
+    expect(await storedRecord()).toMatchObject({ op: 'update', attempts: 1, reported: false });
+    expect(await browser.alarms.get(REGISTRATION_ALARM_NAME)).toBeTruthy();
+    expect(storeLog).not.toHaveBeenCalled();
+  });
+
+  it('delivers the update on a later flush once the backend accepts it', async () => {
+    updateBrowserExtension
+      .mockRejectedValueOnce(UNAUTHORIZED)
+      .mockResolvedValueOnce({ id: 'ext-1' });
+
+    await flushBrowserRegistration();
+    await flushBrowserRegistration();
+
+    expect(updateBrowserExtension).toHaveBeenCalledTimes(2);
+    expect(await storedRecord()).toBeNull();
+    expect((await loadFromLocalStorage('browserInfo')).browserInfo).toMatchObject({ browser_version: '140' });
+  });
+
+  it('reports a signed PUT still rejected at the escalation threshold as stuck, once (log 27)', async () => {
+    await seedRecord({
+      op: 'update',
+      attempts: MAX_ATTEMPTS_BEFORE_ESCALATE - 1,
+      payload: { name: 'ext', browser_name: 'Chrome', browser_version: '140' }
+    });
+    updateBrowserExtension.mockRejectedValue(UNAUTHORIZED);
+
+    await flushBrowserRegistration();
+
+    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(storeLog).toHaveBeenCalledWith('error', 27, expect.objectContaining({ backendStatus: 401 }), expect.stringContaining('stuck'));
+    expect(await storedRecord()).toMatchObject({ attempts: MAX_ATTEMPTS_BEFORE_ESCALATE, reported: true });
+  });
+
+  it('drops the record when the rejected PUT went out unsigned because the signing key was unavailable', async () => {
+    updateBrowserExtension.mockRejectedValue({ ...UNAUTHORIZED, signed: false });
+
+    await flushBrowserRegistration();
+
+    expect(await storedRecord()).toBeNull();
+  });
+
+  it('stops retrying once registrationRequired is set — the backend rejects this install for good', async () => {
+    await saveToLocalStorage({ signing: { active: true, conflict: false, registrationRequired: true, auth401Count: 3 } });
+    updateBrowserExtension.mockRejectedValue(UNAUTHORIZED);
+
+    await flushBrowserRegistration();
+
+    expect(await storedRecord()).toBeNull();
+    expect(storeLog).toHaveBeenCalledWith('error', 27, expect.objectContaining({ backendStatus: 401 }), expect.stringContaining('non-retryable'));
   });
 });

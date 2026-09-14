@@ -35,7 +35,7 @@
 12 - subscribeChannel - browser_extensions.pairing.failure — backend rejected a pairing the user started (expired QR, declined on the phone); downgraded error -> info in 1.9.0, kept as a product signal [info]
 13 - subscribeChannel - subscribeChannel event default
 *26 - updateIncognitoAccess [retired in 1.9.0 — browser API / storage hiccup with no user-visible effect and no extension-side fix; console only]
-27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]; proxy 407 = retry with backoff, never logged (#1163)
+27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]; proxy 407 = retry with backoff, never logged (#1163); since 1.9.1 a 401 on a PUT that went out signed also retries with backoff and is logged only once stuck (was: dropped + logged at once); an unsigned PUT's 401, or one after registrationRequired, still drops + logs at once
 28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST); proxy 407 = retry with backoff, never logged (#1163)
 29 - verifyStorageIntegrity
 30 - closeRequest - close2FARequest / session write failed; transport failures (offline, 5xx, timeout) are filtered out since 1.9.0, and the storage-load variant is console only [error]

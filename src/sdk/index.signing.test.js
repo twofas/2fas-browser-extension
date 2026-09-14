@@ -193,4 +193,39 @@ describe('SDK request signing', () => {
     expect(state.registrationRequired).toBe(false);
     expect(state.auth401Count).toBe(0);
   });
+
+  describe('the normalized HTTP error tells whether the request went out signed', () => {
+    const browserInfo = { name: 'n', browser_name: 'b', browser_version: '1' };
+
+    beforeEach(() => {
+      fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(401, '')));
+    });
+
+    it('signed request → signed: true', async () => {
+      await activateSigning();
+
+      await expect(new SDK().updateBrowserExtension('ext-id', browserInfo))
+        .rejects.toMatchObject({ status: 401, signed: true });
+    });
+
+    it('signing active but the signing key is gone → signed: false', async () => {
+      // getSigningHeaders falls back to an unsigned request (log 65): its 401
+      // cannot be blamed on a signature it never carried.
+      await saveToLocalStorage({
+        keys: { publicKey: 'rsa-pub', signingPublicKey: 'registered-public' },
+        signing: { active: true, conflict: false, registrationRequired: false, auth401Count: 0 }
+      });
+
+      await expect(new SDK().updateBrowserExtension('ext-id', browserInfo))
+        .rejects.toMatchObject({ status: 401, signed: false });
+      expect(sentHeaders(fetchMock.mock.calls[0])[HEADER_SIGNATURE]).toBeUndefined();
+    });
+
+    it('signing not active → signed: false', async () => {
+      await saveToLocalStorage({ signing: { active: false } });
+
+      await expect(new SDK().updateBrowserExtension('ext-id', browserInfo))
+        .rejects.toMatchObject({ status: 401, signed: false });
+    });
+  });
 });

@@ -28,7 +28,7 @@ import openInstallPage from '@background/functions/openInstallPage.js';
 import { INSTALL_PAGE_REASON_RECOVERED, RECOVERED_PAGE_PENDING_KEY } from '@partials/installPageReasons.js';
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import ensureUsableSigningKeyMaterial from '@background/functions/signing/ensureUsableSigningKeyMaterial.js';
-import { activateSigning, markSigningConflict } from '@background/functions/signing/signingState.js';
+import { activateSigning, getSigningState, markSigningConflict } from '@background/functions/signing/signingState.js';
 import {
   REGISTRATION_STORAGE_KEY,
   REGISTRATION_ALARM_NAME,
@@ -321,7 +321,7 @@ const openRecoveredPageIfPending = async () => {
  * Handles a failed attempt: re-registers on 404, gives up (logging once) on a
  * deterministic 4xx, or backs off + reschedules on a transient failure — escalating
  * to a single log only once the registration is genuinely stuck (a proxy 407 backs
- * off but never escalates).
+ * off but never escalates). A 401 on the signed PUT counts as transient.
  * @param {Object} record
  * @param {Object} err - Normalized SDK error.
  * @param {number} now
@@ -363,7 +363,16 @@ const handleFailure = async (record, err, now) => {
     return;
   }
 
-  if (!isRetryable(classification)) {
+  // A 401 on a SIGNED PUT is not a verdict on the request: a clock the SDK
+  // could not correct, or a nonce-store hiccup, rejects it just the same. Dropping
+  // the record abandoned the browser-info update until the next browser update.
+  // Nothing transient to wait out for a PUT that went out unsigned (signing
+  // inactive, or the signing key unavailable), nor once the backend is known to
+  // reject this install for good (registrationRequired) — those still drop.
+  const signedRejection = record.op === 'update' && err?.status === 401 && err?.signed === true &&
+    !(await getSigningState()).registrationRequired;
+
+  if (!signedRejection && !isRetryable(classification)) {
     // Deterministic client error — retrying is futile. Surface once and stop.
     await storeLog(
       'error',

@@ -41,9 +41,11 @@ import { getClockOffsetMs } from './clockOffset.js';
  * @param {Object} [options]
  * @param {boolean} [options.skipLog=false] - Console-only error reporting; set on
  *   the storeLog path, which must never recurse into another storeLog call.
+ * @param {number} [options.clockOffsetMs] - Clock correction to sign with instead
+ *   of the stored offset (the re-sign right after a clock-skew 401).
  * @returns {Promise<Object>} Signature headers, or {} for an unsigned request.
  */
-const getSigningHeaders = async (method, url, body = '', { skipLog = false } = {}) => {
+const getSigningHeaders = async (method, url, body = '', { skipLog = false, clockOffsetMs } = {}) => {
   try {
     // HARD context guard: a content script runs on the page's origin — its
     // indexedDB is page-readable, so loading (and possibly promoting) the
@@ -67,9 +69,9 @@ const getSigningHeaders = async (method, url, body = '', { skipLog = false } = {
       throw new Error('Signing key unavailable while signing is active');
     }
 
-    const clockOffsetMs = await getClockOffsetMs();
+    const offsetMs = typeof clockOffsetMs === 'number' ? clockOffsetMs : await getClockOffsetMs();
 
-    return await signRequest(method, url, body, { privateKey, clockOffsetMs });
+    return await signRequest(method, url, body, { privateKey, clockOffsetMs: offsetMs });
   } catch (err) {
     if (skipLog) {
       console.error('getSigningHeaders', err);
