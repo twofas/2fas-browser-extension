@@ -21,75 +21,67 @@ import config from '@/config.js';
 import browser from 'webextension-polyfill';
 import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import SDK from '@sdk/index.js';
-import Crypt from '@background/functions/Crypt.js';
-import { savePrivateKey, deletePrivateKey } from '@background/functions/privateKeyStore.js';
+import generateKeyMaterial from '@background/functions/generateKeyMaterial.js';
 import storeLog from '@partials/storeLog.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
+import { defaultSigningState } from '@background/functions/signing/signingState.js';
+
+// The only keys a caller may carry across a regeneration: user preferences, nothing
+// else. An allow-list rather than a "these are overridden anyway" convention — a
+// leaked `extensionID` would pair the OLD registration with the NEW keys (the catch
+// below then skips the durable create because an extensionID is present), producing
+// an install that classifies as healthy and can never decrypt a token.
+const OVERRIDABLE_PREFERENCES = [
+  'logging',
+  'nativePush',
+  'contextMenu',
+  'pinInfo',
+  'incognito',
+  'autoSubmitEnabled',
+  'autoSubmitExcludedDomains',
+  'extIcon',
+  // The one non-preference: the self-heal's repeat counter. It has to survive the
+  // regeneration precisely because the regeneration is what it counts (see
+  // selfHealMissingPrivateKey). A manual Reset passes no overrides, so it drops it.
+  'selfHealHistory'
+];
 
 /**
- * Generates the RSA keypair and persists the private key. Preferred: a
- * non-extractable CryptoKey in IndexedDB. When IndexedDB is unavailable —
- * Firefox with "Never remember history" (permanent private browsing) makes
- * indexedDB.open throw for extension pages too (Bugzilla 1841806), and a
- * corrupted profile storage behaves the same; neither is cleared by
- * reinstalling the extension — falls back to the legacy scheme: an extractable
- * key exported as pkcs8 base64, persisted in storage.local via the returned
- * keys object. getOrMigratePrivateKey treats that copy as authoritative and
- * promotes it into IndexedDB automatically if IndexedDB recovers.
+ * Keeps only the preference keys a regeneration may carry over.
  *
- * @async
- * @param {Crypt} crypt - Crypt instance used for key generation and export.
- * @returns {Promise<{publicKey: string, privateKey?: string}>} The keys object for storage.local.
+ * @param {Object} [overrides] - Raw overrides from the caller.
+ * @returns {Object} The allowed subset.
  */
-const generateKeyMaterial = async crypt => {
-  let idbError = null;
+const pickPreferences = (overrides = {}) => {
+  const out = {};
 
-  // Reset clears storage.local; wipe any stale IndexedDB key too, so a
-  // regeneration is fully clean. A failing delete means IndexedDB is
-  // unavailable — switch to the fallback instead of aborting.
-  try {
-    await deletePrivateKey();
-  } catch (err) {
-    idbError = err;
+  if (!overrides || typeof overrides !== 'object') {
+    return out;
   }
 
-  if (!idbError) {
-    const pair = await crypt.generateKeys();
-
-    try {
-      await savePrivateKey(pair.privateKey);
-
-      return { publicKey: crypt.ArrayBufferToString(await crypt.exportKey('spki', pair.publicKey)) };
-    } catch (err) {
-      idbError = err;
+  for (const key of OVERRIDABLE_PREFERENCES) {
+    if (overrides[key] !== undefined) {
+      out[key] = overrides[key];
     }
   }
 
-  const pair = await crypt.generateKeys(true);
-  const [spki, pkcs8] = await Promise.all([
-    crypt.exportKey('spki', pair.publicKey),
-    crypt.exportKey('pkcs8', pair.privateKey)
-  ]);
-
-  await storeLog('warning', 60, idbError, 'generateDefaultStorage - IndexedDB unavailable, private key stored in storage.local fallback');
-
-  return {
-    publicKey: crypt.ArrayBufferToString(spki),
-    privateKey: crypt.ArrayBufferToString(pkcs8)
-  };
+  return out;
 };
 
 /**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
  *
  * @param {Object} browserInfo - The browser information object
+ * @param {Object} [overrides={}] - Preference values written atomically with the defaults
+ *   (e.g. settings carried across an automatic regeneration). Only the keys in
+ *   OVERRIDABLE_PREFERENCES are honoured; everything else — identity, pairing,
+ *   registration and reporting state — is dropped, never merged.
  * @returns {Promise<void>} A promise that resolves when storage is initialized and extension is registered
  */
-const generateDefaultStorage = browserInfo => {
-  const crypt = new Crypt();
+const runGeneration = (browserInfo, overrides = {}) => {
   let attempt = 0;
 
   return loadFromLocalStorage('attempt')
@@ -100,30 +92,41 @@ const generateDefaultStorage = browserInfo => {
 
       return clearLocalStorage();
     })
-    .then(() => generateKeyMaterial(crypt))
+    // Re-arm the attempt counter BEFORE the fallible work. `clearLocalStorage` has
+    // already dropped it, and everything after this point can throw (crypto,
+    // storage.local quota/corruption); leaving storage at `{}` would reset the
+    // pages' `attempt > 5` bound, so a failing reset could be retried forever.
+    .then(() => saveToLocalStorage({ attempt: attempt + 1 }))
+    .then(() => generateKeyMaterial())
     .then(keys => saveToLocalStorage({
-      configured: false,
-      browserInfo,
-      keys,
       contextMenu: true,
       logging: false,
       incognito: false,
       nativePush: (process.env.EXT_PLATFORM !== 'Safari'),
       pinInfo: false,
-      extensionVersion: config.ExtensionVersion,
       autoSubmitEnabled: false,
       autoSubmitExcludedDomains: defaultAutoSubmitExcludedDomains,
-      attempt: attempt + 1,
       extIcon: 0, // 0 - default
+      ...pickPreferences(overrides),
+      // Identity — never overridable.
+      configured: false,
+      browserInfo,
+      keys,
+      extensionVersion: config.ExtensionVersion,
+      attempt: attempt + 1,
+      signing: defaultSigningState(),
       storageSchemaVersion: CURRENT_SCHEMA_VERSION
     }))
     .then(storage => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
+      extensionInstanceBody.public_signing_key = storage.keys.signingPublicKey;
 
       return new SDK().createExtensionInstance(extensionInstanceBody, { timeoutMs: REGISTRATION_TIMEOUT_MS });
     })
-    .then(data => saveToLocalStorage({ extensionID: data.id }))
+    // Registration succeeded with the signing key in the payload — signing is
+    // active from the first request. One atomic write with the extensionID.
+    .then(data => saveToLocalStorage({ extensionID: data.id, signing: { ...defaultSigningState(), active: true } }))
     .then(storage => {
       if (process.env.EXT_PLATFORM === 'Safari') {
         return Promise.resolve();
@@ -153,4 +156,28 @@ const generateDefaultStorage = browserInfo => {
     });
 };
 
+// Single-flight: reachable from onInstalled, onStartup (Safari), storageReset and
+// the Safari self-heal, which can overlap at a browser start. Two interleaved
+// runs (clear → keys → POST → extensionID) can register the keys of one run
+// under the extensionID of the other — a silently undecryptable install. A
+// concurrent caller joins the run in progress instead — and the FIRST caller's
+// arguments (browserInfo, overrides) win; the joiner's are dropped. The only
+// realistic overlap is the Safari self-heal (stored name, preserved preferences)
+// against a manual storageReset (fresh name, defaults): either outcome is a
+// valid fresh identity, so no queueing.
+let inFlight = null;
+
+const generateDefaultStorage = (browserInfo, overrides = {}) => {
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = runGeneration(browserInfo, overrides).finally(() => {
+    inFlight = null;
+  });
+
+  return inFlight;
+};
+
 export default generateDefaultStorage;
+export { OVERRIDABLE_PREFERENCES };

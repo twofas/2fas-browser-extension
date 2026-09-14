@@ -19,51 +19,51 @@
 
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
-import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
+import classifyKeyMaterial, { missingKeyName, KEY_MATERIAL_VALID } from '@background/functions/keyMaterialState.js';
 import reportMissingPrivateKey, { clearMissingPrivateKeyReport } from '@background/functions/reportMissingPrivateKey.js';
+import selfHealMissingPrivateKey from '@background/functions/selfHealMissingPrivateKey.js';
+import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
 import storeLog from '@partials/storeLog.js';
 
-const STORAGE_VALID = 'valid';
+const STORAGE_VALID = KEY_MATERIAL_VALID;
 const STORAGE_INCOMPLETE = 'incomplete';
-const STORAGE_MISSING_PRIVATE_KEY = 'missingPrivateKey';
 
 /**
- * Classifies the current storage state for the integrity check. The private key
- * lives in IndexedDB; for users upgrading from a build that stored it as base64 in
- * storage.local this call also migrates it on first run.
+ * Classifies the current storage state for the integrity check.
  *
- *  - 'valid'             : public key + extensionID + a usable private key.
+ *  - 'valid'             : public key + extensionID + usable key material
+ *                          (see classifyKeyMaterial).
  *  - 'incomplete'        : public key OR extensionID missing (fresh install or a
  *                          partial/aborted first-run) — safe to (re)generate.
- *  - 'missingPrivateKey' : public key AND extensionID present, but NO private key
- *                          in IndexedDB — the extension was fully registered yet the
- *                          key is gone (e.g. IndexedDB evicted while storage.local
+ *  - 'missingPrivateKey' /
+ *    'missingSigningKey' : registered, but a private key is gone (e.g. the
+ *                          extension-origin IndexedDB was lost while storage.local
  *                          survived). Regenerating here would mint a new keypair +
  *                          registration and, since the server public_key cannot be
  *                          rotated, SILENTLY orphan every paired device.
  *
- * A transient IndexedDB error makes getOrMigratePrivateKey throw (not return null),
- * so it propagates to the caller's catch and never masquerades as 'missingPrivateKey'.
+ * A transient IndexedDB error makes the key stores throw (not return null), so it
+ * propagates to the caller's catch and never masquerades as a missing key.
  *
  * @async
  * @param {Object} storage - The storage object to classify
- * @returns {Promise<'valid'|'incomplete'|'missingPrivateKey'>}
+ * @returns {Promise<'valid'|'incomplete'|'missingPrivateKey'|'missingSigningKey'>}
  */
 const classifyStorage = async storage => {
   if (!storage?.keys?.publicKey || !storage?.extensionID) {
     return STORAGE_INCOMPLETE;
   }
 
-  const privateKey = await getOrMigratePrivateKey(storage);
-
-  return privateKey ? STORAGE_VALID : STORAGE_MISSING_PRIVATE_KEY;
+  return classifyKeyMaterial(storage);
 };
 
 /**
  * Verifies that required storage keys exist and regenerates default storage when it
  * is genuinely incomplete (fresh/partial install). A registered install whose private
  * key vanished is NOT silently regenerated — that would orphan the paired devices —
- * the user is told to re-pair instead. After regeneration, re-checks that the storage
+ * the user is told to re-pair instead; on Safari, where that advice cannot work and
+ * the pairings are already dead, selfHealMissingPrivateKey regenerates and opens the
+ * install page instead. After regeneration, re-checks that the storage
  * is actually valid — generateDefaultStorage swallows API errors internally, so a
  * successful await does NOT guarantee a valid storage.
  *
@@ -72,7 +72,7 @@ const classifyStorage = async storage => {
  */
 const verifyStorageIntegrity = async browserInfo => {
   try {
-    let storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    let storage = await loadFromLocalStorage(['keys', 'extensionID', 'signing', REGISTRATION_STORAGE_KEY]);
     const state = await classifyStorage(storage);
 
     if (state === STORAGE_VALID) {
@@ -81,19 +81,44 @@ const verifyStorageIntegrity = async browserInfo => {
       return true;
     }
 
-    if (state === STORAGE_MISSING_PRIVATE_KEY) {
-      // Registered, but the private key is gone. Do NOT regenerate (it would orphan
-      // every paired device with no way to rotate the server key). Surface a re-pair
-      // prompt (once per incident) and leave storage untouched — recovery is an
-      // explicit reset/re-pair.
-      await reportMissingPrivateKey(storage, 'verifyStorageIntegrity');
+    if (state !== STORAGE_INCOMPLETE) {
+      // Registered, but a private key is gone. Safari self-heals here (regenerate +
+      // install page); everywhere else do NOT regenerate (it would orphan every
+      // paired device with no way to rotate the server key) — report once per
+      // incident and leave storage untouched, recovery is an explicit reset/re-pair.
+      // A lost RSA key prompts the user (no token can be decrypted); a lost signing
+      // key is logged only — tokens still work and the 401 path owns the UX later.
+      const key = missingKeyName(state);
 
+      // Regenerated (or the re-read found the key after all): re-classify what is
+      // in storage now instead of trusting the outcome.
+      if (await selfHealMissingPrivateKey(storage, 'verifyStorageIntegrity', { key })) {
+        storage = await loadFromLocalStorage(['keys', 'extensionID', 'signing']);
+
+        if ((await classifyStorage(storage)) === STORAGE_VALID) {
+          await clearMissingPrivateKeyReport();
+
+          return true;
+        }
+
+        return false;
+      }
+
+      await reportMissingPrivateKey(storage, 'verifyStorageIntegrity', { notify: key === 'rsa', cause: { key } });
+
+      return false;
+    }
+
+    // Keys written but the registration POST still pending (install / reset while
+    // offline): the durable create retry owns it — regenerating here would discard
+    // it, mint new keys and bump `attempt`. Not valid yet either (nothing to update).
+    if (storage?.keys?.publicKey && storage?.[REGISTRATION_STORAGE_KEY]?.op === 'create') {
       return false;
     }
 
     await generateDefaultStorage(browserInfo);
 
-    storage = await loadFromLocalStorage(['keys', 'extensionID']);
+    storage = await loadFromLocalStorage(['keys', 'extensionID', 'signing']);
 
     return (await classifyStorage(storage)) === STORAGE_VALID;
   } catch (err) {

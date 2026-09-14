@@ -26,7 +26,13 @@ import storeLog from '@partials/storeLog.js';
 // integrity check re-runs on every extension/browser update. Without this flag
 // the same broken install re-emits log 57 and re-shows the notification on each
 // of those events, forever.
-const REPORTED_FLAG = 'privateKeyMissingReported';
+// One flag per key kind: a logged-only signing-key loss must not silence a
+// later RSA-key loss (which needs the user-facing prompt).
+const REPORTED_FLAGS = {
+  rsa: 'privateKeyMissingReported',
+  signing: 'signingKeyMissingReported'
+};
+const flagFor = key => REPORTED_FLAGS[key] || REPORTED_FLAGS.rsa;
 
 /**
  * Logs the missing-private-key state (error 57) and prompts a re-pair — at most
@@ -43,17 +49,26 @@ const REPORTED_FLAG = 'privateKeyMissingReported';
  * @param {Object} [options]
  * @param {boolean} [options.notify=true] - Skip the built-in (deduped) notification
  *   when the caller shows its own per-request one instead (token request path).
+ * @param {Object} [options.cause] - Extra diagnostic fields merged into the log
+ *   entry's cause (e.g. `{ selfHealed: true }` when the caller regenerates storage,
+ *   `{ key: 'signing' }` when it is the ECDSA signing key that is gone).
  * @returns {Promise<void>}
  */
-const reportMissingPrivateKey = async (storage, context, { notify = true } = {}) => {
-  const flagged = await loadFromLocalStorage(REPORTED_FLAG);
+const reportMissingPrivateKey = async (storage, context, { notify = true, cause = {} } = {}) => {
+  const flag = flagFor(cause.key);
+  const flagged = await loadFromLocalStorage(flag);
 
-  if (flagged?.[REPORTED_FLAG]) {
+  if (flagged?.[flag]) {
     return;
   }
 
+  // Read the storage.local copy of the key that is actually missing: a present-but
+  // -unimportable copy means a corrupt fallback, and the field differs per key kind.
+  // (Reading the RSA field for a signing-key report inverted the diagnostic both ways.)
+  const fallbackField = cause.key === 'signing' ? 'signingPrivateKey' : 'privateKey';
+
   const err = new Error('Private key missing while registration valid; re-pairing required', {
-    cause: { corruptFallbackKey: Boolean(storage?.keys?.privateKey) }
+    cause: { key: 'rsa', corruptFallbackKey: Boolean(storage?.keys?.[fallbackField]), ...cause }
   });
 
   await storeLog('error', 57, err, context);
@@ -67,7 +82,7 @@ const reportMissingPrivateKey = async (storage, context, { notify = true } = {})
     }
   }
 
-  await saveToLocalStorage({ [REPORTED_FLAG]: true });
+  await saveToLocalStorage({ [flag]: true });
 };
 
 /**
@@ -78,11 +93,10 @@ const reportMissingPrivateKey = async (storage, context, { notify = true } = {})
  * @returns {Promise<void>}
  */
 const clearMissingPrivateKeyReport = async () => {
-  const flagged = await loadFromLocalStorage(REPORTED_FLAG);
+  const flags = Object.values(REPORTED_FLAGS);
+  const flagged = await loadFromLocalStorage(flags);
 
-  if (flagged?.[REPORTED_FLAG]) {
-    await removeFromLocalStorage(REPORTED_FLAG);
-  }
+  await Promise.all(flags.filter(flag => flagged?.[flag]).map(flag => removeFromLocalStorage(flag)));
 };
 
 export default reportMissingPrivateKey;

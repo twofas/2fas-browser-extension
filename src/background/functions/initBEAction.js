@@ -25,6 +25,8 @@ import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
 import sendMessageToAllFrames from '@background/functions/sendMessageToAllFrames.js';
 import handleFrontElement from '@background/functions/handleFrontElement.js';
+import { getSigningState } from '@background/functions/signing/signingState.js';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Initiates browser extension action for 2FA token request.
@@ -109,7 +111,22 @@ const initBEAction = async (url, tab, storageData) => {
         await saveToSessionStorage({ [`tabData-${tab.id}`]: tabData }).catch(() => {});
       }
 
-      await storeLog('error', 5, err, url);
+      // Backend rejected the request as unsigned/invalid and the classifier
+      // already concluded re-registration is required — tell the user what to
+      // actually do (reinstall/re-pair) instead of a generic error.
+      if (err?.status === 401) {
+        const signingState = await getSigningState();
+
+        if (signingState.registrationRequired) {
+          return TwoFasNotification.show(config.Texts.Error.SigningRequired, tab.id);
+        }
+      }
+
+      // request2FAToken over a dead connection: the user sees "undefined error"
+      // and retries; there is nothing for the team in a fetch failure.
+      if (!isTransportError(err)) {
+        await storeLog('error', 5, err, url);
+      }
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, tab.id);
     } finally {
       storage = null;

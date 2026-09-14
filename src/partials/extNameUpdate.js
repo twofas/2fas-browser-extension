@@ -24,6 +24,7 @@ import TwoFasNotification from '../notification/index.js';
 import storeLog from './storeLog.js';
 import saveToLocalStorage from '../localStorage/saveToLocalStorage.js';
 import S from '../selectors.js';
+import isTransportError from './isTransportError.js';
 
 let updateTimeout = false;
 
@@ -97,7 +98,9 @@ const extNameUpdate = (storage, e) => {
     })
     .then(() => saveBtn.removeAttribute('disabled'))
     .catch(async err => {
-      await storeLog('error', 25, err, 'extNameUpdate');
+      if (!isTransportError(err)) {
+        await storeLog('error', 25, err, 'extNameUpdate');
+      }
       return TwoFasNotification.showWithoutTimeout(config.Texts.Error.UndefinedError);
     });
 };

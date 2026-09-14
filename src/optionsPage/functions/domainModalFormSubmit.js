@@ -25,6 +25,7 @@ import config from '@/config.js';
 import storeLog from '@partials/storeLog.js';
 import hideDomainModal from '@optionsPage/functions/hideDomainModal.js';
 import validateExcludedDomain from '@optionsPage/functions/validateExcludedDomain.js';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Handles the domain modal form submission, validates input, and saves the excluded domain.
@@ -65,7 +66,9 @@ const domainModalFormSubmit = e => {
       return TwoFasNotification.show(config.Texts.Success.DomainExcluded);
     })
     .catch(async err => {
-      await storeLog('error', 45, err, 'domainModalFormSubmit');
+      if (!isTransportError(err)) {
+        await storeLog('error', 45, err, 'domainModalFormSubmit');
+      }
       return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
     });
 };

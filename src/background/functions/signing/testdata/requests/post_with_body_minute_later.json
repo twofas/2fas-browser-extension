@@ -1,0 +1,15 @@
+{
+  "Name": "post_with_body_minute_later",
+  "Method": "POST",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "a=1&b=2",
+  "Body": "{\"hello\":\"world\"}",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:01:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLXBvc3Rfd2l0aF9ib2R5LXBhZCE=",
+    "X-2fas-Signature": "MEQCIHmE3JcxD6U62pzDGgcDYfD-Jl1X2IEZ3K0N8opfkJxKAiB71FSdty5WygsI7e2-m-tCbIJSIaihQ9Xb4KVrY-ZhMw==",
+    "X-2fas-Body-Sha256": "k6I5cakU5erL8KjSUVTNownDwccvu5kU1Hxg88toFYg="
+  }
+}
+

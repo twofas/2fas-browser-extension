@@ -21,6 +21,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import browser from 'webextension-polyfill';
 import config from '@/config.js';
 import { saveToSessionStorage } from '@sessionStorage/index.js';
+import { saveToLocalStorage } from '@localStorage/index.js';
 
 const storeLog = vi.fn().mockResolvedValue(undefined);
 vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
@@ -49,6 +50,14 @@ const reportMissingPrivateKey = vi.fn().mockResolvedValue(undefined);
 vi.mock('@background/functions/reportMissingPrivateKey.js', () => ({
   default: (...a) => reportMissingPrivateKey(...a),
   clearMissingPrivateKeyReport: vi.fn().mockResolvedValue(undefined)
+}));
+
+const selfHealMissingPrivateKey = vi.fn().mockResolvedValue(false);
+vi.mock('@background/functions/selfHealMissingPrivateKey.js', () => ({
+  default: (...a) => selfHealMissingPrivateKey(...a),
+  HEAL_REGENERATED: 'regenerated',
+  HEAL_KEY_PRESENT: 'keyPresent',
+  RECHECK_DELAY_MS: 0
 }));
 
 vi.mock('@background/functions/syncDevicesWithAPI.js', () => ({ default: vi.fn().mockResolvedValue({ storage: { devices: [] } }) }));
@@ -98,6 +107,11 @@ beforeEach(() => {
   getOrMigratePrivateKey.mockReset();
   getOrMigratePrivateKey.mockResolvedValue({});
   reportMissingPrivateKey.mockClear();
+  // Was missing: without a reset this mock's call history (and any queued `...Once`)
+  // leaked into the next test, so a `not.toHaveBeenCalled()` assertion could fail on
+  // a call another test made.
+  selfHealMissingPrivateKey.mockReset();
+  selfHealMissingPrivateKey.mockResolvedValue(false);
   inputTokenResponse = { status: 'completed' };
   showTokenBehavior = 'ok';
 });
@@ -182,6 +196,7 @@ describe('handleLoginRequest — missing private key', () => {
   it('routes through the deduped log-57 reporter, shows the re-pair notification per request, closes the request — no error 8', async () => {
     getOrMigratePrivateKey.mockResolvedValue(null);
     resolveTokenTargetFrame.mockResolvedValue(0);
+    selfHealMissingPrivateKey.mockResolvedValue(false);
     await setup();
 
     await handleLoginRequest(TAB, DATA);
@@ -200,5 +215,92 @@ describe('handleLoginRequest — missing private key', () => {
 
     // No token delivery is attempted without a key.
     expect(sentActions()).toEqual([]);
+  });
+});
+
+describe('handleLoginRequest — missing private key, Safari self-heal (issue #142)', () => {
+  it('closes the request BEFORE regenerating, shows the "data lost, pair again" notification on the tab, no error 8', async () => {
+    getOrMigratePrivateKey.mockResolvedValue(null);
+    resolveTokenTargetFrame.mockResolvedValue(0);
+    selfHealMissingPrivateKey.mockResolvedValue('regenerated');
+    closeRequest.mockClear();
+    selfHealMissingPrivateKey.mockClear();
+    await setup();
+
+    await handleLoginRequest(TAB, DATA);
+
+    // userInitiated lifts the Safari-only gate: the user is waiting on this token, and
+    // no token can be decrypted with the dead identity on any platform.
+    expect(selfHealMissingPrivateKey).toHaveBeenCalledWith(expect.anything(), 'handleLoginRequest', { userInitiated: true });
+    // closeRequest reads the CURRENT extensionID / signing key — both are replaced by the heal.
+    expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
+    expect(closeRequest.mock.invocationCallOrder.at(-1)).toBeLessThan(selfHealMissingPrivateKey.mock.invocationCallOrder.at(-1));
+
+    // The heal logs 57 itself; the report-only path is not taken.
+    expect(reportMissingPrivateKey).not.toHaveBeenCalled();
+    expect(storeLog).not.toHaveBeenCalled();
+
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.StorageRecovered, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.StorageIntegrity, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.UndefinedError, TAB);
+    expect(sentActions()).not.toContain('inputToken');
+    expect(sentActions()).not.toContain('showTokenNotification');
+  });
+
+  it('finishes the request with the token when the delayed re-read found the key after all', async () => {
+    // False alarm (a concurrent regeneration was in flight): nothing was wiped and
+    // the token in hand is still decryptable, so deliver it instead of making the
+    // user approve a second push for a request the backend already saw completed.
+    getOrMigratePrivateKey.mockResolvedValueOnce(null).mockResolvedValue('private-key');
+    resolveTokenTargetFrame.mockResolvedValue(0);
+    selfHealMissingPrivateKey.mockResolvedValue('keyPresent');
+    await setup();
+
+    await handleLoginRequest(TAB, DATA);
+
+    expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
+    expect(reportMissingPrivateKey).not.toHaveBeenCalled();
+    expect(sentActions()).toContain('inputToken');
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.UndefinedError, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.StorageIntegrity, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.StorageRecovered, TAB);
+  });
+
+  it('asks for a fresh token — not a re-pair — when only the heal\'s own re-read finds the key', async () => {
+    // Our pre-close re-read came back empty but the heal's did not: storage is fine,
+    // the request is simply already closed. Reporting 57 here would blame a healthy
+    // install; the user just needs to approve a new push.
+    getOrMigratePrivateKey.mockResolvedValue(null);
+    selfHealMissingPrivateKey.mockResolvedValue('keyPresent');
+    await setup();
+
+    await handleLoginRequest(TAB, DATA);
+
+    expect(reportMissingPrivateKey).not.toHaveBeenCalled();
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.UndefinedError, TAB);
+    expect(notificationShow).not.toHaveBeenCalledWith(config.Texts.Error.StorageIntegrity, TAB);
+  });
+
+  it('does not try to decrypt with a key from an identity minted after the request', async () => {
+    // A reset/heal completed between the push and its delivery: the new keypair was
+    // never seen by the phone, so decryptToken could only fail. Say the extension was
+    // reset instead of reporting a broken install.
+    await setup();
+    await saveToLocalStorage({ keys: { publicKey: 'pub-old' }, extensionID: 'ext-old' });
+    // The regeneration lands between the first read and the re-read.
+    getOrMigratePrivateKey
+      .mockImplementationOnce(async () => {
+        await saveToLocalStorage({ keys: { publicKey: 'pub-new' }, extensionID: 'ext-new' });
+        return null;
+      })
+      .mockResolvedValue('fresh-key');
+
+    await handleLoginRequest(TAB, DATA);
+
+    expect(selfHealMissingPrivateKey).not.toHaveBeenCalled();
+    expect(reportMissingPrivateKey).not.toHaveBeenCalled();
+    expect(closeRequest).toHaveBeenCalledWith(TAB, REQ);
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.StorageRecovered, TAB);
+    expect(sentActions()).not.toContain('inputToken');
   });
 });

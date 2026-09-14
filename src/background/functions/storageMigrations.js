@@ -17,15 +17,16 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import { loadFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import { defaultSigningState, SIGNING_STORAGE_KEY } from '@background/functions/signing/signingState.js';
 
 /**
  * Current storage schema version. Bump this and append a migration whenever the
  * shape of stored data changes in a way existing installs must be upgraded to.
  * @type {number}
  */
-const CURRENT_SCHEMA_VERSION = 1;
+const CURRENT_SCHEMA_VERSION = 3;
 
 /**
  * Ordered list of schema migrations. Each entry's `version` is the schema version
@@ -44,6 +45,36 @@ const migrations = [
       if (!Array.isArray(data.autoSubmitExcludedDomains)) {
         await saveToLocalStorage({ autoSubmitExcludedDomains: [] });
       }
+    }
+  },
+  {
+    version: 2,
+    migrate: async () => {
+      // v1.9.0 request signing: seed the signing lifecycle state for existing
+      // installs. Offline-only — the ECDSA keypair generation and its backend
+      // registration are network/crypto work owned by
+      // ensureSigningKeyRegistration + the durable registration queue.
+      const data = await loadFromLocalStorage([SIGNING_STORAGE_KEY]);
+
+      if (!data?.[SIGNING_STORAGE_KEY] || typeof data[SIGNING_STORAGE_KEY] !== 'object') {
+        await saveToLocalStorage({ [SIGNING_STORAGE_KEY]: defaultSigningState() });
+      }
+    }
+  },
+  {
+    // v3: the storage.local → IndexedDB key-promotion bookkeeping is gone
+    // (keys in storage.local are now used in place, never promoted or stripped);
+    // drop its stamps. A leftover plaintext key next to an IndexedDB copy is
+    // harmless — storage.local always wins.
+    version: 3,
+    migrate: async () => {
+      const data = await loadFromLocalStorage(['privateKeyIdbStamp', 'signingKeyIdbStamp']);
+
+      await Promise.all(
+        ['privateKeyIdbStamp', 'signingKeyIdbStamp']
+          .filter(key => data?.[key] !== undefined)
+          .map(key => removeFromLocalStorage(key))
+      );
     }
   }
 ];

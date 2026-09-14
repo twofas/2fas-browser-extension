@@ -1,0 +1,15 @@
+{
+  "Name": "post_with_different_nonce",
+  "Method": "POST",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "a=1&b=2",
+  "Body": "{\"hello\":\"world\"}",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:01:00Z",
+    "X-2fas-Signature-Nonce": "kvIRByU_e8F5pd-7pS0OknXL846NnQbT",
+    "X-2fas-Signature": "MEYCIQDpsWfjXHES7HGTst04JMmiW4jOHMlWAT4zTOagWKaySQIhAIqiFyQgokaDvY8BLhgaRRqAq97sWsOl4C7oM-75K71u",
+    "X-2fas-Body-Sha256": "k6I5cakU5erL8KjSUVTNownDwccvu5kU1Hxg88toFYg="
+  }
+}
+

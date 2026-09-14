@@ -17,16 +17,24 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import S from '@/selectors.js';
+/* global atob */
 
 /**
- * Displays the storage integrity error message on the install page.
+ * Decodes a (padded or unpadded) base64url string to bytes.
  *
- * @returns {void}
+ * @param {string} str - The base64url string to decode.
+ * @returns {Uint8Array} Decoded bytes.
  */
-const showIntegrityError = () => {
-  const el = document.querySelector(S.optionsPage.integrityError);
-  el.classList.add('show-integrity-error');
+const b64urlToBytes = str => {
+  const b64 = str.replaceAll('-', '+').replaceAll('_', '/');
+  const raw = atob(b64);
+  const out = new Uint8Array(raw.length);
+
+  for (let i = 0; i < raw.length; i++) {
+    out[i] = raw.charCodeAt(i);
+  }
+
+  return out;
 };
 
-export default showIntegrityError;
+export default b64urlToBytes;

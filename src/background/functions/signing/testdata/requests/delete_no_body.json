@@ -1,0 +1,15 @@
+{
+  "Name": "delete_no_body",
+  "Method": "DELETE",
+  "Path": "/api/browser-extensions/abc-123",
+  "RawQuery": "",
+  "Body": "",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLWRlbGV0ZS1wYWQhIQ==",
+    "X-2fas-Signature": "MEQCIDshIyt43hO_qEfDW8mXSMJs9qqs19CcFr5EJd-2xMt3AiBJj5K43ktJCw_fEdSCthZOct0EiNUQBwgfkcgfwfikMg==",
+    "X-2fas-Body-Sha256": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="
+  }
+}
+

@@ -17,16 +17,21 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import S from '@/selectors.js';
+/* global crypto, TextEncoder */
+import bytesToB64url from './bytesToB64url.js';
 
 /**
- * Shows the storage integrity error message on the options page.
+ * Computes the padded-base64url SHA-256 of the exact request body bytes
+ * (UTF-8). An absent body hashes as zero bytes — the backend does the same.
  *
- * @returns {void}
+ * @async
+ * @param {string} [body=''] - The exact string passed as the fetch body.
+ * @returns {Promise<string>} Padded base64url digest.
  */
-const showIntegrityError = () => {
-  const el = document.querySelector(S.optionsPage.integrityError);
-  el.classList.add('show-integrity-error');
+const hashBody = async (body = '') => {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body || ''));
+
+  return bytesToB64url(digest);
 };
 
-export default showIntegrityError;
+export default hashBody;

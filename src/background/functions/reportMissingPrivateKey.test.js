@@ -58,6 +58,61 @@ describe('reportMissingPrivateKey', () => {
     expect(flagged.privateKeyMissingReported).toBe(true);
   });
 
+  it('merges a caller-supplied cause into the log entry next to the corruptFallbackKey diagnostic', async () => {
+    await reportMissingPrivateKey({ keys: { privateKey: 'corrupt' } }, 'checkSafariStorage', { notify: false, cause: { selfHealed: true } });
+
+    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'rsa', corruptFallbackKey: true, selfHealed: true });
+    expect(notificationShow).not.toHaveBeenCalled();
+  });
+
+  it('reads the corruptFallbackKey diagnostic from the field of the key that is missing', async () => {
+    // A signing-key report used to inspect keys.privateKey, so it claimed a corrupt
+    // fallback whenever the (healthy) RSA copy happened to be in storage.local, and
+    // missed a genuinely corrupt signing copy.
+    await reportMissingPrivateKey(
+      { keys: { privateKey: 'healthy-rsa-copy' } },
+      'verifyStorageIntegrity',
+      { notify: false, cause: { key: 'signing' } }
+    );
+    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'signing', corruptFallbackKey: false });
+
+    storeLog.mockClear();
+
+    await reportMissingPrivateKey(
+      { keys: { signingPrivateKey: 'corrupt' } },
+      'verifyStorageIntegrity',
+      { notify: false, cause: { key: 'signing' } }
+    );
+    // Same incident, already flagged — nothing new is sent.
+    expect(storeLog).not.toHaveBeenCalled();
+
+    await clearMissingPrivateKeyReport();
+    await reportMissingPrivateKey(
+      { keys: { signingPrivateKey: 'corrupt' } },
+      'verifyStorageIntegrity',
+      { notify: false, cause: { key: 'signing' } }
+    );
+    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'signing', corruptFallbackKey: true });
+  });
+
+  it('dedupes per key kind: a logged signing-key loss does not silence a later RSA-key loss', async () => {
+    await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity', { notify: false, cause: { key: 'signing' } });
+    await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity', { notify: false, cause: { key: 'signing' } });
+    await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
+
+    expect(storeLog).toHaveBeenCalledTimes(2);
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    const flags = await loadFromLocalStorage(['privateKeyMissingReported', 'signingKeyMissingReported']);
+    expect(flags.privateKeyMissingReported).toBe(true);
+    expect(flags.signingKeyMissingReported).toBe(true);
+
+    await clearMissingPrivateKeyReport();
+    const after = await loadFromLocalStorage(['privateKeyMissingReported', 'signingKeyMissingReported']);
+    expect(after.privateKeyMissingReported).toBeUndefined();
+    expect(after.signingKeyMissingReported).toBeUndefined();
+  });
+
   it('clearMissingPrivateKeyReport re-arms reporting for a future incident', async () => {
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
     await clearMissingPrivateKeyReport();

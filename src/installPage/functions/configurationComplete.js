@@ -27,6 +27,8 @@ import S from '@/selectors.js';
 const configurationComplete = () => {
   document.querySelector(S.installPage.newDevice).classList.add('hidden');
   document.querySelector(S.installPage.configured).classList.remove('hidden');
+  // The "data was lost, pair again" banner (self-heal) is done once pairing succeeded.
+  document.querySelector(S.installPage.recoveredInfo)?.classList.add('hidden');
 
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0);

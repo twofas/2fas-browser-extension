@@ -19,7 +19,6 @@
 
 import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
-import storeLog from '@partials/storeLog.js';
 import checkTabCS from '@background/functions/checkTabCS.js';
 
 /**
@@ -34,7 +33,10 @@ const updateIncognitoAccess = async () => {
   try {
     storage = await loadFromLocalStorage(['incognito']);
   } catch (err) {
-    return storeLog('error', 26, err, 'updateIncognitoAccess');
+    // Console only: a storage.local read failure here degrades nothing the user
+    // can perceive and the team cannot act on a browser-internal error.
+    console.error('updateIncognitoAccess - storage load', err);
+    return undefined;
   }
 
   if (storage.incognito !== incognitoAllowed) {
@@ -45,7 +47,7 @@ const updateIncognitoAccess = async () => {
       })
       .then(() => browser.tabs.query({ active: true }))
       .then(tabs => tabs.map(tab => checkTabCS(tab.id)))
-      .catch(err => storeLog('error', 26, err, 'updateIncognitoAccess'));
+      .catch(err => console.error('updateIncognitoAccess', err));
   }
 };
 

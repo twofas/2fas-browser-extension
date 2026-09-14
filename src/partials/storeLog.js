@@ -17,9 +17,11 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '../localStorage/index.js';
 import config from '../config.js';
 import SDK from '../sdk/index.js';
+import isContentScriptContext from './isContentScriptContext.js';
 
 const logDebounceMap = new Map();
 const DEBOUNCE_TIME_MS = 30000;
@@ -207,10 +209,12 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   if (
     (c?.errorInfo?.message?.includes('FILE_ERROR_NO_SPACE')) ||
     (c?.errorInfo?.status === 407) ||
+    (c?.errorInfo?.backendStatus === 407) ||
     (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
     (c?.errorInfo?.message?.includes('Refused to run the JavaScript URL')) ||
     (c?.errorInfo?.message?.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) ||
     (c?.errorInfo?.statusText?.includes('Proxy Authentication Required')) ||
+    (c?.errorInfo?.backendStatusText?.includes('Proxy Authentication Required')) ||
     (c?.errorInfo?.message?.includes('Could not establish connection')) ||
     (c?.errorInfo?.message?.includes('Receiving end does not exist')) ||
     (c?.errorInfo?.message?.includes('Extension context invalidated')) ||
@@ -250,7 +254,25 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   try {
     m = sanitizeLogValue(m);
     c.errorInfo = sanitizeLogValue(c.errorInfo);
-    await new SDK().storeLog(storage.extensionID, level, m, c);
+
+    if (isContentScriptContext()) {
+      // Proxy through the background worker: it signs the request (the
+      // signing key lives in the extension-origin IndexedDB, unreachable
+      // here) and the fetch runs from the extension origin instead of the
+      // page's (no host CORS surprises). Fallback to a direct — unsigned —
+      // call only when messaging itself fails.
+      try {
+        const response = await browser.runtime.sendMessage({ action: 'storeLogEvent', level, message: m, context: c });
+
+        if (response?.status !== 'ok') {
+          throw new Error(`storeLogEvent proxy failed: ${response?.status || 'no response'}`);
+        }
+      } catch (proxyErr) {
+        await new SDK().storeLog(storage.extensionID, level, m, c);
+      }
+    } else {
+      await new SDK().storeLog(storage.extensionID, level, m, c);
+    }
   } catch (err) {
     console.error('Failed to send log:', err);
   } finally {

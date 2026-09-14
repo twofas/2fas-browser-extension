@@ -20,7 +20,6 @@
 const BrowserRegExps = {
   chrome: /chrome\.html$/,
   firefox: /firefox\.html$/,
-  opera: /opera\.html$/,
   safari: /safari\.html$/,
   edge: /edge\.html$/
 };

@@ -48,11 +48,11 @@ Before you start, you should have installed:
 3. Run command for chosen browser (f.e. `npm run chrome-dev` or `yarn chrome-dev` for Chrome browser)
 
 ### Useful scripts
-`chrome-dev`, `opera-dev`, `firefox-dev`, `edge-dev`, `safari-dev` - These scripts build extension code for development for chosen browser (without production mode, browserlist-update etc.)
+`chrome-dev`, `firefox-dev`, `edge-dev`, `safari-dev` - These scripts build extension code for development for chosen browser (without production mode, browserlist-update etc.)
 
-`chrome-prod`, `opera-prod`, `firefox-prod`, `edge-prod`, `safari-prod` - These scripts build production extension code.
+`chrome-prod`, `firefox-prod`, `edge-prod`, `safari-prod` - These scripts build production extension code.
 
-`chrome-build`, `opera-build`, `firefox-build`, `edge-build` - These scripts build production extension code and creates zip files for it. There is no script for Safari, because Safari version is created by xCode.
+`chrome-build`, `firefox-build`, `edge-build` - These scripts build production extension code and creates zip files for it. There is no script for Safari, because Safari version is created by xCode.
 
 `all-build` - Script that performs build for all browsers (except Safari).
 
