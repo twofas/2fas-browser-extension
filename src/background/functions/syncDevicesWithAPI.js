@@ -22,6 +22,7 @@ import storeLog from '@partials/storeLog.js';
 import createAsyncThrottle from '@partials/createAsyncThrottle.js';
 import { mutateDevices } from '@background/functions/listStore.js';
 import reconcileDevices from '@background/functions/reconcileDevices.js';
+import isTransportError from '@partials/isTransportError.js';
 
 // Collapse bursts of sync requests (rapid action triggers, duplicate WebSocket
 // responses, concurrent callers) into a single backend request. Without this a
@@ -89,7 +90,17 @@ const fetchAndReconcileDevices = async storage => {
 
     return result;
   } catch (err) {
-    await storeLog('error', 39, err, 'syncDevicesWithAPI');
+    // Offline is short-circuited above, but a captive portal, VPN, DNS failure or
+    // a 2FAS outage still lands here — environment, not a defect. `result.apiError`
+    // already drives the "devices unavailable" UI. Anything else (a shape/logic
+    // error from reconcileDevices) is ours and still reported.
+    if (!isTransportError(err)) {
+      // 72, not 39: the catalogue documents 39 as a retired content-script code, so
+      // every device-sync failure landed in a bucket nobody was watching.
+      await storeLog('error', 72, err, 'syncDevicesWithAPI');
+    } else {
+      console.error('syncDevicesWithAPI', err);
+    }
     result.apiError = true;
     return result;
   }

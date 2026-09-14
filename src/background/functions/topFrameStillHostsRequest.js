@@ -27,10 +27,12 @@ import getOrigin from '@partials/getOrigin.js';
  * before the copy-to-clipboard fallback (Z1). Confirms the request has not been
  * superseded (requestID) and that the top frame STILL hosts the origin that
  * initiated the request (frameIds/tabs are reused across navigations, so a page
- * that navigated to a different site must not receive the token). A legacy record
- * with no comparable origin is allowed as long as the top frame is an ordinary
- * http/https page, preserving prior behavior without ever surfacing the token on
- * an extension or browser page.
+ * that navigated to a different site must not receive the token). A record with
+ * no comparable request origin is NOT trusted: every request stores its origin
+ * before the push, so a missing origin means the record was wiped mid-flight
+ * (onTabUpdated's cross-origin invalidation racing an in-flight 2fa_response) —
+ * the old allowance for any http(s) page here could surface the token on the
+ * origin the user navigated TO.
  *
  * Returns a verdict rather than a bare boolean so the caller can tell the benign
  * causes apart (a post-login redirect vs. an approved-but-outdated request vs. a
@@ -39,12 +41,15 @@ import getOrigin from '@partials/getOrigin.js';
  * @async
  * @param {number} tabID - The tab to check.
  * @param {string} tokenRequestId - The request id this token belongs to.
- * @returns {Promise<{safe: boolean, reason?: ('superseded'|'originChanged'|'lookupFailed'), error?: Error}>}
+ * @returns {Promise<{safe: boolean, reason?: ('superseded'|'originChanged'|'lookupFailed'), stage?: ('sessionRead'|'frameLookup'), error?: Error}>}
  *   `{safe: true}` when the top frame may receive the token; otherwise `safe: false` with
  *   `reason` — 'superseded' (a newer request took over the tab), 'originChanged' (the top
- *   frame no longer hosts the request origin) or 'lookupFailed' (with the real `error`).
+ *   frame no longer hosts the request origin) or 'lookupFailed' (with the real `error`
+ *   and the `stage` that failed: the session-storage read or the webNavigation lookup).
  */
 const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
+  let stage = 'sessionRead';
+
   try {
     const sessionData = await loadFromSessionStorage([`tabData-${tabID}`]);
     const tabData = sessionData?.[`tabData-${tabID}`];
@@ -55,20 +60,16 @@ const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
     }
 
     const requestOrigin = tabData?.origin;
-    const frame = await browser.webNavigation.getFrame({ tabId: tabID, frameId: 0 });
-    const currentOrigin = getOrigin(frame?.url);
 
+    // No comparable request origin = record wiped mid-flight (see the function
+    // doc) — the page moved on; withhold without even looking the frame up.
     if (!isUsableOrigin(requestOrigin)) {
-      // Legacy/wiped session record — no request origin to compare against.
-      // Keep the legacy allowance, but only for an ordinary web page: requests
-      // start exclusively on http/https, so an extension/browser page in the
-      // top frame can never be the page that initiated this request.
-      if (typeof frame?.url === 'string' && /^https?:/i.test(frame.url)) {
-        return { safe: true };
-      }
-
       return { safe: false, reason: 'originChanged' };
     }
+
+    stage = 'frameLookup';
+    const frame = await browser.webNavigation.getFrame({ tabId: tabID, frameId: 0 });
+    const currentOrigin = getOrigin(frame?.url);
 
     if (isUsableOrigin(currentOrigin) && currentOrigin === requestOrigin) {
       return { safe: true };
@@ -79,7 +80,7 @@ const topFrameStillHostsRequest = async (tabID, tokenRequestId) => {
     // on" situation as a committed cross-origin navigation.
     return { safe: false, reason: 'originChanged' };
   } catch (err) {
-    return { safe: false, reason: 'lookupFailed', error: err };
+    return { safe: false, reason: 'lookupFailed', stage, error: err };
   }
 };
 

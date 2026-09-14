@@ -60,33 +60,37 @@ describe('topFrameStillHostsRequest', () => {
     expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'superseded' });
   });
 
-  it('is safe (legacy) when no comparable request origin is recorded and the top frame is an http(s) page', async () => {
+  it('withholds (originChanged) when the record was wiped mid-flight — no comparable request origin', async () => {
     await setTabData({ requestID: REQ });
-    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://site.test/login' });
+    const spy = vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://site.test/login' });
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: true });
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'originChanged' });
+    // Withheld before the frame lookup — an http(s) top frame must not re-enable
+    // the old unverified allowance.
+    expect(spy).not.toHaveBeenCalled();
   });
 
-  it('blocks the legacy allowance when the top frame is not an ordinary web page', async () => {
-    await setTabData({ requestID: REQ });
-    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'chrome-extension://abc/optionsPage.html' });
+  it('withholds (originChanged) for a fully wiped record even on an ordinary web page', async () => {
+    await setTabData({});
+    vi.spyOn(browser.webNavigation, 'getFrame').mockResolvedValue({ url: 'https://site.test/login' });
 
     expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'originChanged' });
   });
 
-  it('reports lookupFailed when the frame lookup throws on a legacy record', async () => {
-    await setTabData({ requestID: REQ });
-    const boom = new Error('no frame');
-    vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
-
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'lookupFailed', error: boom });
-  });
-
-  it('reports lookupFailed with the real error when the frame lookup throws', async () => {
+  it('reports lookupFailed with the real error and the frameLookup stage when the frame lookup throws', async () => {
     await setTabData({ origin: 'https://site.test', requestID: REQ });
     const boom = new Error('no frame');
     vi.spyOn(browser.webNavigation, 'getFrame').mockRejectedValue(boom);
 
-    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'lookupFailed', error: boom });
+    expect(await topFrameStillHostsRequest(TAB, REQ)).toEqual({ safe: false, reason: 'lookupFailed', stage: 'frameLookup', error: boom });
+  });
+
+  it('reports lookupFailed with the sessionRead stage when the session storage read throws', async () => {
+    vi.spyOn(browser.storage.session, 'get').mockRejectedValue(new Error('session storage read failed'));
+
+    // loadFromSessionStorage wraps the raw error, so assert shape rather than identity.
+    const verdict = await topFrameStillHostsRequest(TAB, REQ);
+    expect(verdict).toMatchObject({ safe: false, reason: 'lookupFailed', stage: 'sessionRead' });
+    expect(verdict.error).toBeInstanceOf(Error);
   });
 });

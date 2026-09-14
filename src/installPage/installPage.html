@@ -34,7 +34,8 @@
   <div class="twofas-install-page-integrity-error js-twofas-integrity-error">
     <h1 data-i18n="errorStorageIntegrityTitle">Browser Extension data error</h1>
     <p>:(</p>
-    <h2 data-i18n="errorStorageIntegrityMessage">Please reinstall browser extension or contact with 2FAS Support on Discord</h2>
+    <h2 data-i18n="errorStorageIntegrityMessage">Please reset or reinstall the browser extension and pair it with your device again, or contact 2FAS Community Support on Discord</h2>
+    <button data-i18n="optionsSafariReset" class="btn btn-theme js-twofas-integrity-reset">Reset Browser Extension</button>
   </div>
 
   <div class="twofas-install-page">
@@ -46,6 +47,11 @@
     </div>
 
     <div class="twofas-install-page-container">
+      <div class="twofas-install-page-recovered js-twofas-recovered-info hidden">
+        <h2 data-i18n="installRecoveredTitle">Browser Extension data lost</h2>
+        <p data-i18n="installRecoveredMessage">The extension's encryption key was lost, so the extension has been reset and your previous pairing no longer works. Please pair it with your device again — you can then remove the old browser extension entry in the 2FAS app.</p>
+      </div>
+
       <div class="twofas-install-page-new-device hidden">
         <div class="twofas-install-page-container-header">
           <h1 data-i18n="installH1">To start, you need to pair this extension with the 2FAS Auth mobile application.</h1>

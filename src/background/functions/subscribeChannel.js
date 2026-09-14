@@ -226,7 +226,10 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       }
 
       case 'browser_extensions.pairing.failure': {
-        await storeLog('error', 12, messageData, 'browser_extensions.pairing.failure');
+        // Info: the backend rejected a pairing the user started (expired QR,
+        // declined on the phone). Nothing for the team to fix; kept because the
+        // ratio of failures to successes is a real product signal.
+        await storeLog('info', 12, messageData, 'browser_extensions.pairing.failure');
         TwoFasNotification.show(config.Texts.Error.WebSocket, tabID);
         closeWSChannel(channel);
         cleanupListeners();
@@ -305,8 +308,13 @@ const subscribeChannel = (storage, tabID, options = {}) => {
 
     // onerror always precedes onclose, so reconnect is driven from onclose only
     // (a single entry point) to avoid double-scheduling; here we just log.
-    channel.ws.onerror = async err => {
-      await storeLog('error', 11, err, 'WebSocket channel error');
+    channel.ws.onerror = err => {
+      // Console only. A WebSocket error Event carries no diagnostics by spec (no
+      // type/code/reason worth sending), and every cause is outside the extension:
+      // flaky Wi-Fi, captive portal, corporate proxy, offline. Reconnect is driven
+      // from onclose, so the entry changed nothing but the noise floor. The
+      // constructor-threw case above still logs 11 — that one IS ours (bad URL/CSP).
+      console.error('subscribeChannel - WebSocket channel error', err);
     };
 
     channel.ws.onclose = () => {

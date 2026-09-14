@@ -17,7 +17,6 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import storeLog from '@partials/storeLog.js';
 import { updateBrowserExtension, updateIncognitoAccess, verifyStorageIntegrity } from '@background/functions/update/index.js';
 
 /**
@@ -36,7 +35,10 @@ const updateBrowserInfo = browserInfo => {
       return updateBrowserExtension(browserInfo);
     })
     .then(updateIncognitoAccess)
-    .catch(err => storeLog('error', 6, err, 'updateBrowserInfo'));
+    // Console only: every step of this chain logs its own failures
+    // (verifyStorageIntegrity 29, updateBrowserExtension 48, updateIncognitoAccess),
+    // so bucket 6 only ever duplicated one of them with less context.
+    .catch(err => console.error('updateBrowserInfo', err));
 };
 
 export default updateBrowserInfo;

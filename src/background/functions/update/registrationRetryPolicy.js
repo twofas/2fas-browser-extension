@@ -57,7 +57,9 @@ const JITTER_RATIO = 0.2;
  * @param {{status?: number}|null|undefined} err - The normalized error.
  * @returns {'network'|'server'|'notFound'|'client'}
  *   - network : connection/DNS/TLS/abort failure (transient, retry)
- *   - server  : 5xx / 408 / 425 / 429 (transient, retry)
+ *   - server  : 5xx / 407 / 408 / 425 / 429 (transient, retry) — 407 is a proxy
+ *               between the user and the API demanding auth the background fetch
+ *               cannot supply; it clears once the user signs in through a tab
  *   - notFound: 404 (record gone server-side — re-register, do not blindly retry)
  *   - client  : other deterministic 4xx (do not retry)
  */
@@ -72,11 +74,36 @@ export const classifyError = err => {
     return 'notFound';
   }
 
-  if (status === 408 || status === 425 || status === 429 || status >= 500) {
+  if (status === 407 || status === 408 || status === 425 || status === 429 || status >= 500) {
     return 'server';
   }
 
   return 'client';
+};
+
+/**
+ * Detects the backend's signing-key conflict rejection: a 400 on PUT whose
+ * body carries ErrBrowserExtensionAlreadyHasSigningKey ("browser extension
+ * already has public signing key ..."). It means the server holds a DIFFERENT
+ * public signing key for this extensionID — key replacement is not supported,
+ * so retrying with the same payload is futile; the caller flips the conflict
+ * state and re-sends without the key.
+ *
+ * @param {{status?: number, content?: *}|null|undefined} err - Normalized SDK error.
+ * @returns {boolean}
+ */
+export const isSigningKeyConflictError = err => {
+  if (!err || err.status !== 400) {
+    return false;
+  }
+
+  try {
+    const content = typeof err.content === 'string' ? err.content : JSON.stringify(err.content ?? '');
+
+    return content.toLowerCase().includes('already has public signing key');
+  } catch (e) {
+    return false;
+  }
 };
 
 /**

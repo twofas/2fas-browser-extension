@@ -34,10 +34,13 @@ import frameHostsUrl from '@background/functions/frameHostsUrl.js';
  *     against its recorded origin;
  *   - with no recorded frame (focus-less request) the top frame is checked against
  *     the request's own origin.
- * When the recorded origin is unknown (legacy session records) we fall back to the
- * top frame unverified, preserving prior behavior. When a frame's origin no longer
- * matches, NO frame is returned (`null`) — the page navigated away, so the token is
- * not delivered anywhere rather than leaking to a different origin.
+ * A record with no verifiable identity (no request origin, or a recorded frame with
+ * neither origin nor URL) is NOT delivered to: every request stores these before the
+ * push, so their absence means the record was wiped mid-flight (onTabUpdated's
+ * cross-origin invalidation racing an in-flight 2fa_response) — delivering unverified
+ * could hand the token to the origin the user navigated to. When a frame's origin no
+ * longer matches, NO frame is returned (`null`) — the page navigated away, so the
+ * token is not delivered anywhere rather than leaking to a different origin.
  *
  * @async
  * @param {number} tabID - The tab the token belongs to.
@@ -63,10 +66,13 @@ const resolveTokenTargetFrame = async tabID => {
 
   // No specific frame recorded (focus-less request): deliver to the top frame, but
   // only while it still hosts the origin that initiated the request. With no known
-  // request origin (legacy record) fall back to the top frame unverified.
+  // request origin the record was wiped mid-flight (see the function doc): withhold.
   if (typeof storedFrameId !== 'number') {
     if (!isUsableOrigin(requestOrigin)) {
-      return 0;
+      await storeLog('info', 51, new Error('Token request record missing at delivery; token withheld', {
+        cause: { hadRecordedFrame: false }
+      }), 'resolveTokenTargetFrame');
+      return null;
     }
 
     return (await frameHostsOrigin(tabID, 0, requestOrigin)) ? 0 : null;
@@ -76,14 +82,18 @@ const resolveTokenTargetFrame = async tabID => {
   // data:, sandbox without allow-same-origin) — origins are all "null" and not
   // comparable. Re-verify by exact URL instead and deliver to the recorded frame:
   // this restores autofill into opaque sub-frames (3DS / IdP / CMP widgets) that
-  // the origin-only check used to misroute to the top frame (Z7). A legacy record
-  // with no stored URL keeps the prior behavior (top frame unverified).
+  // the origin-only check used to misroute to the top frame (Z7). A record with
+  // neither origin nor URL has no verifiable identity (handleFrontElement always
+  // stores both) — withhold rather than deliver to the top frame unverified.
   if (!isUsableOrigin(storedOrigin)) {
     if (typeof storedUrl === 'string' && storedUrl.length > 0) {
       return (await frameHostsUrl(tabID, storedFrameId, storedUrl)) ? storedFrameId : null;
     }
 
-    return 0;
+    await storeLog('info', 51, new Error('Token request record missing at delivery; token withheld', {
+      cause: { hadRecordedFrame: true }
+    }), 'resolveTokenTargetFrame');
+    return null;
   }
 
   // Confirm the recorded frame still hosts the same origin before sending the

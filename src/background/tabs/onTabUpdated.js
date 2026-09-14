@@ -20,7 +20,6 @@
 import browser from 'webextension-polyfill';
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
-import storeLog from '@partials/storeLog.js';
 import SDK from '@sdk/index.js';
 import checkTabCS from '@background/functions/checkTabCS.js';
 import shouldInvalidateTabRequest from '@background/functions/shouldInvalidateTabRequest.js';
@@ -56,7 +55,9 @@ const onTabUpdated = async (tabID, changeInfo, tab) => {
     // `sessionData` is always null here (the load above threw), so the tab's
     // stored URL is unreachable. Fall back to the navigation URL from the event
     // itself, which is the only URL context available at this point.
-    await storeLog('error', 3, err, changeInfo?.url || tab?.url);
+    // Console only — same reasoning as onTabRemoved: transient storage failures
+    // during tab churn are environment, not a defect we can act on.
+    console.error('onTabUpdated - storage load', err);
     storage = null;
     sessionData = null;
     return false;
@@ -74,14 +75,14 @@ const onTabUpdated = async (tabID, changeInfo, tab) => {
     try {
       await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, tabData?.origin);
+      console.error('onTabUpdated - session write', err);
     }
   } else if (tabData && !tabData?.requestID) {
     // No request in flight: reset any stale tab data on a real page load.
     try {
       await saveToSessionStorage({ [`tabData-${tabID}`]: {} });
     } catch (err) {
-      await storeLog('error', 3, err, tabData?.origin);
+      console.error('onTabUpdated - session write', err);
     }
   }
 

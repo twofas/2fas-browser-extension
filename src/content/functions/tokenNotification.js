@@ -21,7 +21,6 @@ import config from '@/config.js';
 import isInFrame from '@content/functions/isInFrame.js';
 import copyToClipboard from '@content/functions/copyToClipboard.js';
 import mountTopLayer from '@content/functions/mountTopLayer.js';
-import storeLog from '@partials/storeLog.js';
 import { createElement, createSVGElement, createTextElement } from '@partials/DOMElements';
 import iconSrc from '@images/notification-logo.svg';
 import copySrc from '@images/copy-icon.svg';
@@ -129,7 +128,9 @@ const tokenNotification = (token, tokenRequestId) => {
     const copied = await copyToClipboard(token, n?.container);
 
     if (!copied) {
-      await storeLog('warning', 59, new Error('Clipboard copy failed'), 'tokenNotification');
+      // Console only: no secure context, or the user/site denied clipboard
+      // access. The token stays on screen to copy by hand; nothing to fix here.
+      console.warn('tokenNotification - clipboard copy failed');
       return;
     }
 

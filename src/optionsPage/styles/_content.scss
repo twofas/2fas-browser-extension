@@ -644,13 +644,42 @@
       }
     }
 
+    // Animated by grid track size, not by a max-height cap. A cap has to be guessed,
+    // and both ways of guessing are wrong: 600px silently CLIPPED the Danger Zone
+    // block added in 1.9.0 (measured content is 648px at 400px of width, 820px at
+    // 320px, and a longer translation overflows even a wide window), hiding the one
+    // recovery this section offers; raising it to 1600px stopped the clipping but
+    // spent most of the 350ms travelling through empty space, so a collapse looked
+    // like it hesitated before anything moved.
+    //
+    // `0fr -> 1fr` interpolates to whatever the content actually measures, so it can
+    // neither clip nor stall, and it needs no JS measurement. It does need a single
+    // grid item to size — hence the `-inner` wrapper in the three option views; put
+    // several children straight in the container and rows 2..n land in implicit
+    // tracks that `0fr` never collapses. Interpolating grid tracks ships in Chrome /
+    // Edge 107, Firefox 66 and Safari 16.0 — under every floor the manifests declare
+    // (Safari 16.4, Firefox 131) — and an engine that cannot interpolate them still
+    // opens and closes the section correctly, just without the tween.
+    //
+    // Two things to keep out of here: `auto` instead of `0fr` (it snaps at the
+    // midpoint rather than tweening) and a margin on `-inner` (margins sit outside
+    // the clipped border box and leak through the collapse — spacing belongs on the
+    // container or on the wrapper's children).
     &-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height .35s ease-in-out;
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .35s ease-in-out;
 
       &.visible {
-        max-height: 600px;
+        grid-template-rows: 1fr;
+      }
+
+      // A grid item's automatic minimum size is its content, which would keep the
+      // row from ever reaching zero; the overflow lives here because the item, not
+      // the container, is what gets clipped while the track collapses.
+      &-inner {
+        min-height: 0;
+        overflow: hidden;
       }
     }
   }

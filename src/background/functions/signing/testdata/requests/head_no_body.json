@@ -1,0 +1,15 @@
+{
+  "Name": "head_no_body",
+  "Method": "HEAD",
+  "Path": "/api/browser-extensions/example",
+  "RawQuery": "",
+  "Body": "",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLWhlYWQtcGFkISE=",
+    "X-2fas-Signature": "MEYCIQCnEpiv0_TM3OaRs5NtxrAy-cxZqEjfnShIYyf5c87DHAIhANPbJqiDSnNoC8eihHfCukmMPAbExHAHh9_q6ok2tbi5",
+    "X-2fas-Body-Sha256": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="
+  }
+}
+

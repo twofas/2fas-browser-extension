@@ -63,4 +63,3 @@ export { default as setPushRadio } from './setPushRadio.js';
 export { default as setShortcutBox } from './setShortcutBox.js';
 export { default as showDomainModal } from './showDomainModal.js';
 export { default as showConfirmModal } from './showConfirmModal.js';
-export { default as showIntegrityError } from './showIntegrityError.js';

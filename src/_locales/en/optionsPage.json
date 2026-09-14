@@ -131,14 +131,6 @@
     "message": "Find 2FAS icon on the list, drag it to the toolbar",
     "description": ""
   },
-  "optionsPinOperaStep2Header": {
-    "message": "Find added Extension on the list and click “Details”.",
-    "description": ""
-  },
-  "optionsPinOperaStep2SubHeader": {
-    "message": "Then turn on “Allow on site with finding results”.",
-    "description": ""
-  },
   "optionsPinSafariToolbarCustomization": {
     "message": "Toolbar customization",
     "description": ""

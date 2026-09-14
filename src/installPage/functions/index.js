@@ -22,4 +22,4 @@ export { default as generateQRCode } from './generateQRCode.js';
 export { default as installContainerHandlers } from './installContainerHandlers.js';
 export { default as qrTimeout } from './qrTimeout.js';
 export { default as setQRCode } from './setQRCode.js';
-export { default as showIntegrityError } from './showIntegrityError.js';
+export { default as showRecoveredInfo } from './showRecoveredInfo.js';

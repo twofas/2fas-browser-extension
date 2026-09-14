@@ -1,0 +1,15 @@
+{
+  "Name": "put_with_body",
+  "Method": "PUT",
+  "Path": "/api/browser-extensions/abc-123/refresh",
+  "RawQuery": "",
+  "Body": "{\"refresh\":true}",
+  "Headers": {
+    "X-2fas-Signature-Version": "1",
+    "X-2fas-Signature-Timestamp": "2026-01-01T12:00:00Z",
+    "X-2fas-Signature-Nonce": "Z29sZGVuLW5vbmNlLXB1dC1wYWQhIQ==",
+    "X-2fas-Signature": "MEUCIQDhMRJv0Nb_-rBKFUcCYOKnHbAhRo8VEPPxx16zqVrkugIgUuIVYPcHibdSrXDnaWRljmgcCCEZ7F0EaAUHgj3GH68=",
+    "X-2fas-Body-Sha256": "YgzuN-A6-8WLs-hp3uUWbTEo0R8mHGqG2Se_3waY0bQ="
+  }
+}
+

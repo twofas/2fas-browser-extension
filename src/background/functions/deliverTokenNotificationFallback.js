@@ -40,8 +40,8 @@ import topFrameStillHostsRequest from '@background/functions/topFrameStillHostsR
  *   - superseded: the user approved an outdated push (a newer request took over the
  *     tab) — logged as info (61) and the user is told via TwoFasNotification, which
  *     honors the native/front-end notification setting; the token itself is dropped;
- *   - lookupFailed: the safety check itself failed — logged as warning (62) with the
- *     real underlying error.
+ *   - lookupFailed: the safety check itself failed — logged as warning (62), constant
+ *     message carrying the failed stage, real underlying error in the `cause`.
  *
  * If the front-end notification cannot render (no content script — bfcache-restored,
  * orphaned or blocked page) the token is dropped, NOT pushed to a native OS
@@ -69,7 +69,11 @@ const deliverTokenNotificationFallback = async (tabID, token, tokenRequestId) =>
       // script must not escalate this benign case into an error.
       await TwoFasNotification.show(config.Texts.Error.OldRequest, tabID).catch(() => {});
     } else if (verdict.reason === 'lookupFailed') {
-      await storeLog('warning', 62, verdict.error, 'handleLoginRequest');
+      // Constant message with the raw error in `cause` — the raw text must stay
+      // out of the message so storeLog's global filters (e.g. Safari's dead-tab
+      // "… Tab not found.") can't swallow the entry; the stage separates
+      // session-storage failures from webNavigation.getFrame rejections.
+      await storeLog('warning', 62, new Error(`Top-frame safety lookup failed (${verdict.stage || 'frameLookup'}); token withheld`, { cause: verdict.error }), 'handleLoginRequest');
     }
 
     // originChanged: the page navigated after a (nearly always successful) login —

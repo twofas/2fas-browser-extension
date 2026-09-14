@@ -22,6 +22,7 @@ import browser from 'webextension-polyfill';
 import storeLog from '@partials/storeLog.js';
 import showConfirmModal from '@optionsPage/functions/showConfirmModal.js';
 import TwoFasNotification from '@notification';
+import isTransportError from '@partials/isTransportError.js';
 
 /**
  * Handles the domain removal process from excluded list with confirmation modal.
@@ -57,7 +58,9 @@ const removeDomain = function (e) {
           return TwoFasNotification.show(config.Texts.Success.DomainExcludedRemoved);
         })
         .catch(async err => {
-          await storeLog('error', 52, err, 'removeDomain');
+          if (!isTransportError(err)) {
+            await storeLog('error', 52, err, 'removeDomain');
+          }
           return TwoFasNotification.show(config.Texts.Error.UndefinedError, null, true);
         });
     }
