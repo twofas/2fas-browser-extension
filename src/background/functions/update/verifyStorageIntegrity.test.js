@@ -40,12 +40,19 @@ import Crypt from '@background/functions/Crypt.js';
 
 const GEN_PARAMS = { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-512' } };
 
+// The self-heal unpairs the dead identity on the backend before the wipe (a
+// real SDK DELETE): every test here answers it, and the heal tests assert it.
+let fetchMock;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+  vi.stubGlobal('fetch', fetchMock);
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('verifyStorageIntegrity', () => {
@@ -219,6 +226,11 @@ describe('verifyStorageIntegrity — Safari self-heal (issue #142)', () => {
     expect(await verifyStorageIntegrity({ name: 'Safari' })).toBe(true);
 
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+    // The dead identity's pairings are removed on the backend before the wipe.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/browser_extensions\/id\/devices$/);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'DELETE' });
+    expect(fetchMock.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
     // Background trigger: the page opens, but must not yank the window forward.
     expect(openInstallPage).toHaveBeenCalledWith('recovered', { focusWindow: false });
     // 57 (self-heal marker) + 69, both before the wipe; the deduped re-pair
@@ -279,6 +291,19 @@ describe('verifyStorageIntegrity — Safari self-heal (issue #142)', () => {
     expect(openInstallPage).not.toHaveBeenCalled();
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
     expect(after.extensionID).toBe('id');
+  });
+
+  it('a refused unpair (offline) never stops the heal — it is best effort', async () => {
+    await registeredKeyless();
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    generateDefaultStorage.mockImplementationOnce(regenerateValid);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(await verifyStorageIntegrity({ name: 'Safari' })).toBe(true);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+    expect((await loadFromLocalStorage(['extensionID'])).extensionID).toBe('id-new');
   });
 
   it('does not regenerate a healthy Safari install', async () => {

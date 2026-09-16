@@ -43,5 +43,30 @@ module.exports = [
       'no-trailing-spaces': ['error', { skipBlankLines: true }],
       'no-irregular-whitespace': 'off'
     }
+  },
+  {
+    // Key-adjacent modules print through @partials/safeConsole.js, which redacts
+    // key material from every argument. A raw console call there could echo a
+    // key carried by a backend Reason, a request body or an error object.
+    files: [
+      'src/background/functions/signing/**/*.js',
+      'src/background/functions/update/**/*.js',
+      'src/sdk/**/*.js',
+      'src/partials/storeLog.js',
+      'src/background/functions/subscribeChannel.js',
+      'src/background/functions/selfHealMissingPrivateKey.js',
+      'src/background/functions/syncDevicesWithAPI.js',
+      'src/background/functions/keyStore.js',
+      'src/background/functions/cryptoKeyStore.js',
+      'src/background/functions/privateKeyStore.js',
+      'src/background/functions/generateDefaultStorage.js',
+      // The storeLogEvent proxy: its failure path prints the SDK rejection,
+      // whose body can echo what the request carried.
+      'src/background/events/onMessage.js'
+    ],
+    ignores: ['**/*.test.js'],
+    rules: {
+      'no-console': 'error'
+    }
   }
 ];

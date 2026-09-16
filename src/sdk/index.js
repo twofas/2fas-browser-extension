@@ -82,7 +82,7 @@ class SDK {
       // checks the timestamp before the signature) — counting it would turn a
       // wrong machine clock into a "re-pair required" prompt.
       if (res?.status !== 401 || !isClockSkewRejection(signedTimestamp, serverDate)) {
-        noteSigningAuthResult(res?.status).catch(() => {});
+        noteSigningAuthResult(res?.status, { signed: Boolean(signedTimestamp) }).catch(() => {});
       }
     } catch (e) {}
 
@@ -246,8 +246,11 @@ class SDK {
 
       try {
         return JSON.parse(text);
-      } catch (e) {
-        return Promise.reject(new SyntaxError(`Invalid JSON response: ${e.message}`));
+      } catch {
+        // Never embed the parser's message: V8 quotes the start of the body, which
+        // can be key material echoed by the backend. Length and a markup flag (a
+        // proxy or captive-portal HTML page) are enough to tell the cases apart.
+        return Promise.reject(new SyntaxError(`Invalid JSON response (length ${text.length}, markup ${/^\s*</.test(text)})`));
       }
     });
   }

@@ -20,6 +20,7 @@
 import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import checkTabCS from '@background/functions/checkTabCS.js';
+import safeConsole from '@partials/safeConsole.js';
 
 /**
  * Updates the stored incognito access status and refreshes content scripts if changed.
@@ -35,7 +36,7 @@ const updateIncognitoAccess = async () => {
   } catch (err) {
     // Console only: a storage.local read failure here degrades nothing the user
     // can perceive and the team cannot act on a browser-internal error.
-    console.error('updateIncognitoAccess - storage load', err);
+    safeConsole.error('updateIncognitoAccess - storage load', err);
     return undefined;
   }
 
@@ -47,7 +48,7 @@ const updateIncognitoAccess = async () => {
       })
       .then(() => browser.tabs.query({ active: true }))
       .then(tabs => tabs.map(tab => checkTabCS(tab.id)))
-      .catch(err => console.error('updateIncognitoAccess', err));
+      .catch(err => safeConsole.error('updateIncognitoAccess', err));
   }
 };
 

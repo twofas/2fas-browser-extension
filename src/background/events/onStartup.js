@@ -20,6 +20,7 @@
 import { initContextMenu } from '@background/contextMenu/index.js';
 import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
 import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
+import remindSigningRepair from '@background/functions/signing/remindSigningRepair.js';
 import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import storeLog from '@partials/storeLog.js';
@@ -72,6 +73,11 @@ const onStartup = async () => {
   } catch (err) {
     console.error('onStartup - ensureSigningKeyRegistration', err);
   }
+
+  // v1.9.1: an install whose signing identity cannot be repaired in place is
+  // reminded (once per version) to Reset and pair again — before the backend
+  // starts rejecting unsigned requests.
+  await remindSigningRepair();
 
   flushBrowserRegistration();
 };

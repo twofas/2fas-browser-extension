@@ -86,11 +86,13 @@ const init = async storage => {
     }, 5300);
   }
 
-  // v1.9.0: backend rejects this extension's requests — pairing cannot
-  // proceed; only a reinstall/re-pair (fresh registration) can recover.
-  if (storage?.signing?.registrationRequired) {
+  // v1.9.x: the backend rejects this extension's requests for good
+  // (registrationRequired), or holds a signing key this install does not have
+  // (conflict). Pairing cannot proceed on this identity; only a Reset (fresh
+  // registration, pair again) recovers — the overlay with its Reset button.
+  if (storage?.signing?.registrationRequired || storage?.signing?.conflict) {
     hidePreloader(true);
-    showIntegrityError();
+    showIntegrityError(storage.signing.conflict ? config.Texts.Error.SigningKeyConflict : config.Texts.Error.SigningRequired);
     return false;
   }
 

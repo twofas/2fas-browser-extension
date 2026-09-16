@@ -19,7 +19,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import browser from 'webextension-polyfill';
-import { getClockOffsetMs, noteServerDate, isClockSkewRejection } from './clockOffset.js';
+import { getClockOffsetMs, noteServerDate, isClockSkewRejection, CLOCK_OBSERVED_KEY } from './clockOffset.js';
+import { loadFromSessionStorage } from '@sessionStorage/index.js';
 
 // The production incident (2026-09-14): the machine clock ran 13m23s behind the
 // server, so the signature timestamp fell outside the backend's ±5 min window.
@@ -113,5 +114,114 @@ describe('isClockSkewRejection', () => {
     expect(isClockSkewRejection(undefined, SERVER_DATE)).toBe(false);
     expect(isClockSkewRejection('2026-09-14T14:10:13Z', null)).toBe(false);
     expect(isClockSkewRejection('2026-09-14T14:10:13Z', 'garbage')).toBe(false);
+  });
+});
+
+describe('server clock priming (GET /health before the first signature of a session)', () => {
+  const HEALTH_URL = 'https://api.example.test/health';
+  let fetchMock;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('with no server date seen this session, asks /health once and applies its Date', async () => {
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200, headers: { Date: SERVER_DATE } }));
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(803000);
+    expect(await getClockOffsetMs({ prime: true })).toBe(803000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toBe(HEALTH_URL);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'GET' });
+    expect(typeof (await loadFromSessionStorage(CLOCK_OBSERVED_KEY))[CLOCK_OBSERVED_KEY]).toBe('number');
+  });
+
+  it('never asks once any response of the session carried a Date', async () => {
+    await noteServerDate('Mon, 14 Sep 2026 14:10:14 GMT');
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('without priming it never touches the network', async () => {
+    expect(await getClockOffsetMs()).toBe(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('an unreachable /health leaves the raw clock and is not retried within a minute', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(0);
+    expect(await getClockOffsetMs({ prime: true })).toBe(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    vi.setSystemTime(new Date('2026-09-14T14:11:20Z'));
+    await getClockOffsetMs({ prime: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('a /health answer without a Date header leaves the raw clock', async () => {
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(0);
+    expect((await loadFromSessionStorage(CLOCK_OBSERVED_KEY))[CLOCK_OBSERVED_KEY]).toBeUndefined();
+  });
+
+  it('a non-2xx /health still tells the time', async () => {
+    fetchMock.mockResolvedValue(new Response('', { status: 503, headers: { Date: SERVER_DATE } }));
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(803000);
+  });
+
+  it('two signatures racing at session start share one /health and both get the offset', async () => {
+    fetchMock.mockImplementation(() => new Promise(resolve => {
+      setTimeout(() => resolve(new Response('{}', { status: 200, headers: { Date: SERVER_DATE } })), 20);
+    }));
+
+    const [a, b] = await Promise.all([getClockOffsetMs({ prime: true }), getClockOffsetMs({ prime: true })]);
+
+    expect(a).toBe(803000);
+    expect(b).toBe(803000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failed storage.session read still lets one attempt through, and the offset it observed is used', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(browser.storage.session, 'get').mockRejectedValue(new Error('storage.session unavailable'));
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200, headers: { Date: SERVER_DATE } }));
+
+    expect(await getClockOffsetMs({ prime: true })).toBe(803000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('a backwards clock step (the NTP correction itself) does not suppress a later retry', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await getClockOffsetMs({ prime: true });
+    vi.setSystemTime(new Date('2026-09-14T12:10:13Z'));
+    await getClockOffsetMs({ prime: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('a hanging /health is abandoned after 5 s and the raw clock used', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    vi.setSystemTime(new Date(LOCAL_NOW));
+    fetchMock.mockImplementation((url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    }));
+
+    const pending = getClockOffsetMs({ prime: true });
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(await pending).toBe(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

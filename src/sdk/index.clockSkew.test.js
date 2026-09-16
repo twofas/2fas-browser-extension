@@ -48,6 +48,31 @@ const sentTimestamp = call => call[1].headers[HEADER_SIGNATURE_TIMESTAMP];
 // The response tap writes the signing state fire-and-forget.
 const settle = () => new Promise(resolve => setTimeout(resolve, 50));
 
+const isHealth = url => String(url).endsWith('/health');
+const unreachable = () => Promise.reject(new TypeError('Failed to fetch'));
+
+/**
+ * Scripts the fetch stub: GET /health (the session's clock priming) gets
+ * `health`, every other request pops the next response maker — the last one
+ * repeats. Call it after fetchMock exists.
+ */
+const routeFetch = ({ health = () => Promise.resolve(serverOk()), responses = [serverOk] }) => {
+  const queue = [...responses];
+
+  fetchMock.mockImplementation(url => {
+    if (isHealth(url)) {
+      return health();
+    }
+
+    const make = queue.length > 1 ? queue.shift() : queue[0];
+
+    return Promise.resolve(make());
+  });
+};
+
+/** The signed-scope requests only, in order. */
+const signedCalls = () => fetchMock.mock.calls.filter(call => !isHealth(call[0]));
+
 const activateSigning = async () => {
   const material = await generateSigningKeyMaterial();
 
@@ -75,33 +100,45 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('SDK — clock-skew 401 recovery', () => {
+describe('SDK — the first signed request of a session is pre-corrected', () => {
+  it('asks GET /health once and signs with the server clock from the start: no rejection, no re-sign', async () => {
+    await activateSigning();
+    routeFetch({ responses: [serverOk] });
+
+    await expect(new SDK().updateBrowserExtension('ext-id', { name: 'n', browser_name: 'Chrome', browser_version: '140' }))
+      .resolves.toEqual({});
+    await new SDK().removePairedDevice('ext-id', 'd1');
+
+    expect(fetchMock.mock.calls.filter(call => isHealth(call[0])).length).toBe(1);
+    expect(signedCalls().length).toBe(2);
+    expect(sentTimestamp(signedCalls()[0])).toBe(CORRECTED_TIMESTAMP);
+    expect(sentTimestamp(signedCalls()[1])).toBe(CORRECTED_TIMESTAMP);
+  });
+});
+
+describe('SDK — clock-skew 401 recovery when /health could not be reached', () => {
   it('re-signs a clock-skew 401 with the server clock and retries it once', async () => {
     await activateSigning();
-    fetchMock
-      .mockResolvedValueOnce(skewRejection())
-      .mockResolvedValueOnce(serverOk());
+    routeFetch({ health: unreachable, responses: [skewRejection, serverOk] });
 
     await expect(new SDK().updateBrowserExtension('ext-id', { name: 'n', browser_name: 'Chrome', browser_version: '140' }))
       .resolves.toEqual({});
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(sentTimestamp(fetchMock.mock.calls[0])).toBe(SKEWED_TIMESTAMP);
-    expect(sentTimestamp(fetchMock.mock.calls[1])).toBe(CORRECTED_TIMESTAMP);
+    expect(signedCalls().length).toBe(2);
+    expect(sentTimestamp(signedCalls()[0])).toBe(SKEWED_TIMESTAMP);
+    expect(sentTimestamp(signedCalls()[1])).toBe(CORRECTED_TIMESTAMP);
   });
 
   it('carries the corrected clock over to later requests in the session', async () => {
     await activateSigning();
-    fetchMock
-      .mockResolvedValueOnce(skewRejection())
-      .mockImplementation(() => Promise.resolve(serverOk()));
+    routeFetch({ health: unreachable, responses: [skewRejection, serverOk] });
 
     const sdk = new SDK();
     await sdk.updateBrowserExtension('ext-id', { name: 'n', browser_name: 'Chrome', browser_version: '140' });
     await sdk.removePairedDevice('ext-id', 'd1');
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(sentTimestamp(fetchMock.mock.calls[2])).toBe(CORRECTED_TIMESTAMP);
+    expect(signedCalls().length).toBe(3);
+    expect(sentTimestamp(signedCalls()[2])).toBe(CORRECTED_TIMESTAMP);
   });
 
   it.each([
@@ -113,28 +150,24 @@ describe('SDK — clock-skew 401 recovery', () => {
     ['storeLog', sdk => sdk.storeLog('ext-id', 'error', 'm', { logID: 1 })]
   ])('%s recovers from a clock-skew 401 the same way', async (_, call) => {
     await activateSigning();
-    fetchMock
-      .mockResolvedValueOnce(skewRejection())
-      .mockResolvedValueOnce(serverOk('[]'));
+    routeFetch({ health: unreachable, responses: [skewRejection, () => serverOk('[]')] });
 
     await call(new SDK());
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(sentTimestamp(fetchMock.mock.calls[1])).toBe(CORRECTED_TIMESTAMP);
+    expect(signedCalls().length).toBe(2);
+    expect(sentTimestamp(signedCalls()[1])).toBe(CORRECTED_TIMESTAMP);
   });
 
   it('re-signs with the server clock even when storage.session cannot keep the offset', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(browser.storage.session, 'get').mockRejectedValue(new Error('storage.session unavailable'));
     await activateSigning();
-    fetchMock
-      .mockResolvedValueOnce(skewRejection())
-      .mockResolvedValueOnce(serverOk());
+    routeFetch({ health: unreachable, responses: [skewRejection, serverOk] });
 
     await expect(new SDK().updateBrowserExtension('ext-id', { name: 'n', browser_name: 'Chrome', browser_version: '140' }))
       .resolves.toEqual({});
 
-    expect(sentTimestamp(fetchMock.mock.calls[1])).toBe(CORRECTED_TIMESTAMP);
+    expect(sentTimestamp(signedCalls()[1])).toBe(CORRECTED_TIMESTAMP);
   });
 
   it('never counts a clock-skew 401 toward registrationRequired, even when the retry is skewed too', async () => {
@@ -142,6 +175,10 @@ describe('SDK — clock-skew 401 recovery', () => {
     // the corrected retry is rejected for skew all over again.
     await activateSigning();
     fetchMock.mockImplementation((url, options) => {
+      if (isHealth(url)) {
+        return unreachable();
+      }
+
       const signedMs = Date.parse(options.headers[HEADER_SIGNATURE_TIMESTAMP]);
 
       return Promise.resolve(response(401, '', { Date: new Date(signedMs + 803000).toUTCString() }));
@@ -154,31 +191,30 @@ describe('SDK — clock-skew 401 recovery', () => {
     await settle();
 
     // Exactly one retry per call — never a loop.
-    expect(fetchMock).toHaveBeenCalledTimes(6);
+    expect(signedCalls().length).toBe(6);
     expect(await getSigningState()).toMatchObject({ auth401Count: 0, registrationRequired: false });
   });
 
   it('does not retry a 401 inside the clock window, and counts it', async () => {
     await activateSigning();
-    fetchMock.mockImplementation(() => Promise.resolve(response(401, '', { Date: 'Mon, 14 Sep 2026 14:10:14 GMT' })));
+    const inWindow = () => response(401, '', { Date: 'Mon, 14 Sep 2026 14:10:14 GMT' });
+    routeFetch({ health: () => Promise.resolve(inWindow()), responses: [inWindow] });
 
     await new SDK().removePairedDevice('ext-id', 'd1').catch(() => {});
     await settle();
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(signedCalls().length).toBe(1);
     expect((await getSigningState()).auth401Count).toBe(1);
   });
 
   it('counts a 401 on the corrected retry exactly once — that rejection is not about the clock', async () => {
     await activateSigning();
-    fetchMock
-      .mockResolvedValueOnce(skewRejection())
-      .mockResolvedValueOnce(response(401, '', { Date: SERVER_DATE }));
+    routeFetch({ health: unreachable, responses: [skewRejection, () => response(401, '', { Date: SERVER_DATE })] });
 
     await new SDK().removePairedDevice('ext-id', 'd1').catch(() => {});
     await settle();
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(signedCalls().length).toBe(2);
     expect((await getSigningState()).auth401Count).toBe(1);
   });
 

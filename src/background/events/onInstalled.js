@@ -26,6 +26,7 @@ import checkSafariStorage from '@background/functions/checkSafariStorage.js';
 import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import runStorageMigrations from '@background/functions/storageMigrations.js';
 import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
+import remindSigningRepair from '@background/functions/signing/remindSigningRepair.js';
 
 /**
  * Handles extension installation and update events.
@@ -52,7 +53,11 @@ const onInstalled = async details => {
 
     // v1.9.0: installs migrated from ≤1.8.4 register their signing key here
     // (durable PUT); no-op once signing is active/conflicted.
-    return ensureSigningKeyRegistration();
+    await ensureSigningKeyRegistration();
+
+    // v1.9.1: a signing identity that cannot be repaired in place gets the
+    // Reset-and-pair-again reminder, once per version.
+    return remindSigningRepair();
   }
 
   const browserInfo = await getBrowserInfo({ force: true });

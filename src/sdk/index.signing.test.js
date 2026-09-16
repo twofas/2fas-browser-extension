@@ -33,6 +33,8 @@ import {
 } from '@background/functions/signing/signingHeaderNames.js';
 import { getSigningState } from '@background/functions/signing/signingState.js';
 import { saveToLocalStorage } from '@localStorage/index.js';
+import { saveToSessionStorage } from '@sessionStorage/index.js';
+import { CLOCK_OBSERVED_KEY } from '@background/functions/signing/clockOffset.js';
 
 const jsonResponse = (status, body = '{}', headers = {}) => new Response(body, {
   status,
@@ -53,9 +55,12 @@ const activateSigning = async () => {
 
 const sentHeaders = call => call[1].headers;
 
-beforeEach(() => {
+beforeEach(async () => {
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
+  // The session's server clock is already known: the GET /health priming is
+  // covered by index.clockSkew.test.js and would shift the scripted fetches here.
+  await saveToSessionStorage({ [CLOCK_OBSERVED_KEY]: Date.now() });
 });
 
 afterEach(() => {

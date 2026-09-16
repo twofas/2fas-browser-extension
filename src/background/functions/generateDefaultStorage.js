@@ -23,11 +23,13 @@ import { clearLocalStorage, loadFromLocalStorage, saveToLocalStorage } from '@lo
 import SDK from '@sdk/index.js';
 import generateKeyMaterial from '@background/functions/generateKeyMaterial.js';
 import storeLog from '@partials/storeLog.js';
+import describeBackendError from '@partials/describeBackendError.js';
 import defaultAutoSubmitExcludedDomains from '@/defaultAutoSubmitExcludedDomains.js';
 import enqueueBrowserRegistration from '@background/functions/update/enqueueBrowserRegistration.js';
 import { classifyError, isRetryable, REGISTRATION_TIMEOUT_MS } from '@background/functions/update/registrationRetryPolicy.js';
 import { CURRENT_SCHEMA_VERSION } from '@background/functions/storageMigrations.js';
 import { defaultSigningState } from '@background/functions/signing/signingState.js';
+import { withKeyMaterialLock } from '@background/functions/signing/signingKeyStore.js';
 
 // The only keys a caller may carry across a regeneration: user preferences, nothing
 // else. An allow-list rather than a "these are overridden anyway" convention — a
@@ -72,6 +74,25 @@ const pickPreferences = (overrides = {}) => {
 };
 
 /**
+ * Counts one keyed registration request about to go out with the current
+ * signing key (`signingKeySends`, log 64 diagnostics). Best effort: a storage
+ * failure never fails the request.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
+const countSigningKeySend = async () => {
+  try {
+    const stored = await loadFromLocalStorage(['signingKeySends']);
+    const sends = stored?.signingKeySends;
+
+    await saveToLocalStorage({ signingKeySends: (Number.isInteger(sends) && sends >= 0 ? sends : 0) + 1 });
+  } catch (err) {
+    // The request matters more than the counter.
+  }
+};
+
+/**
  * Generates default storage with encryption keys and registers extension with the 2FAS API.
  *
  * @param {Object} browserInfo - The browser information object
@@ -97,8 +118,12 @@ const runGeneration = (browserInfo, overrides = {}) => {
     // storage.local quota/corruption); leaving storage at `{}` would reset the
     // pages' `attempt > 5` bound, so a failing reset could be retried forever.
     .then(() => saveToLocalStorage({ attempt: attempt + 1 }))
-    .then(() => generateKeyMaterial())
-    .then(keys => saveToLocalStorage({
+    // Key generation and the keys write run under the signing key-material lock,
+    // so a concurrent ensureUsableSigningKeyMaterial can neither interleave its
+    // generation with this one nor write its stale keys back over these. Nothing
+    // else: the catch below may enqueue a registration, which awaits the flush,
+    // which takes the same lock.
+    .then(() => withKeyMaterialLock(() => generateKeyMaterial().then(keys => saveToLocalStorage({
       contextMenu: true,
       logging: false,
       incognito: false,
@@ -112,18 +137,22 @@ const runGeneration = (browserInfo, overrides = {}) => {
       configured: false,
       browserInfo,
       keys,
+      // Signing-key lineage (log 64 diagnostics), in the same set as the key.
+      signingKeyGeneratedAt: Date.now(),
+      signingKeyGenerations: 1,
+      signingKeySends: 0,
       extensionVersion: config.ExtensionVersion,
       attempt: attempt + 1,
       signing: defaultSigningState(),
       storageSchemaVersion: CURRENT_SCHEMA_VERSION
-    }))
-    .then(storage => {
+    }))))
+    .then(storage => countSigningKeySend().then(() => {
       const extensionInstanceBody = structuredClone(browserInfo);
       extensionInstanceBody.public_key = storage.keys.publicKey;
       extensionInstanceBody.public_signing_key = storage.keys.signingPublicKey;
 
       return new SDK().createExtensionInstance(extensionInstanceBody, { timeoutMs: REGISTRATION_TIMEOUT_MS });
-    })
+    }))
     // Registration succeeded with the signing key in the payload — signing is
     // active from the first request. One atomic write with the extensionID.
     .then(data => saveToLocalStorage({ extensionID: data.id, signing: { ...defaultSigningState(), active: true } }))
@@ -152,7 +181,23 @@ const runGeneration = (browserInfo, overrides = {}) => {
         return enqueueBrowserRegistration({ op: 'create', payload: s.browserInfo || browserInfo });
       }
 
-      return storeLog('error', 28, err, 'generateDefaultStorage');
+      // An SDK-shaped HTTP error (numeric status or a response body) is reduced to typed,
+      // key-free fields: the backend can echo the public_key and public_signing_key this
+      // POST sent. Anything else (an Error from crypto or storage) passes through unchanged.
+      const sdkShaped = Boolean(err) && typeof err === 'object' && !(err instanceof Error) &&
+        (typeof err.status === 'number' || 'content' in err);
+
+      if (!sdkShaped) {
+        return storeLog('error', 28, err, 'generateDefaultStorage');
+      }
+
+      return storeLog('error', 28, {
+        message: 'Browser-extension create registration failed',
+        name: 'RegistrationError',
+        backendStatus: typeof err.status === 'number' ? err.status : null,
+        backendStatusText: typeof err.statusText === 'string' ? err.statusText : null,
+        backend: describeBackendError(err)
+      }, 'generateDefaultStorage');
     });
 };
 

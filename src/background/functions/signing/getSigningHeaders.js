@@ -19,17 +19,23 @@
 
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import isContentScriptContext from '@partials/isContentScriptContext.js';
+import safeConsole from '@partials/safeConsole.js';
 import { getOrMigrateSigningKey } from './signingKeyStore.js';
 import signRequest from './signRequest.js';
 import { getClockOffsetMs } from './clockOffset.js';
 
 /**
  * Produces the signature headers for one SDK request, or {} when the request
- * must go unsigned: signing not yet active (key not confirmed registered),
- * key conflict (signing with the wrong key would 401 even inside the
- * migration window), or a signing failure (during the migration window an
- * unsigned request still succeeds; after it the 401 classifier surfaces the
- * broken state — never block the request here).
+ * must go unsigned: signing not yet active (key not confirmed registered) and
+ * not challenged, key conflict (signing with the wrong key would 401 even
+ * inside the migration window), or a signing failure (during the migration
+ * window an unsigned request still succeeds; after it the 401 classifier
+ * surfaces the broken state — never block the request here).
+ *
+ * Challenged (signingState): the backend rejected an unsigned request while
+ * signing was inactive, so the held key is tried on every request from now
+ * on. Nothing to try — no key, an unreadable store — is not a fault there:
+ * the request goes out unsigned, as it would have without the challenge.
  *
  * Each call signs afresh (new nonce + timestamp) — retried requests MUST call
  * this again per attempt, or the backend's nonce replay protection rejects them.
@@ -59,22 +65,30 @@ const getSigningHeaders = async (method, url, body = '', { skipLog = false, cloc
     const stored = await loadFromLocalStorage(['signing', 'keys']);
     const signing = stored?.signing;
 
-    if (!signing?.active || signing?.conflict) {
+    if (signing?.conflict || (!signing?.active && !signing?.challenged)) {
       return {};
     }
 
-    const privateKey = await getOrMigrateSigningKey({ keys: stored?.keys });
+    const privateKey = signing.active
+      ? await getOrMigrateSigningKey({ keys: stored?.keys })
+      : await getOrMigrateSigningKey({ keys: stored?.keys }).catch(() => null);
 
     if (!privateKey) {
+      if (!signing.active) {
+        return {};
+      }
+
       throw new Error('Signing key unavailable while signing is active');
     }
 
-    const offsetMs = typeof clockOffsetMs === 'number' ? clockOffsetMs : await getClockOffsetMs();
+    // The first signature of a session primes the server clock (GET /health)
+    // so a skewed machine never sends a signature the backend would reject.
+    const offsetMs = typeof clockOffsetMs === 'number' ? clockOffsetMs : await getClockOffsetMs({ prime: true });
 
     return await signRequest(method, url, body, { privateKey, clockOffsetMs: offsetMs });
   } catch (err) {
     if (skipLog) {
-      console.error('getSigningHeaders', err);
+      safeConsole.error('getSigningHeaders', err);
     } else {
       try {
         // Dynamic import: storeLog uses the SDK, which uses this module — a
@@ -82,7 +96,7 @@ const getSigningHeaders = async (method, url, body = '', { skipLog = false, cloc
         const { default: storeLog } = await import(/* webpackMode: "eager" */ '@partials/storeLog.js');
         await storeLog('error', 65, err, 'getSigningHeaders');
       } catch (logErr) {
-        console.error('getSigningHeaders - log', logErr);
+        safeConsole.error('getSigningHeaders - log', logErr);
       }
     }
 

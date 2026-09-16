@@ -17,11 +17,15 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global CryptoKey */
+
 import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '../localStorage/index.js';
 import config from '../config.js';
 import SDK from '../sdk/index.js';
 import isContentScriptContext from './isContentScriptContext.js';
+import { createRedactionStats, redactLogString, redactLogValue, redactionStatsToJSON } from './redactKeyMaterial.js';
+import safeConsole from './safeConsole.js';
 
 const logDebounceMap = new Map();
 const DEBOUNCE_TIME_MS = 30000;
@@ -47,10 +51,39 @@ const URL_REGEX = /[a-z][a-z0-9.+-]*:\/\/\S+/gi;
 const MAX_SANITIZE_DEPTH = 6;
 
 /**
- * Recursively masks every URL found within a value before it is sent to the
- * backend. Strings have their embedded URLs replaced via {@link logURL};
- * arrays, plain objects and Error objects are traversed (Error message/stack
- * are non-enumerable, so they are extracted explicitly). Other primitives are
+ * Coerces a log message to text without ever throwing: a null-prototype object
+ * has no toString, and storeLog is called from catch blocks everywhere.
+ * @param {*} value - The message candidate.
+ * @return {string} The text.
+ */
+const toLogText = value => {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  try {
+    return String(value);
+  } catch {
+    return 'Unknown Error';
+  }
+};
+
+/**
+ * Returns a string for a string, '' for anything else, so the message filters
+ * never call `includes` on a non-string.
+ * @param {*} value - The candidate.
+ * @return {string} The value or ''.
+ */
+const stringOrEmpty = value => (typeof value === 'string' ? value : '');
+
+/**
+ * Recursively redacts key material and masks every URL found within a value
+ * before it is sent to the backend. Strings are redacted first (a key glued to
+ * a URL would otherwise be swallowed by the URL match and cut apart by the
+ * masking), then their embedded URLs are replaced via {@link logURL}. CryptoKey
+ * handles and binary data become markers before any traversal; arrays, plain
+ * objects and Error objects are traversed (Error message/stack are
+ * non-enumerable, so they are extracted explicitly). Other primitives are
  * returned unchanged. Cyclic references, excessive depth and throwing getters
  * are all guarded so a malformed error object can never hang, leak through an
  * unvisited branch, or blow up the logger.
@@ -61,11 +94,22 @@ const MAX_SANITIZE_DEPTH = 6;
  */
 const sanitizeLogValue = (value, depth = 0, seen = new WeakSet()) => {
   if (typeof value === 'string') {
-    return value.replace(URL_REGEX, match => logURL(match));
+    return redactLogString(value).replace(URL_REGEX, match => logURL(match));
   }
 
   if (!value || typeof value !== 'object') {
     return value;
+  }
+
+  // Type rules come before any traversal: a key handle or raw bytes are never walked.
+  const tag = Object.prototype.toString.call(value);
+
+  if ((typeof CryptoKey !== 'undefined' && value instanceof CryptoKey) || tag === '[object CryptoKey]') {
+    return '[CryptoKey]';
+  }
+
+  if (ArrayBuffer.isView(value) || tag === '[object ArrayBuffer]' || tag === '[object SharedArrayBuffer]') {
+    return `[binary:${value.byteLength}]`;
   }
 
   // Beyond the depth limit, drop the sub-tree to a placeholder rather than
@@ -136,7 +180,10 @@ const shouldDebounce = (logID, errorMessage) => {
 };
 
 /**
- * Stores error logs to the 2FAS backend.
+ * Stores error logs to the 2FAS backend. Key material in the message, the
+ * error info and the url label is redacted right after they are extracted,
+ * before any sink: the console, the filters, the debounce map and the backend.
+ * `context.redactions` carries how many markers were written and of which kinds.
  * @async
  * @param {string} level - Log level (info, warning, error, debug).
  * @param {number} logID - The log identifier.
@@ -148,9 +195,6 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   let m = 'Unknown Error';
   let c = { logID };
   let storage = null;
-
-  console.error(logID, url);
-  console.dir(errObj);
 
   switch (true) {
     case errObj instanceof Event: {
@@ -188,10 +232,19 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     }
   }
 
+  // Redact before any sink. The console print stays ahead of the logging gate,
+  // so developers keep (redacted) diagnostics with logging off.
+  const redactions = createRedactionStats();
+  m = redactLogString(toLogText(m), redactions);
+  c.errorInfo = redactLogValue(c.errorInfo, redactions);
+  const logLabel = typeof url === 'string' ? redactLogString(url, redactions) : '';
+
+  safeConsole.error('storeLog', logID, logLabel, c.errorInfo);
+
   try {
     storage = await loadFromLocalStorage(['logging', 'extensionID', 'browserInfo']);
   } catch (err) {
-    console.error(err);
+    safeConsole.error(err);
     return false;
   }
 
@@ -206,21 +259,30 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     return false;
   }
 
+  // String-guarded locals: a non-string field must never throw here, outside
+  // any try. The message falls back to `m`, which still holds the text of an
+  // error whose own `message` is not enumerable (and so did not survive the
+  // redacting copy).
+  const info = c.errorInfo;
+  const msg = typeof info?.message === 'string' ? info.message : m;
+  const statusText = stringOrEmpty(info?.statusText);
+  const backendStatusText = stringOrEmpty(info?.backendStatusText);
+
   if (
-    (c?.errorInfo?.message?.includes('FILE_ERROR_NO_SPACE')) ||
-    (c?.errorInfo?.status === 407) ||
-    (c?.errorInfo?.backendStatus === 407) ||
-    (c?.errorInfo?.message?.includes('An unexpected error occurred')) ||
-    (c?.errorInfo?.message?.includes('Refused to run the JavaScript URL')) ||
-    (c?.errorInfo?.message?.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) ||
-    (c?.errorInfo?.statusText?.includes('Proxy Authentication Required')) ||
-    (c?.errorInfo?.backendStatusText?.includes('Proxy Authentication Required')) ||
-    (c?.errorInfo?.message?.includes('Could not establish connection')) ||
-    (c?.errorInfo?.message?.includes('Receiving end does not exist')) ||
-    (c?.errorInfo?.message?.includes('Extension context invalidated')) ||
-    (c?.errorInfo?.message?.includes('Invalid call to runtime.sendMessage')) ||
-    (c?.errorInfo?.message?.includes('Tab not found')) ||
-    (c?.errorInfo?.message?.includes('The message port closed before a response was received'))
+    (msg.includes('FILE_ERROR_NO_SPACE')) ||
+    (info?.status === 407) ||
+    (info?.backendStatus === 407) ||
+    (msg.includes('An unexpected error occurred')) ||
+    (msg.includes('Refused to run the JavaScript URL')) ||
+    (msg.includes('QuotaExceededError: storage.local API call exceeded its quota limitations')) ||
+    (statusText.includes('Proxy Authentication Required')) ||
+    (backendStatusText.includes('Proxy Authentication Required')) ||
+    (msg.includes('Could not establish connection')) ||
+    (msg.includes('Receiving end does not exist')) ||
+    (msg.includes('Extension context invalidated')) ||
+    (msg.includes('Invalid call to runtime.sendMessage')) ||
+    (msg.includes('Tab not found')) ||
+    (msg.includes('The message port closed before a response was received'))
   ) {
     storage = null;
     m = null;
@@ -228,7 +290,9 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
     return false;
   }
 
-  const errorMessage = c?.errorInfo?.message || m;
+  // Built from redacted text: markers carry kind and length only, so the key
+  // stays stable across different keys and never holds key material.
+  const errorMessage = msg || m;
 
   if (shouldDebounce(logID, errorMessage)) {
     storage = null;
@@ -240,16 +304,18 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
   c.errorType = errObj?.constructor?.name || '';
   c.extensionVersion = config.ExtensionVersion;
   c.browserInfo = storage.browserInfo;
-  c.url = logURL(url);
+  c.url = logURL(logLabel);
   c.online = (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') ? navigator.onLine : null;
 
-  if (!url.includes('http')) {
+  if (!logLabel.includes('http')) {
     if (typeof window !== 'undefined' && window?.location?.href) {
       try {
-        c.frontUrl = logURL(window?.location?.href);
+        c.frontUrl = logURL(redactLogString(window.location.href, redactions));
       } catch (e) {}
     }
   }
+
+  c.redactions = redactionStatsToJSON(redactions);
 
   try {
     m = sanitizeLogValue(m);
@@ -274,7 +340,7 @@ const storeLog = async (level, logID = 0, errObj, url = '') => {
       await new SDK().storeLog(storage.extensionID, level, m, c);
     }
   } catch (err) {
-    console.error('Failed to send log:', err);
+    safeConsole.error('Failed to send log:', err);
   } finally {
     storage = null;
     m = null;
