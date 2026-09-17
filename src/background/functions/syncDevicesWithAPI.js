@@ -19,6 +19,7 @@
 
 import SDK from '@sdk/index.js';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import createAsyncThrottle from '@partials/createAsyncThrottle.js';
 import { mutateDevices } from '@background/functions/listStore.js';
 import reconcileDevices from '@background/functions/reconcileDevices.js';
@@ -99,7 +100,7 @@ const fetchAndReconcileDevices = async storage => {
       // every device-sync failure landed in a bucket nobody was watching.
       await storeLog('error', 72, err, 'syncDevicesWithAPI');
     } else {
-      console.error('syncDevicesWithAPI', err);
+      safeConsole.error('syncDevicesWithAPI', err);
     }
     result.apiError = true;
     return result;

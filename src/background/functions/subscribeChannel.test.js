@@ -17,7 +17,9 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global crypto, Buffer */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { longestSurvivor } from '@test/helpers/keySinks.js';
 
 const handleLoginRequest = vi.fn();
 const handleConfigurationRequest = vi.fn();
@@ -100,6 +102,15 @@ const { default: subscribeChannel } = await import('./subscribeChannel.js');
 
 const baseOpts = { login: true, requestID: 'req-1', origin: 'https://example.test' };
 
+// Generated per run: no key literal in source, and assertions below only ever
+// compare numbers and booleans derived from it.
+const generateP256Spki = async () => {
+  const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  return Buffer.from(await crypto.subtle.exportKey('spki', pair.publicKey)).toString('base64');
+};
+
+const log13Payloads = () => storeLog.mock.calls.filter(call => call[1] === 13).map(call => call[2]);
+
 beforeEach(() => {
   sockets = [];
   throwOnConstruct = false;
@@ -144,6 +155,50 @@ describe('subscribeChannel — malformed frame handling', () => {
     // A subsequent valid frame is still handled within the same request budget.
     ws.message(JSON.stringify({ event: 'browser_extensions.device.2fa_response', token: 'x' }));
     expect(handleLoginRequest).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('subscribeChannel — log 13 carries no frame content', () => {
+  it('logs the event name and field names only for an unknown event', async () => {
+    const spki = await generateP256Spki();
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    channel.connect();
+    const ws = sockets[0];
+    ws.open();
+
+    ws.message(JSON.stringify({ event: 'x.unknown', device_public_key: spki, n: 1 }));
+
+    const payloads = log13Payloads();
+    expect(payloads.length).toBe(1);
+    expect(longestSurvivor(JSON.stringify(payloads[0]), spki)).toBe(0);
+    expect(payloads[0]?.fields?.includes('device_public_key') === true).toBe(true);
+    expect(payloads[0]?.event === 'x.unknown').toBe(true);
+    expect(payloads[0]?.message === 'Unknown WebSocket event').toBe(true);
+  });
+
+  it('logs a constant Error with only the parser name and frame length for a malformed frame', async () => {
+    // A 40-char slice past the constant DER header: random key bytes only.
+    const slice = (await generateP256Spki()).slice(40, 80);
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    channel.connect();
+    const ws = sockets[0];
+    ws.open();
+
+    ws.message(`Q${slice}`);
+
+    const payloads = log13Payloads();
+    expect(payloads.length).toBe(1);
+
+    const [payload] = payloads;
+    const { message, stack, cause } = payload || {};
+    expect(longestSurvivor(JSON.stringify({ message, stack, cause }), slice)).toBe(0);
+    expect(payload instanceof Error).toBe(true);
+    expect(message === 'WebSocket frame is not valid JSON').toBe(true);
+    expect(cause?.parseErrorName === 'SyntaxError' && cause?.frameLength === 41).toBe(true);
+
+    // Tear the channel down so its request timer does not outlive the test.
+    ws.message(JSON.stringify({ event: 'browser_extensions.device.2fa_response', token: 'x' }));
+    expect(stopKeepAlive).toHaveBeenCalledTimes(1);
   });
 });
 

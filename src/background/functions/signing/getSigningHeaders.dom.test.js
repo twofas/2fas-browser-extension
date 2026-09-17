@@ -26,12 +26,16 @@ vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(und
 import browser from 'webextension-polyfill';
 import getSigningHeaders from './getSigningHeaders.js';
 import { saveToLocalStorage } from '@localStorage/index.js';
+import { saveToSessionStorage } from '@sessionStorage/index.js';
+import { CLOCK_OBSERVED_KEY } from './clockOffset.js';
 
 const EXTENSION_BASE_URL = 'chrome-extension://test-extension-id/';
 const originalGetURL = browser.runtime.getURL;
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  // The session's server clock is already known: no GET /health priming here.
+  await saveToSessionStorage({ [CLOCK_OBSERVED_KEY]: Date.now() });
 });
 
 afterEach(() => {

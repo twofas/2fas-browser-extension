@@ -27,11 +27,15 @@ vi.mock('@background/functions/generateDefaultStorage.js', () => ({ default: vi.
 vi.mock('@background/functions/checkSafariStorage.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/updateBrowserInfo.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/storageMigrations.js', () => ({ default: vi.fn().mockResolvedValue(1), CURRENT_SCHEMA_VERSION: 1 }));
+vi.mock('@background/functions/update/ensureSigningKeyRegistration.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@background/functions/signing/remindSigningRepair.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 
 import onInstalled from './onInstalled.js';
 import runStorageMigrations from '@background/functions/storageMigrations.js';
 import updateBrowserInfo from '@background/functions/updateBrowserInfo.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
+import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
+import remindSigningRepair from '@background/functions/signing/remindSigningRepair.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -52,5 +56,20 @@ describe('onInstalled', () => {
 
     expect(runStorageMigrations).not.toHaveBeenCalled();
     expect(generateDefaultStorage).toHaveBeenCalled();
+  });
+});
+
+describe('onInstalled — signing repair reminder', () => {
+  it('reminds a broken signing state on update, after the registration attempt', async () => {
+    await onInstalled({ reason: 'update' });
+
+    expect(remindSigningRepair).toHaveBeenCalledTimes(1);
+    expect(ensureSigningKeyRegistration.mock.invocationCallOrder[0]).toBeLessThan(remindSigningRepair.mock.invocationCallOrder[0]);
+  });
+
+  it('never reminds on a fresh install', async () => {
+    await onInstalled({ reason: 'install' });
+
+    expect(remindSigningRepair).not.toHaveBeenCalled();
   });
 });

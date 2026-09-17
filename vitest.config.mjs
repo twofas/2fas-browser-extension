@@ -40,6 +40,8 @@ export default defineConfig({
   resolve: {
     alias: {
       ...aliases,
+      // Test-only helpers (key-safe sinks, fakes); never part of a webpack bundle.
+      '@test': path.resolve(dirname, 'test'),
       // Replace the real polyfill (which throws outside a browser) with an
       // in-memory fake of browser.storage.local.
       'webextension-polyfill': path.resolve(dirname, 'test/stubs/webextension-polyfill.js')

@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-/* global crypto */
+/* global crypto, Response */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
@@ -43,8 +43,14 @@ import Crypt from '@background/functions/Crypt.js';
 
 const GEN_PARAMS = { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-512' } };
 
+// The self-heal unpairs the dead identity on the backend before the wipe (a
+// real SDK DELETE): every test here answers it, and the heal tests assert it.
+let fetchMock;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+  vi.stubGlobal('fetch', fetchMock);
   // clearAllMocks wipes call history but KEEPS implementations, so a test that made
   // generateDefaultStorage actually write an identity would silently change what
   // every later test sees. Restore the inert default explicitly.
@@ -56,6 +62,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('checkSafariStorage', () => {
@@ -221,6 +228,12 @@ describe('checkSafariStorage', () => {
     expect(storeLog.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
 
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
+    // The dead identity's pairings are removed on the backend BEFORE the wipe
+    // (its extensionID is gone afterwards), so the stale entry leaves the phone.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/browser_extensions\/id\/devices$/);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'DELETE' });
+    expect(fetchMock.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
     // The background-page notification is invisible on Safari — the install page
     // carries the explanation instead, opened with the "recovered" reason.
     expect(notificationShow).not.toHaveBeenCalled();

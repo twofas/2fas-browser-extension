@@ -392,7 +392,7 @@
     "description": ""
   },
   "errorOnInstallErrorMessage": {
-    "message": "Please restart your browser or reinstall the extension.",
+    "message": "Please restart your browser, or open the extension options and use Reset Browser Extension.",
     "description": ""
   },
   "errorExtNameRequiredTitle": {
@@ -480,7 +480,7 @@
     "description": ""
   },
   "errorStorageIntegrityMessage": {
-    "message": "Please reset or reinstall the browser extension and pair it with your device again, or contact 2FAS Community Support on Discord",
+    "message": "Please use Reset Browser Extension below and pair it with your device again, or contact 2FAS Community Support on Discord",
     "description": ""
   },
   "errorStorageRecoveredTitle": {
@@ -544,7 +544,7 @@
     "description": ""
   },
   "errorSigningRequiredMessage": {
-    "message": "This browser extension can no longer securely connect to 2FAS. Please reinstall it and pair it with your device again.",
+    "message": "This browser extension can no longer securely connect to 2FAS. Open the extension options, use Reset Browser Extension and pair it with your device again.",
     "description": ""
   },
   "errorSigningKeyConflictTitle": {
@@ -552,7 +552,7 @@
     "description": ""
   },
   "errorSigningKeyConflictMessage": {
-    "message": "This browser extension could not register its security key with 2FAS. Please reinstall it and pair it with your device again.",
+    "message": "This browser extension could not register its security key with 2FAS. Open the extension options, use Reset Browser Extension and pair it with your device again.",
     "description": ""
   },
   "warningTooSoonTitle": {

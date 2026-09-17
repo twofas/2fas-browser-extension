@@ -18,6 +18,7 @@
 //
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
+import safeConsole from '@partials/safeConsole.js';
 import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
 import flushBrowserRegistration from './flushBrowserRegistration.js';
 
@@ -43,7 +44,7 @@ const enqueueBrowserRegistration = async ({ op, payload }) => {
     const storage = await loadFromLocalStorage(REGISTRATION_STORAGE_KEY);
     existing = storage?.[REGISTRATION_STORAGE_KEY] || null;
   } catch (err) {
-    console.error('enqueueBrowserRegistration - load', err);
+    safeConsole.error('enqueueBrowserRegistration - load', err);
   }
 
   let record;

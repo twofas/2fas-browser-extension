@@ -89,11 +89,13 @@ const init = async storage => {
     }, 5300);
   }
 
-  // v1.9.0: the backend rejects this extension's requests (no registered
-  // signing key after the migration window, or a key conflict escalated) —
-  // storage itself is intact, but only a reinstall/re-pair can recover.
-  if (storage?.signing?.registrationRequired) {
-    showIntegrityError();
+  // v1.9.x: the backend rejects this extension's requests for good
+  // (registrationRequired), or holds a signing key this install does not have
+  // (conflict — it never replaces a key). Storage itself is intact; only a
+  // Reset (new identity, pair again) recovers, so the overlay with its Reset
+  // button takes over, with the matching text.
+  if (storage?.signing?.registrationRequired || storage?.signing?.conflict) {
+    showIntegrityError(storage.signing.conflict ? config.Texts.Error.SigningKeyConflict : config.Texts.Error.SigningRequired);
     hidePreloader();
     return false;
   }

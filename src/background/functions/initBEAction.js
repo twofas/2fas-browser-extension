@@ -113,7 +113,7 @@ const initBEAction = async (url, tab, storageData) => {
 
       // Backend rejected the request as unsigned/invalid and the classifier
       // already concluded re-registration is required — tell the user what to
-      // actually do (reinstall/re-pair) instead of a generic error.
+      // actually do (Reset and re-pair) instead of a generic error.
       if (err?.status === 401) {
         const signingState = await getSigningState();
 

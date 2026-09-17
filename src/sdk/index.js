@@ -20,7 +20,8 @@
 /* global fetch, AbortController, Response, setTimeout, clearTimeout */
 import getSigningHeaders from '@background/functions/signing/getSigningHeaders.js';
 import { noteSigningAuthResult } from '@background/functions/signing/signingState.js';
-import { noteServerDate } from '@background/functions/signing/clockOffset.js';
+import { noteServerDate, isClockSkewRejection } from '@background/functions/signing/clockOffset.js';
+import { HEADER_SIGNATURE_TIMESTAMP } from '@background/functions/signing/signingHeaderNames.js';
 import isContentScriptContext from '@partials/isContentScriptContext.js';
 
 /** Valid backend log levels (shared with the onMessage storeLogEvent proxy). */
@@ -41,6 +42,13 @@ const DEFAULT_TIMEOUT_MS = 15000;
 const PAIRED_DEVICES_RETRY_BACKOFF_MS = [1000, 2000];
 
 /**
+ * Responses to requests that went out signed. Lets onError tell a caller whether
+ * a rejection can be about the signature at all — `signing.active` alone cannot:
+ * with the signing key unavailable the request silently goes out unsigned.
+ */
+const signedResponses = new WeakSet();
+
+/**
  * SDK class for communicating with the 2FAS REST API.
  */
 class SDK {
@@ -53,9 +61,10 @@ class SDK {
    * request itself. Arrow field so it stays bound when passed as a callback.
    *
    * @param {Response} res - The raw fetch response.
+   * @param {?string} [signedTimestamp] - The signature timestamp the request carried (absent when unsigned).
    * @returns {Response} The same response, untouched.
    */
-  trackAuth = res => {
+  trackAuth = (res, signedTimestamp) => {
     try {
       // Content scripts must never mutate the shared signing state: their
       // storeLog fallback goes unsigned by design, and counting its 401s here
@@ -65,8 +74,16 @@ class SDK {
         return res;
       }
 
-      noteServerDate(res?.headers?.get?.('date')).catch(() => {});
-      noteSigningAuthResult(res?.status).catch(() => {});
+      const serverDate = res?.headers?.get?.('date');
+
+      noteServerDate(serverDate).catch(() => {});
+
+      // A clock-skew rejection says nothing about the registration (the backend
+      // checks the timestamp before the signature) — counting it would turn a
+      // wrong machine clock into a "re-pair required" prompt.
+      if (res?.status !== 401 || !isClockSkewRejection(signedTimestamp, serverDate)) {
+        noteSigningAuthResult(res?.status, { signed: Boolean(signedTimestamp) }).catch(() => {});
+      }
     } catch (e) {}
 
     return res;
@@ -124,26 +141,77 @@ class SDK {
   }
 
   /**
-   * Performs a request with a hard timeout and bounded retries on transient
-   * failures (network/abort errors and retryable server statuses), pausing for
-   * the supplied backoff delay before each retry. Exhausted retries and
+   * Sends a request to a signed-scope route (`/browser_extensions/:id/...`),
+   * signed afresh (getSigningHeaders returns {} when it must go unsigned).
+   *
+   * A 401 whose signature timestamp lies outside the backend's clock window is
+   * recovered here: the server clock from its Date header is recorded as the
+   * signing offset and the request is re-signed with that observed offset and
+   * sent exactly once more. Without it the first signed request of every browser
+   * session on a machine with a skewed clock is rejected — the stored offset only
+   * lives in storage.session. The re-sign takes the offset directly, never via a
+   * storage round-trip. Re-signing (never replaying) is required: the nonce is
+   * single-use.
+   *
+   * @param {string} method - HTTP method.
+   * @param {string} url - Absolute request URL.
+   * @param {string} [body=''] - The exact request body ('' for none).
+   * @param {Object} [options]
+   * @param {number} [options.timeoutMs] - Per-attempt timeout.
+   * @param {boolean} [options.skipLog=false] - Forwarded to getSigningHeaders.
+   * @param {boolean} [options.track=true] - Feed the final response to trackAuth.
+   * @returns {Promise<Response>} The final raw response.
+   */
+  async signedFetch (method, url, body = '', { timeoutMs, skipLog = false, track = true } = {}) {
+    const send = async clockOffsetMs => {
+      const signature = await getSigningHeaders(method, url, body, { skipLog, clockOffsetMs });
+      const res = await this.fetchWithTimeout(url, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          ...signature
+        },
+        method,
+        ...(body ? { body } : {})
+      }, timeoutMs);
+
+      return { res, signedTimestamp: signature[HEADER_SIGNATURE_TIMESTAMP] };
+    };
+
+    let { res, signedTimestamp } = await send();
+    const serverDate = res?.headers?.get?.('date');
+
+    if (res?.status === 401 && isClockSkewRejection(signedTimestamp, serverDate)) {
+      const offsetMs = await noteServerDate(serverDate);
+
+      ({ res, signedTimestamp } = await send(offsetMs));
+    }
+
+    if (signedTimestamp && res) {
+      signedResponses.add(res);
+    }
+
+    return track ? this.trackAuth(res, signedTimestamp) : res;
+  }
+
+  /**
+   * Performs a request with bounded retries on transient failures
+   * (network/abort errors and retryable server statuses), pausing for the
+   * supplied backoff delay before each retry. Exhausted retries and
    * non-retryable rejections are normalized through onError.
    * Use ONLY for idempotent requests (GET) — a retried POST could double-act.
    *
-   * @param {string} url - The request URL.
-   * @param {Object|Function} options - fetch() options, or an (async) factory
-   *   returning them. Signed requests MUST pass a factory: the signature
-   *   headers carry a single-use nonce, so every attempt needs a fresh set —
-   *   replaying the previous attempt's nonce is rejected by the backend.
+   * @param {Function} send - Sends one attempt and resolves its raw Response.
+   *   Signed requests MUST sign inside it: the signature headers carry a
+   *   single-use nonce, so every attempt needs a fresh set — replaying the
+   *   previous attempt's nonce is rejected by the backend.
    * @param {Object} [settings] - Retry settings.
-   * @param {number} [settings.timeoutMs] - Per-attempt timeout.
    * @param {number[]} [settings.backoffMs] - Delay before each retry; its length is the retry count.
    * @returns {Promise<Object>}
    */
-  fetchWithRetry (url, options, { timeoutMs, backoffMs = [] } = {}) {
-    const attempt = i => Promise.resolve(typeof options === 'function' ? options() : options)
-      .then(opts => this.fetchWithTimeout(url, opts, timeoutMs))
-      .then(this.trackAuth)
+  fetchWithRetry (send, { backoffMs = [] } = {}) {
+    const attempt = i => Promise.resolve()
+      .then(send)
       .then(this.onSuccess)
       .catch(err => {
         if (i < backoffMs.length && this.isRetryableError(err)) {
@@ -178,8 +246,11 @@ class SDK {
 
       try {
         return JSON.parse(text);
-      } catch (e) {
-        return Promise.reject(new SyntaxError(`Invalid JSON response: ${e.message}`));
+      } catch {
+        // Never embed the parser's message: V8 quotes the start of the body, which
+        // can be key material echoed by the backend. Length and a markup flag (a
+        // proxy or captive-portal HTML page) are enough to tell the cases apart.
+        return Promise.reject(new SyntaxError(`Invalid JSON response (length ${text.length}, markup ${/^\s*</.test(text)})`));
       }
     });
   }
@@ -187,7 +258,8 @@ class SDK {
   /**
    * Handles API errors and formats error objects.
    * Extracts as much useful information as possible from either:
-   *   - a Response (HTTP error) — status, statusText, body (json or text)
+   *   - a Response (HTTP error) — status, statusText, body (json or text), and
+   *     `signed`: whether the rejected request carried a signature
    *   - a network/parse Error — name, message, stack
    * @param {Response|Error} err - The error to format
    * @returns {Promise<never>} Rejected promise with formatted error
@@ -199,6 +271,7 @@ class SDK {
       errObj.status = err.status;
       errObj.statusText = err.statusText;
       errObj.url = err.url;
+      errObj.signed = signedResponses.has(err);
 
       try {
         const text = await err.text();
@@ -285,17 +358,7 @@ class SDK {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}`;
     const body = JSON.stringify(browserInfo);
 
-    return getSigningHeaders('PUT', url, body)
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'PUT',
-        body
-      }, timeoutMs))
-      .then(this.trackAuth)
+    return this.signedFetch('PUT', url, body, { timeoutMs })
       .then(this.onSuccess)
       .catch(this.onError);
   }
@@ -308,16 +371,12 @@ class SDK {
   getAllPairedDevices (extID) {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/devices`;
 
-    // Options factory: every retry attempt is re-signed with a fresh
-    // nonce/timestamp — the backend rejects a replayed nonce.
-    return this.fetchWithRetry(url, async () => ({
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        ...(await getSigningHeaders('GET', url, ''))
-      },
-      method: 'GET'
-    }), { timeoutMs: DEFAULT_TIMEOUT_MS, backoffMs: PAIRED_DEVICES_RETRY_BACKOFF_MS });
+    // Every retry attempt is re-signed with a fresh nonce/timestamp — the
+    // backend rejects a replayed nonce.
+    return this.fetchWithRetry(
+      () => this.signedFetch('GET', url, '', { timeoutMs: DEFAULT_TIMEOUT_MS }),
+      { backoffMs: PAIRED_DEVICES_RETRY_BACKOFF_MS }
+    );
   }
 
   /**
@@ -350,15 +409,7 @@ class SDK {
   removeAllPairedDevices (extID) {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/devices`;
 
-    return getSigningHeaders('DELETE', url, '', { skipLog: true })
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'DELETE'
-      }, DEFAULT_TIMEOUT_MS))
+    return this.signedFetch('DELETE', url, '', { timeoutMs: DEFAULT_TIMEOUT_MS, skipLog: true, track: false })
       .then(this.onSuccess)
       .catch(this.onError);
   }
@@ -366,16 +417,7 @@ class SDK {
   removePairedDevice (extID, deviceID) {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/devices/${deviceID}`;
 
-    return getSigningHeaders('DELETE', url, '')
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'DELETE'
-      }, DEFAULT_TIMEOUT_MS))
-      .then(this.trackAuth)
+    return this.signedFetch('DELETE', url, '', { timeoutMs: DEFAULT_TIMEOUT_MS })
       .then(this.onSuccess)
       .catch(this.onError);
   }
@@ -390,17 +432,7 @@ class SDK {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/commands/request_2fa_token`;
     const body = JSON.stringify({ domain });
 
-    return getSigningHeaders('POST', url, body)
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'POST',
-        body
-      }, DEFAULT_TIMEOUT_MS))
-      .then(this.trackAuth)
+    return this.signedFetch('POST', url, body, { timeoutMs: DEFAULT_TIMEOUT_MS })
       .then(this.onSuccess)
       .catch(this.onError);
   }
@@ -416,17 +448,7 @@ class SDK {
     const url = `${this.REST_API_URL}/browser_extensions/${extID}/2fa_requests/${requestID}/commands/close_2fa_request`;
     const body = JSON.stringify({ status: status ? 'completed' : 'terminated' });
 
-    return getSigningHeaders('POST', url, body)
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'POST',
-        body
-      }, DEFAULT_TIMEOUT_MS))
-      .then(this.trackAuth)
+    return this.signedFetch('POST', url, body, { timeoutMs: DEFAULT_TIMEOUT_MS })
       .then(this.onSuccess)
       .catch(this.ignoreError);
   }
@@ -448,17 +470,7 @@ class SDK {
     const body = JSON.stringify({ level, message, context: JSON.stringify(context) });
 
     // skipLog: a signing failure here must never recurse into storeLog again.
-    return getSigningHeaders('POST', url, body, { skipLog: true })
-      .then(signature => this.fetchWithTimeout(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...signature
-        },
-        method: 'POST',
-        body
-      }, DEFAULT_TIMEOUT_MS))
-      .then(this.trackAuth)
+    return this.signedFetch('POST', url, body, { timeoutMs: DEFAULT_TIMEOUT_MS, skipLog: true })
       .then(this.onSuccess)
       .catch(this.ignoreError);
   }

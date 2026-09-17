@@ -17,6 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+/* global crypto */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
@@ -36,11 +37,15 @@ const realGenerateKeyMaterial = await vi.importActual('./generateKeyMaterial.js'
 const generateKeyMaterial = vi.fn((...a) => realGenerateKeyMaterial.default(...a));
 vi.mock('./generateKeyMaterial.js', () => ({ default: (...a) => generateKeyMaterial(...a) }));
 
+import browser from 'webextension-polyfill';
 import generateDefaultStorage from './generateDefaultStorage.js';
 import { getPrivateKey } from './privateKeyStore.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import Crypt from './Crypt.js';
 import { CURRENT_SCHEMA_VERSION } from './storageMigrations.js';
+import ensureUsableSigningKeyMaterial from './signing/ensureUsableSigningKeyMaterial.js';
+import { getSigningKey, signingKeyPairMatches } from './signing/signingKeyStore.js';
+import { installKeyConsoleTripwire, longestSurvivor } from '@test/helpers/keySinks.js';
 
 const BROWSER_INFO = { name: 'Chrome', browser_name: 'Chrome', browser_version: '120' };
 
@@ -178,11 +183,177 @@ describe('generateDefaultStorage', () => {
     expect(storage.keys).toBeUndefined();
   });
 
+  it('a create 400 echoing the sent keys logs 28 with the typed descriptor, key-free', async () => {
+    createExtensionInstance.mockImplementation(async body => {
+      const rejection = {
+        status: 400,
+        statusText: 'Bad Request',
+        url: 'https://api.example.test/browser_extensions',
+        signed: false,
+        content: {
+          Code: 400,
+          Type: 'BadRequest',
+          Description: 'Malformed request syntax.',
+          Reason: `cannot register public_key "${body.public_key}" with public_signing_key "${body.public_signing_key}"`
+        }
+      };
+
+      throw rejection;
+    });
+
+    await generateDefaultStorage(BROWSER_INFO);
+
+    const { keys } = await loadFromLocalStorage(['keys']);
+    const storeLog = (await import('@partials/storeLog.js')).default;
+    const payloads = storeLog.mock.calls.filter(call => call[1] === 28).map(call => call[2]);
+
+    expect(typeof keys?.publicKey === 'string' && typeof keys?.signingPublicKey === 'string').toBe(true);
+    expect(payloads.length).toBe(1);
+
+    const [payload] = payloads;
+    const wire = JSON.stringify(payload);
+
+    expect(longestSurvivor(wire, keys.publicKey)).toBe(0);
+    expect(longestSurvivor(wire, keys.signingPublicKey)).toBe(0);
+    expect(typeof payload.backend === 'object' && payload.backend !== null).toBe(true);
+    expect('content' in payload).toBe(false);
+    expect('url' in payload).toBe(false);
+    expect(payload.backendStatus === 400 && payload.backendStatusText === 'Bad Request').toBe(true);
+    expect(enqueueBrowserRegistration.mock.calls.length).toBe(0);
+  });
+
+  it('a plain Error still reaches log 28 as the Error itself', async () => {
+    const failure = new Error('crypto unavailable');
+    generateKeyMaterial.mockRejectedValueOnce(failure);
+
+    await generateDefaultStorage(BROWSER_INFO);
+
+    const storeLog = (await import('@partials/storeLog.js')).default;
+    const payloads = storeLog.mock.calls.filter(call => call[1] === 28).map(call => call[2]);
+
+    expect(payloads.length).toBe(1);
+    expect(payloads[0] === failure).toBe(true);
+  });
+
   it('stamps the current storage schema version so fresh installs need no migration', async () => {
     await generateDefaultStorage(BROWSER_INFO);
 
     const storage = await loadFromLocalStorage(['storageSchemaVersion']);
 
     expect(storage.storageSchemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+  });
+
+  it('a stale ensureUsable overlapping a reset leaves the new identity intact (M13)', async () => {
+    createExtensionInstance.mockResolvedValue({ id: 'ext-2' });
+    await saveToLocalStorage({ extensionID: 'ext-1', keys: { publicKey: 'rsa-1' } });
+
+    const realGenerateKey = crypto.subtle.generateKey.bind(crypto.subtle);
+    let ecdsaCalls = 0;
+    const generateKey = vi.spyOn(crypto.subtle, 'generateKey').mockImplementation(async (algorithm, ...rest) => {
+      if (algorithm?.name === 'ECDSA' && ++ecdsaCalls === 1) {
+        // The ensure has snapshotted the old identity. Let the reset clear storage
+        // and re-arm its attempt counter before this key exists.
+        await vi.waitFor(async () => {
+          const storage = await loadFromLocalStorage(['attempt', 'keys']);
+
+          if (!Number.isInteger(storage.attempt) || storage.keys !== undefined) {
+            throw new Error('reset not yet cleared');
+          }
+        }, { timeout: 10000, interval: 5 });
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        // An unserialized reset is already generating its own keys: let it write
+        // them first, which is the stale write-back ordering. A serialized one
+        // cannot start while this call holds the key-material lock.
+        if (generateKeyMaterial.mock.calls.length > 0) {
+          await vi.waitFor(async () => {
+            if ((await loadFromLocalStorage(['keys'])).keys === undefined) {
+              throw new Error('reset keys not yet written');
+            }
+          }, { timeout: 10000, interval: 5 });
+        }
+      }
+
+      return realGenerateKey(algorithm, ...rest);
+    });
+    let results;
+
+    try {
+      results = await Promise.allSettled([ensureUsableSigningKeyMaterial(), generateDefaultStorage(BROWSER_INFO)]);
+    } finally {
+      generateKey.mockRestore();
+    }
+
+    const after = await loadFromLocalStorage(['keys', 'extensionID']);
+
+    expect(after.keys?.publicKey === 'rsa-1').toBe(false);
+    expect(results.every(result => result.status === 'fulfilled')).toBe(true);
+    expect(results[0].value?.persisted === false).toBe(true);
+    expect(after.extensionID === 'ext-2').toBe(true);
+    expect(await signingKeyPairMatches(after.keys?.signingPublicKey, await getSigningKey())).toBe(true);
+  });
+
+  it('writes a fresh key lineage in the keys set and counts its own POST as a send', async () => {
+    let sendsAtPost = null;
+    createExtensionInstance.mockImplementation(async () => {
+      sendsAtPost = (await loadFromLocalStorage(['signingKeySends'])).signingKeySends;
+
+      return { id: 'ext-123' };
+    });
+
+    const set = vi.spyOn(browser.storage.local, 'set');
+    const before = Date.now();
+    let keyWrites;
+
+    try {
+      // Lineage counters are identity, never carried over as preferences.
+      await generateDefaultStorage(BROWSER_INFO, { signingKeyGenerations: 7, signingKeySends: 9, signingKeyGeneratedAt: 1 });
+      keyWrites = set.mock.calls.map(call => call[0]).filter(arg => arg && typeof arg.keys === 'object');
+    } finally {
+      set.mockRestore();
+    }
+
+    expect(keyWrites.length).toBe(1);
+
+    const [write] = keyWrites;
+    expect(write.signingKeyGenerations).toBe(1);
+    expect(write.signingKeySends).toBe(0);
+    expect(typeof write.signingKeyGeneratedAt === 'number' && write.signingKeyGeneratedAt >= before && write.signingKeyGeneratedAt <= Date.now()).toBe(true);
+    expect(sendsAtPost).toBe(1);
+
+    const storage = await loadFromLocalStorage(['signingKeyGenerations', 'signingKeySends', 'signingKeyGeneratedAt', 'extensionID']);
+    expect(storage.signingKeyGenerations).toBe(1);
+    expect(storage.signingKeySends).toBe(1);
+    expect(storage.signingKeyGeneratedAt === write.signingKeyGeneratedAt).toBe(true);
+    expect(storage.extensionID).toBe('ext-123');
+  });
+
+  it('a failing signingKeySends increment never blocks or fails the POST', async () => {
+    const realSet = browser.storage.local.set;
+    const set = vi.spyOn(browser.storage.local, 'set').mockImplementation(data => (
+      data && 'signingKeySends' in data && !('keys' in data)
+        ? Promise.reject(new Error('storage write failed'))
+        : realSet(data)
+    ));
+    // saveToLocalStorage prints its failures; swallow them.
+    const tripwire = installKeyConsoleTripwire();
+
+    try {
+      await generateDefaultStorage(BROWSER_INFO);
+    } finally {
+      tripwire.restore();
+      set.mockRestore();
+    }
+
+    const storeLog = (await import('@partials/storeLog.js')).default;
+    const storage = await loadFromLocalStorage(['extensionID', 'signingKeySends']);
+
+    expect(createExtensionInstance.mock.calls.length).toBe(1);
+    expect(storage.extensionID).toBe('ext-123');
+    expect(storage.signingKeySends).toBe(0);
+    expect(storeLog.mock.calls.filter(call => call[1] === 28).length).toBe(0);
+    expect(enqueueBrowserRegistration.mock.calls.length).toBe(0);
+    expect(tripwire.hits).toBe(0);
   });
 });
