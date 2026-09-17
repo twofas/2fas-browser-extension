@@ -126,4 +126,6 @@ utils/export/messages.json
 .mcp.json
 .playwright-mcp
 memory/
+GEMINI.md
+.agents
 docs/

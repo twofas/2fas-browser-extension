@@ -17,6 +17,25 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
+// REDACTION (every log ID, since 1.9.1)
+// storeLog redacts key material from the message, errorInfo and the url label (and frontUrl) right after the error-shape switch,
+// before every sink: the console print, the message filters, the debounce key and the backend request. The background storeLogEvent
+// proxy (logs sent from content scripts) redacts message and context again. Redaction is idempotent and fails closed.
+// A marker carries the kind and the length only, never a fingerprint, hash or excerpt of the key:
+//   [redacted:<kind>:<len>]   spki-p256 | spki-rsa | pkcs8-p256 | pkcs8-rsa (DER key header) | pem | hex | b64 | b64url (high-entropy run)
+//                             | b64-pct (percent-encoded key) | reason (a value quoted in the backend "cannot update key from X to Y" Reason)
+//                             | unprocessable (the redactor itself failed and replaced the whole value; <len> is 'object' for a non-string)
+//   [redacted:field:<name>:<len>] / [redacted:field:<name>:object]   a key-named field (public_key, public_signing_key, publicKey, signingPublicKey,
+//                             signingPrivateKey, privateKey, device_public_key, pkcs8, spki, jwk) or a JWK member (d, p, q, dp, dq, qi, k, x, y, n)
+//   [binary:<n>]              ArrayBuffer / typed array of n bytes
+//   [CryptoKey]               a key handle
+//   [Circular], [unserializable], [array], [object] are walk placeholders (cycle, throwing getter, depth limit 6), not redactions.
+// context.redactions = {count, kinds} on every entry sent (kinds: the marker kinds above plus field, binary, cryptoKey). The payload is
+// already clean, but a non-zero count on any log ID means a producer hands key material to storeLog: fix it to log typed fields.
+// b64 / b64url / hex are heuristic and can be false positives (e.g. a base64 OAuth state in a page URL); the other kinds need a DER header,
+// PEM armor, a key-named field, a JWK member or the backend conflict Reason, so outside that Reason they are real key material.
+// Console output of storeLog and of the key-adjacent modules goes through safeConsole, redacted the same way, also with logging off.
+
 // GENERAL
 0 - Undefined Error
 
@@ -33,10 +52,24 @@
 *10 - sendNotificationInfo [deprecated]
 11 - subscribeChannel - WebSocket CONSTRUCTION failed (bad URL / CSP / resource exhaustion — ours) [error]. Since 1.9.0 the ws.onerror handler no longer logs: its Event carries no diagnostics and every cause (flaky Wi-Fi, captive portal, proxy, offline) is environment; reconnect is driven from onclose
 12 - subscribeChannel - browser_extensions.pairing.failure — backend rejected a pairing the user started (expired QR, declined on the phone); downgraded error -> info in 1.9.0, kept as a product signal [info]
-13 - subscribeChannel - subscribeChannel event default
+13 - subscribeChannel - unhandled WebSocket frame [error]. Since 1.9.1 it never carries frame content (frames can carry device public keys):
+     context "subscribeChannel event default" = unknown event, channel closed; errorInfo {message: 'Unknown WebSocket event', event (the name, first 100 chars, or its typeof when not a string), fields (up to 20 top-level field names matching [A-Za-z0-9_]{1,40})}
+     context "subscribeChannel JSON parse error" = frame skipped, socket kept open; Error('WebSocket frame is not valid JSON') with cause {parseErrorName, frameLength (-1 for non-string data)}
+     [before 1.9.1: the whole parsed frame, or the raw parser error, whose message quotes the start of the frame]
 *26 - updateIncognitoAccess [retired in 1.9.0 — browser API / storage hiccup with no user-visible effect and no extension-side fix; console only]
-27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]; proxy 407 = retry with backoff, never logged (#1163)
+27 - updateBrowserExtension / flushBrowserRegistration - registration stuck (PUT) [error] or missing extensionID [warning]; proxy 407 = retry with backoff, never logged (#1163); a 401 (signed or not) drops the record and logs at once: clock skew is re-signed inside the SDK, so a 401 that reaches this flow means the row verifies against a key this install does not hold, and the backend never replaces a key (errorInfo.backend.signed tells the two apart)
+     SINCE 1.9.1 errorInfo.backendContent IS GONE (the backend echoes the keys a request sent). errorInfo = {message, name, op, attempts, pendingForMs, online, backendStatus, backendStatusText, backend, stack, cause}
+     backend = describeBackendError(err): typed and key-free, never Reason, Description or body text:
+       status (number|null), signed (boolean|null), bodyShape: json | text | empty | none
+       type: BadRequest | InternalServerError | NotFound | AccessForbidden | Conflict | Gone | OK | other | none (no Type, or not a JSON body)
+       reasonClass: signingKeyConflict | validation | notFound | database | other | none
+       validationField / validationTag: the validator's field and tag names from "Field validation for '<F>' failed on the '<tag>' tag"; 'other' when a name has an unexpected shape, 'none' without that message
+       reasonLength: length of Reason (JSON body) or of the text body; networkName: AbortError | TypeError | SyntaxError | other for a status-less failure, none when the backend answered
+     backendStatus / backendStatusText are kept, so the 407 filters still apply. An SDK JSON-parse failure reads message 'Invalid JSON response (length N, markup true|false)', with no parser text.
 28 - generateDefaultStorage / flushBrowserRegistration - registration stuck (POST); proxy 407 = retry with backoff, never logged (#1163)
+     Since 1.9.1 flushBrowserRegistration's 28 has the same errorInfo as 27 (typed backend, no backendContent, same JSON-parse message).
+     generateDefaultStorage's own 28 (a create failure not deferred to the durable retry) logs {message: 'Browser-extension create registration failed', name: 'RegistrationError', backendStatus, backendStatusText, backend}
+     for an HTTP-shaped SDK error; an Error (crypto, storage) or a status-less SDK failure {name, message, stack} passes through as before, redacted.
 29 - verifyStorageIntegrity
 30 - closeRequest - close2FARequest / session write failed; transport failures (offline, 5xx, timeout) are filtered out since 1.9.0, and the storage-load variant is console only [error]
 35 - checkSafariStorage (Safari: on install AND on every browser start, no pre-check delay since 1.9.0) — the catch is dominated by IndexedDB open failures, which also mean the self-heal can never fire (classifyKeyMaterial throws instead of reporting 'missing'), so a persistently broken profile is a dead end worth seeing [error]
@@ -53,10 +86,36 @@
 60 - generateDefaultStorage - IndexedDB unavailable (Firefox permanent private browsing / corrupted profile storage), private key stored in storage.local fallback; NOT logged when keyStoragePolicy chooses storage.local for the platform (Safari since 1.9.0 — never emitted there) [warning]
 61 - handleLoginRequest - token withheld: request superseded by a newer one (user approved an outdated push), user notified via Outdated request notification [info]
 62 - handleLoginRequest - token fallback blocked: top-frame safety lookup failed; constant message names the failed stage (sessionRead = storage.session read, any engine / frameLookup = webNavigation.getFrame rejection, Firefox+Safari only — Chromium resolves null and goes silent), raw error in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
-63 - ensureSigningKeyRegistration - signing keypair generation/registration setup failed (retried on next startup/update) [error]
-64 - signingState - signing key conflict: backend already holds a different public signing key, re-pairing required [warning]
+63 - ensureSigningKeyRegistration - signing keypair generation/registration setup failed (retried on next startup/update) [error]. Since 1.9.1 two exits are silent: the SIGNING_ACTIVE refusal (signing turned active while the key was being ensured; a registered key is never replaced), and the skipped enqueue when a reset or self-heal replaced the extensionID, or queued a create, in the meantime. Every other key-material error still logs (IndexedDB read failure, generation failure, a failed sign/verify inside the pair check). Since 1.9.1 that includes a failed signing-key read with no keys.signingPublicKey stored while IndexedDB still takes writes: ensureUsableSigningKeyMaterial no longer turns it into a first generation (see 74)
+64 - signingState - markSigningConflict - signing key conflict: backend already holds a different public signing key, re-pairing required [warning]
+     SINCE 1.9.1 THE PAYLOAD IS BUILT FROM TYPED FIELDS, NEVER FROM THE BACKEND ERROR (its Reason names both public keys). No content, Reason, Description or url:
+       {message: 'Signing key conflict: backend holds a different public signing key', status, statusText, signed (whether the rejected PUT was signed),
+        backendCode (content.Code, number|null), backendType (content.Type from the list in 27's backend.type, 'other', or null),
+        cause: {keyGenerations, sendsWithThisKey, keyAgeBucket, recordAttempts, recordAgeBucket, storedExtensionVersion}}
+     cause holds counters and enums only (no key, fingerprint or hash):
+       keyGenerations          storage.local signingKeyGenerations: signing keys generated in this identity lineage. generateDefaultStorage writes 1; each ensureUsableSigningKeyMaterial regeneration adds 1 (a reuse or a 75 restore does not). A regeneration that replaces a key from before the counters (counter absent or malformed) writes 2: at least that key came before it. null when absent.
+       sendsWithThisKey        storage.local signingKeySends as read for the failing PUT: keyed requests (a PUT carrying public_signing_key, a create POST) sent with the current key BEFORE it. 0 = the failing PUT was the key's first send. null when absent.
+       keyAgeBucket            age of the current key (signingKeyGeneratedAt): '<1m' | '<1h' | '<1d' | '<7d' | '>=7d' | 'unknown'
+       recordAttempts          attempts of the failing pendingBrowserRegistration record (number|null)
+       recordAgeBucket         age of that record (firstAttemptAt), same buckets
+       storedExtensionVersion  storage.local extensionVersion (a release number like '1.9.0'; 'other' when malformed; null when absent). Only a successful PUT commits it, so on the first keyed PUT after an update it still names the PRE-update version.
+     Reading the cause:
+       keyGenerations === 1 && sendsWithThisKey === 0 -> the backend held a key before this lineage ever sent its only key: another copy of the identity set it (cloned or rolled-back profile, or a third party).
+                                                         The same extensionID repeating 64 across days -> an environment that rolls storage back (non-persistent VDI/Citrix, roaming profile, backup or reboot restore).
+       keyGenerations > 1                              -> this install regenerated its key locally; expect a preceding 74 (a loss of both halves regenerates silently, as a first generation).
+       sendsWithThisKey > 0 && keyGenerations === 1    -> an earlier send of this same key never reached the backend while another key did (clone / rollback), or a backend anomaly.
+       null counters, keyAgeBucket 'unknown'           -> the key predates 1.9.1; sends are counted from its first 1.9.1 send. A lineage without counters that 1.9.1 regenerates over an existing key reports keyGenerations 2
+                                                         (a lower bound), so it reads as a local regeneration on its own. Only a first key starts at 1 without a counter: the first signing key of a
+                                                         <=1.8.4 install, or a 1.9.0 install that lost both halves (storedExtensionVersion 1.9.0 or later hints at the latter).
+     At most once per extensionID: storage.local signingConflictLoggedFor, recorded after the log call (also when logging is off) and wiped with the identity. A new extensionID re-arms it; an install without an extensionID always reports.
+     A failed strict signing-state read writes nothing and logs nothing (no conflict flag, no 64, no notification); the next conflicting response retries. Reported on Chrome as well as Firefox: identity copies and storage rollbacks do not depend on the browser.
+     Keyless retry (1.9.1): the conflict retry never re-sends the key. The write that resets the pendingBrowserRegistration update record's attempts to 0 also sets keyless: true on it, whether or not markSigningConflict could store the conflict.
+       Every PUT for a keyless record goes out without public_signing_key: no key-material check, no signingKeySends count, and a success commits the browser info without activating signing.
+       The flag survives backoff retries and every update that enqueueBrowserRegistration merges into the pending record. A 404 converts the record to a create without it (a create POST always carries the key).
+       While the conflict could not be stored, only a fresh record sends a keyed PUT again: a later browser or extension update, or ensureSigningKeyRegistration on browser start, once the keyless record has committed or been dropped.
+       So an install sends at most one keyed PUT per registration episode, and each gets the conflict again; this 64 and the re-pair notification wait for that episode's conflict.
 65 - getSigningHeaders - request signing failed while signing active (request sent unsigned; works only inside migration window) [error]
-66 - signingState - backend rejects requests as unsigned/invalid (post-migration-window 401 threshold reached), re-registration required [error]
+66 - signingState - backend rejects requests as unsigned/invalid (post-migration-window 401 threshold reached), re-registration required [error]. The user is told to use Reset Browser Extension on the options page and pair again (never to reinstall); the options and install pages show the same as a blocking overlay with the Reset button. The notice is delivered by deliverSigningRepairNotice (native push, or — nativePush off, Safari's default — the active tab's content script; nothing shown without a page) and marks signingRepairRemindedVersion; remindSigningRepair repeats it once per extension version on every start/update, and on every content-script load (getTabData → remindSigningRepairInTab: the first http(s) page is Safari's first chance to render), when no one-shot delivered it (also for the conflict state, 64). Text precedence everywhere: conflict first. Since 1.9.1 the first unsigned 401 while signing is inactive (and not in conflict) also sets signing.challenged: every later request is signed with the held key, no extra request is sent, and a verified success activates signing instead of reaching this threshold (a key the backend never registered still ends here)
 67 - signingKeyStore - IndexedDB unavailable, ECDSA signing key stored in storage.local fallback; NOT logged when keyStoragePolicy chooses storage.local for the platform (Safari since 1.9.0 — never emitted there) [warning]
 68 - resolveTokenTargetFrame - frame lookup failed (webNavigation.getFrame rejected — Firefox/Safari missing frame or tab; Chromium resolves null instead and lands in 51), token withheld; constant message ("Frame lookup failed" / "Opaque frame lookup failed"), raw rejection in cause so storeLog's message filters (Safari "Tab not found") can't swallow it [warning]
 69 - selfHealMissingPrivateKey - private key lost while registration valid (cause.key: 'rsa' | 'signing'; extension-origin IndexedDB gone, storage.local intact — reinstall cannot clear it), storage regenerated + install page opened for re-pairing; logged before the wipe; can appear without a paired 57 when the incident was already reported (dedupe) [warning].
@@ -66,7 +125,30 @@
 70 - selfHealMissingPrivateKey - Safari self-heal step failed; context names the stage: plain context = heal aborted before/while regenerating, caller fell back to the report-only path [error]; "<context> - openInstallPage" = storage already regenerated, only the install-page tab could not be opened (user reaches it via the toolbar icon) [warning]; context "flushBrowserRegistration - openInstallPage" = same, but for the deferred page of an OFFLINE heal, opened once the durable create committed the extensionID (recoveredInstallPagePending marker)
 71 - onMessage - storageReset accepted through the tab-url fallback (sender.url absent — a bridge without MessageSender.url, older Safari?); bounded telemetry for the sender guard, deduped once per install since 1.9.0 (storageResetTabUrlFallbackReported). Delete after one release cycle if the bucket stays empty [warning]
 73 - selfHealMissingPrivateKey - self-heal REFUSED: the private key was lost again within the brake window (MAX_HEALS_PER_WINDOW regenerations per HEAL_WINDOW_MS, counter carried through the regeneration in selfHealHistory, dropped only by a manual Reset). cause: key, count, firstAt, userInitiated. Once per window; the caller falls back to report-only (57 + re-pair notification). This is the actionable signal for an environment that keeps losing keys — the loss itself is 57/69 [warning]
-72 - syncDevicesWithAPI - paired-device sync failed for a reason that is NOT transport (a shape/logic error from reconcileDevices, an unexpected API payload); offline/5xx/timeout are filtered out. Was logged as 39 before 1.9.0, colliding with a retired content-script code [error]
+72 - syncDevicesWithAPI - paired-device sync failed for a reason that is NOT transport (a shape/logic error from reconcileDevices, an unexpected API payload); offline/5xx/timeout are filtered out. Was logged as 39 before 1.9.0, colliding with a retired content-script code [error]. Since 1.9.1 an SDK JSON-parse failure reads 'Invalid JSON response (length N, markup true|false)', with no parser text
+74 - ensureUsableSigningKeyMaterial - unregistered signing key unusable: kept or regenerated [warning] (new in 1.9.1)
+     Message 'Unregistered signing key kept: its public half is unknown, nothing to register' (outcome kept) or 'Unregistered signing key regenerated' (outcome regenerated); cause {reason, outcome, storedIn}, enums only:
+       reason: privateMissing (public key stored, private key gone: IndexedDB loss or rollback)
+             | publicMissing (the private key survives but keys.signingPublicKey is lost and no pair-verified signingKeyMeta could restore it: storage.local tier, or an IndexedDB key from before 1.9.1 that never got its companion)
+             | importFailed (keys.signingPrivateKey is present but does not import; wins over the other reasons)
+             | pairMismatch (the stored public key is not the public half of the private key, e.g. a leftover of a 1.9.0 generation race, or a storage.local rollback past a regeneration; when the IndexedDB companion pairs with the key, the public key is restored instead — 75)
+       outcome: kept        | FALLBACK, expected never: a private key survived (pairMismatch, publicMissing, importFailed with an IndexedDB key behind the corrupt copy) but its public half could not be recovered from its own signatures (see 75 source=derived — that recovery succeeds for every real P-256 signing key).
+                             The backend never replaces a registered key (same key = no-op, another key = 400, no reset) and this may be the registered one, so it STAYS the live key: the mismatched public key is dropped from storage.local, the 'signingKeyUnregistrable' marker is set, no pair is generated and no PUT carries a key.
+                             It signs as soon as the backend challenges the install (an unsigned request gets 401 -> signing.challenged), and the first verified success activates signing. Logged once per install (the marker), not on every start. Any volume here is a bug in recoverSigningPublicKey or a key that is not P-256.
+              | regenerated | nothing survived (privateMissing, importFailed with nothing behind it), or the key is for a new identity (a create, or the re-registration after a 404, whose row and key are gone): a fresh pair replaced the material before registration.
+       storedIn: idb | local (tier of the kept, or of the NEW, private key; local = Safari's keyStoragePolicy, a storage.local pkcs8 survivor, or the IndexedDB-unavailable fallback, which also logs 67)
+     Not logged for a first generation (no signing key material at all), nor when a reset replaced the identity in the meantime and nothing was written. Sent after the key-material lock is released.
+     No generation at all (so no 74) when keys.signingPublicKey is absent and the IndexedDB read of the signing key fails while IndexedDB still takes writes (a write probe, record 'signingKeyWriteProbe', written and deleted): the read error propagates and the caller retries (63 from ensureSigningKeyRegistration, backoff in flushBrowserRegistration),
+       so a transient error never overwrites a key nobody could read. An IndexedDB that takes no writes either (Firefox permanent private browsing) still gets a silent first generation in the storage.local fallback (67).
+     Inactive signing only: while signing is active a regeneration is refused (code SIGNING_ACTIVE), except for the create re-registration after a 404, whose row and key are gone.
+     Correlate with 64 on the same extensionID: 74 outcome=regenerated then 64 = the backend already held the key this install lost; a 64 with no 74 before it = another copy of the identity, or a third party, set the backend key (see the 64 cause). outcome=kept never leads to a 64: no key is ever sent for a kept survivor.
+     Expect NO 74 uptick from mismatched pairs after the 1.9.1 rollout: those recover their public key (75 source=derived) and register or confirm it through the normal keyed PUT; only a lost private key (privateMissing) regenerates and may then draw a 64.
+75 - ensureUsableSigningKeyMaterial - signing public key restored: keys.signingPublicKey was lost or mismatched (storage.local rollback, crash, a 1.9.0 stale write) while the private key survived, and the same public key was put back instead of a regeneration [warning] (new in 1.9.1)
+     Constant message 'Signing public key restored'; cause {source}:
+       companion | the pair-verified signingKeyMeta IndexedDB record (keys generated by 1.9.1+, or older keys whose companion 1.9.1 backfilled on a verified reuse); IndexedDB tier only
+       derived   | recovered from the private key's own signatures (recoverSigningPublicKey: two Web Crypto signatures, ECDSA public-key recovery over public data, the candidate confirmed by crypto.subtle.verify); every tier, incl. a storage.local pkcs8 copy and an unavailable IndexedDB; the companion is backfilled afterwards on the IndexedDB tier
+     The restored key is the one the install may already have registered: the next keyed PUT confirms it (same key, no-op 200 -> active), registers it (keyless row) or reveals the conflict (another key -> 400, 64). It also serves a new identity (create / re-registration after 404: a pair-checked key is reused) and corrects the public key while signing is active (a restore is not a rekey).
+     Not logged when a reset replaced the identity in the meantime (nothing written). Volume = rollback / stale-write incidents recovered that would otherwise have ended in 74 + 64. A rising 'derived' share on fresh 1.9.1 keys (which always have a companion) points at IndexedDB companion loss.
 
 // CONTENT
 *33 - content_script [dead — content_script.js no longer calls storeLog; no emitter since before 1.9.0]
@@ -90,7 +172,7 @@
 *34 - regenerate QR [dead — generateQRCode.js no longer logs; no emitter since before 1.9.0]
 
 // OPTIONS PAGE
-21 - optionsPage (bootstrap via pageError, and the device-list fetch — transport failures filtered out since 1.9.0)
+21 - optionsPage (bootstrap via pageError, and the device-list fetch — transport failures filtered out since 1.9.0); since 1.9.1 an SDK JSON-parse failure of the device-list fetch reads 'Invalid JSON response (length N, markup true|false)', with no parser text
 22 - removeDevice (transport failures filtered out since 1.9.0 — the 'updateList remove device failed' protocol error still logs)
 31 - removeDevice - wrong deviceID or deviceName
 36 - handleSafariReset (Danger Zone reset, every platform since 1.9.0) / integrityReset (Reset button in the storage-integrity overlay, options + install page) — both via resetExtensionStorage: background refused or failed the storageReset, nothing wiped page-side

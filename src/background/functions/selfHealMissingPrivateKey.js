@@ -25,6 +25,7 @@ import reportMissingPrivateKey, { clearMissingPrivateKeyReport } from '@backgrou
 import { getOrMigratePrivateKey } from '@background/functions/privateKeyStore.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import SDK from '@sdk/index.js';
 import wait from '@partials/wait.js';
 import { INSTALL_PAGE_REASON_RECOVERED, RECOVERED_PAGE_PENDING_KEY } from '@partials/installPageReasons.js';
@@ -209,7 +210,7 @@ const heal = async (storage, context, key, userInitiated) => {
   try {
     await new SDK().removeAllPairedDevices(current.extensionID);
   } catch (err) {
-    console.warn('selfHealMissingPrivateKey - unpair of the dead identity failed', err);
+    safeConsole.warn('selfHealMissingPrivateKey - unpair of the dead identity failed', err);
   }
 
   // Non-forced: keeps the stored (possibly user-set) extension name.

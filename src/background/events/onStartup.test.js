@@ -23,6 +23,7 @@ vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(und
 vi.mock('@background/contextMenu/index.js', () => ({ initContextMenu: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/update/flushBrowserRegistration.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/update/ensureSigningKeyRegistration.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@background/functions/signing/remindSigningRepair.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@background/functions/getBrowserInfo.js', () => ({ default: vi.fn().mockResolvedValue({ name: 'Safari' }) }));
 
 const checkSafariStorage = vi.fn().mockResolvedValue(undefined);
@@ -34,6 +35,7 @@ vi.mock('@partials/wait.js', () => ({ default: (...a) => wait(...a) }));
 import onStartup from './onStartup.js';
 import ensureSigningKeyRegistration from '@background/functions/update/ensureSigningKeyRegistration.js';
 import flushBrowserRegistration from '@background/functions/update/flushBrowserRegistration.js';
+import remindSigningRepair from '@background/functions/signing/remindSigningRepair.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -79,5 +81,14 @@ describe('onStartup', () => {
     expect(checkSafariStorage).not.toHaveBeenCalled();
     expect(wait).not.toHaveBeenCalled();
     expect(ensureSigningKeyRegistration).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('onStartup — signing repair reminder', () => {
+  it('reminds a broken signing state after the registration attempt, on every start', async () => {
+    await onStartup();
+
+    expect(remindSigningRepair).toHaveBeenCalledTimes(1);
+    expect(ensureSigningKeyRegistration.mock.invocationCallOrder[0]).toBeLessThan(remindSigningRepair.mock.invocationCallOrder[0]);
   });
 });

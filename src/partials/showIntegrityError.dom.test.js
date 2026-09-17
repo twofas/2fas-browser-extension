@@ -74,3 +74,33 @@ describe('showIntegrityError — without the overlay markup', () => {
     expect(() => showIntegrityError()).not.toThrow();
   });
 });
+
+describe('showIntegrityError — signing states use their own texts', () => {
+  const markup = () => {
+    document.body.innerHTML = `
+      <div class="js-twofas-integrity-error">
+        <h1>Browser Extension data error</h1>
+        <h2>Please use Reset Browser Extension below</h2>
+        <button class="btn js-twofas-integrity-reset">Reset Browser Extension</button>
+      </div>`;
+  };
+
+  it('replaces the title and the message with the given texts', () => {
+    markup();
+
+    showIntegrityError({ Title: 'Re-pairing required', Message: 'Use Reset Browser Extension below and pair again.' });
+
+    expect(document.querySelector('.js-twofas-integrity-error h1').textContent).toBe('Re-pairing required');
+    expect(document.querySelector('.js-twofas-integrity-error h2').textContent).toBe('Use Reset Browser Extension below and pair again.');
+    expect(document.querySelector('.js-twofas-integrity-error').classList.contains('show-integrity-error')).toBe(true);
+  });
+
+  it('keeps the generic texts when called without texts', () => {
+    markup();
+
+    showIntegrityError();
+
+    expect(document.querySelector('.js-twofas-integrity-error h1').textContent).toBe('Browser Extension data error');
+    expect(document.querySelector('.js-twofas-integrity-error h2').textContent).toBe('Please use Reset Browser Extension below');
+  });
+});

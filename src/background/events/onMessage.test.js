@@ -27,6 +27,11 @@ vi.mock('@background/functions/updateListAction.js', () => ({ default: (...args)
 const generateDefaultStorage = vi.fn();
 vi.mock('@background/functions/generateDefaultStorage.js', () => ({ default: (...args) => generateDefaultStorage(...args) }));
 vi.mock('@background/functions/getBrowserInfo.js', () => ({ default: vi.fn().mockResolvedValue({ name: 'Chrome' }) }));
+const remindSigningRepairInTab = vi.fn().mockResolvedValue(undefined);
+vi.mock('@background/functions/signing/remindSigningRepair.js', () => ({
+  default: vi.fn().mockResolvedValue(undefined),
+  remindSigningRepairInTab: (...args) => remindSigningRepairInTab(...args)
+}));
 
 import browser from 'webextension-polyfill';
 import onMessage from './onMessage.js';
@@ -232,5 +237,31 @@ describe('onMessage — storageReset sender guard', () => {
 
     expect(generateDefaultStorage).not.toHaveBeenCalled();
     expect(sendResponse).toHaveBeenCalledWith({ status: 'error', message: 'Forbidden' });
+  });
+});
+
+describe('onMessage — getTabData offers the signing repair notice to the page that just loaded', () => {
+  beforeEach(() => {
+    remindSigningRepairInTab.mockClear();
+  });
+
+  it('answers the tab data and hands the tab id to the reminder', async () => {
+    const sendResponse = vi.fn();
+
+    onMessage({ action: 'getTabData' }, { tab: { id: 7, url: 'https://example.com/login', status: 'complete' } }, sendResponse);
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(sendResponse).toHaveBeenCalledWith(expect.objectContaining({ id: 7, urlPath: 'https://example.com/login' }));
+    expect(remindSigningRepairInTab).toHaveBeenCalledWith(7);
+  });
+
+  it('without a tab there is nothing to render in', async () => {
+    const sendResponse = vi.fn();
+
+    onMessage({ action: 'getTabData' }, {}, sendResponse);
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(sendResponse).toHaveBeenCalledWith({ status: 'No tabID' });
+    expect(remindSigningRepairInTab).not.toHaveBeenCalled();
   });
 });

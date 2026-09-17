@@ -19,7 +19,7 @@
 
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
-import ensureUsableSigningKeyMaterial from '@background/functions/signing/ensureUsableSigningKeyMaterial.js';
+import ensureUsableSigningKeyMaterial, { SIGNING_ACTIVE } from '@background/functions/signing/ensureUsableSigningKeyMaterial.js';
 import enqueueBrowserRegistration from './enqueueBrowserRegistration.js';
 import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
 
@@ -40,8 +40,12 @@ import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
  * Skips when:
  *  - there is no extensionID yet (the create path registers the key itself);
  *  - signing is already active or in conflict;
- *  - re-registration was flagged as required (reinstall is the only fix);
- *  - a 'create' record is pending (its success sets signing.active).
+ *  - the held private key has no known public half (kept, nothing to register);
+ *  - re-registration was flagged as required (a Reset is the only fix);
+ *  - a 'create' record is pending (its success sets signing.active);
+ *  - signing turned active while the key was ensured (SIGNING_ACTIVE refusal, silent);
+ *  - a reset or self-heal replaced the extensionID, or queued a create, while
+ *    the key was ensured — checked on a fresh read right before the enqueue.
  *
  * @async
  * @returns {Promise<void>} Always resolves — failures are logged, never thrown.
@@ -64,13 +68,37 @@ const ensureSigningKeyRegistration = async () => {
       return;
     }
 
+    let material;
+
     try {
-      await ensureUsableSigningKeyMaterial();
+      material = await ensureUsableSigningKeyMaterial();
     } catch (err) {
+      if (err?.code === SIGNING_ACTIVE) {
+        // Signing turned active meanwhile (a registration committed): its key
+        // is registered and is never replaced. Nothing to register or report.
+        return;
+      }
+
       // Transient IndexedDB failure or key generation error — retried on the
       // next startup/update. Logged (deduped by storeLog) so a persistently
       // failing device is visible.
       await storeLog('error', 63, err, 'ensureSigningKeyRegistration - key material');
+      return;
+    }
+
+    // A held private key nothing pairs with is kept, unregistrable: there is no
+    // key to send, and the backend would never replace one anyway. It signs
+    // once the backend challenges the install (signingState `challenged`).
+    if (!material?.signingPublicKey) {
+      return;
+    }
+
+    // The key lock can wait behind a reset or self-heal. An update enqueued for
+    // an identity that is gone would PUT the old payload under the new one, or
+    // shadow its pending create. A failed read skips too: the next start re-runs this.
+    const fresh = await loadFromLocalStorage(['extensionID', REGISTRATION_STORAGE_KEY]).catch(() => null);
+
+    if (!fresh || fresh.extensionID !== storage.extensionID || fresh[REGISTRATION_STORAGE_KEY]?.op === 'create') {
       return;
     }
 

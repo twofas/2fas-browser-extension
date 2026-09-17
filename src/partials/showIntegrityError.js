@@ -31,13 +31,32 @@ import storeLog from './storeLog.js';
  * section), so the reset must be reachable from the overlay itself. Reset = new
  * keys + new registration + pair again; a confirmation guards the click.
  *
+ * @param {{Title: string, Message: string}} [texts] - Replaces the overlay's
+ *   generic title and message, e.g. the signing-state texts (a conflict or a
+ *   rejected registration), whose only repair is the same Reset.
  * @returns {void}
  */
-const showIntegrityError = () => {
+const showIntegrityError = texts => {
   const el = document.querySelector(S.optionsPage.integrityError);
 
   if (!el) {
     return;
+  }
+
+  if (texts?.Title) {
+    const title = el.querySelector('h1');
+
+    if (title) {
+      title.textContent = texts.Title;
+    }
+  }
+
+  if (texts?.Message) {
+    const message = el.querySelector('h2');
+
+    if (message) {
+      message.textContent = texts.Message;
+    }
   }
 
   el.classList.add('show-integrity-error');

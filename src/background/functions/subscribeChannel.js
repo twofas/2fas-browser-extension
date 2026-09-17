@@ -28,6 +28,7 @@ import { startKeepAlive, stopKeepAlive } from '@background/functions/keepAlive.j
 import wsTabChanged from '@background/functions/wsTabChanged.js';
 import wsTabClosed from '@background/functions/wsTabClosed.js';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 
 const WS_TIMEOUT_MS = (1000 * 60 * config.WebSocketTimeout) - 5000;
 // Backoff delays for unexpected drops. Length doubles as the max consecutive
@@ -39,6 +40,28 @@ const MAX_RECONNECT_ATTEMPTS = RECONNECT_BACKOFF_MS.length;
 // drops the socket (accept-then-drop) would reset the counter on every onopen and
 // reconnect forever within the budget, never hitting MAX_RECONNECT_ATTEMPTS.
 const STABLE_CONNECTION_MS = 5000;
+const MAX_EVENT_NAME_LENGTH = 100;
+const MAX_LOGGED_FIELDS = 20;
+const LOGGABLE_FIELD_NAME = /^[A-Za-z0-9_]{1,40}$/;
+
+/**
+ * Describes a WebSocket frame with an unhandled event for log 13 without any of
+ * its values: frames can carry device public keys and other payload data.
+ * @param {*} frame - The parsed frame.
+ * @returns {{message: string, event: string, fields: string[]}} Event name (or its type) and up to 20 field names.
+ */
+const unknownEventLogInfo = frame => {
+  const event = frame?.event;
+  const fields = frame && typeof frame === 'object'
+    ? Object.keys(frame).filter(key => LOGGABLE_FIELD_NAME.test(key)).slice(0, MAX_LOGGED_FIELDS)
+    : [];
+
+  return {
+    message: 'Unknown WebSocket event',
+    event: typeof event === 'string' ? event.slice(0, MAX_EVENT_NAME_LENGTH) : typeof event,
+    fields
+  };
+};
 
 /**
  * Creates a WebSocket channel for communication with 2FAS backend.
@@ -122,7 +145,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
 
     closeWSChannel(channel);
     cleanupListeners();
-    console.warn('WebSocket closed without a response');
+    safeConsole.warn('WebSocket closed without a response');
 
     if (timeout) {
       TwoFasNotification.show(notifications.timeout, tabID);
@@ -193,7 +216,14 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       // while leaving the socket OPEN: an unmonitored, un-kept-alive channel. Just
       // skip the bad frame; the socket, its timeout and the keep-alive stay intact
       // so a subsequent valid frame is still handled within the request budget.
-      await storeLog('error', 13, parseError, 'subscribeChannel JSON parse error');
+      // The parser's own message quotes the start of the frame, so only its name
+      // and the frame length are logged.
+      await storeLog('error', 13, new Error('WebSocket frame is not valid JSON', {
+        cause: {
+          parseErrorName: parseError?.name || 'Error',
+          frameLength: typeof messageEvent?.data === 'string' ? messageEvent.data.length : -1
+        }
+      }), 'subscribeChannel JSON parse error');
       return;
     }
 
@@ -239,7 +269,8 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       default: {
         closeWSChannel(channel);
         cleanupListeners();
-        await storeLog('error', 13, messageData, 'subscribeChannel event default');
+        // Event name and field names only: frame values can carry device keys.
+        await storeLog('error', 13, unknownEventLogInfo(messageData), 'subscribeChannel event default');
       }
     }
   };
@@ -314,7 +345,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       // flaky Wi-Fi, captive portal, corporate proxy, offline. Reconnect is driven
       // from onclose, so the entry changed nothing but the noise floor. The
       // constructor-threw case above still logs 11 — that one IS ours (bad URL/CSP).
-      console.error('subscribeChannel - WebSocket channel error', err);
+      safeConsole.error('subscribeChannel - WebSocket channel error', err);
     };
 
     channel.ws.onclose = () => {

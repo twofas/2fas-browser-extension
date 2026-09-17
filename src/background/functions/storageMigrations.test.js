@@ -78,7 +78,7 @@ describe('runStorageMigrations', () => {
     await runStorageMigrations();
 
     const stored = await loadFromLocalStorage(['signing', 'storageSchemaVersion']);
-    expect(stored.signing).toEqual({ active: false, conflict: false, registrationRequired: false, auth401Count: 0 });
+    expect(stored.signing).toEqual({ active: false, conflict: false, registrationRequired: false, auth401Count: 0, challenged: false });
     expect(stored.storageSchemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   });
 

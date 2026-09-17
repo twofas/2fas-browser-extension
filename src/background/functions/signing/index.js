@@ -32,7 +32,7 @@ export {
   HEADER_BODY_SHA256,
   HEADER_SIGNATURE
 } from './signingHeaderNames.js';
-export { getClockOffsetMs, noteServerDate } from './clockOffset.js';
+export { getClockOffsetMs, noteServerDate, isClockSkewRejection } from './clockOffset.js';
 export { default as ensureUsableSigningKeyMaterial } from './ensureUsableSigningKeyMaterial.js';
 export {
   generateSigningKeyMaterial,

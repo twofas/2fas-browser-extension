@@ -23,12 +23,15 @@ import getBrowserInfo from '@background/functions/getBrowserInfo.js';
 import generateDefaultStorage from '@background/functions/generateDefaultStorage.js';
 import handleUpdateList from '@background/functions/updateListAction.js';
 import storeLog from '@partials/storeLog.js';
+import { redactLogString, redactLogValue } from '@partials/redactKeyMaterial.js';
+import safeConsole from '@partials/safeConsole.js';
 import TwoFasNotification from '@notification/index.js';
 import SDK, { LOG_LEVELS } from '@sdk/index.js';
 import { loadFromLocalStorage } from '@localStorage/index.js';
 import { loadFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 import { REGISTRATION_STORAGE_KEY } from '@background/functions/update/registrationRetryPolicy.js';
 import isRegistrationPending from '@partials/registrationPending.js';
+import { remindSigningRepairInTab } from '@background/functions/signing/remindSigningRepair.js';
 
 // Log 71 answers one bounded question: does any shipped Safari build deliver runtime
 // messages without `MessageSender.url`? One answer per browser session is plenty.
@@ -117,6 +120,12 @@ const onMessage = (request, sender, sendResponse) => {
           urlPath,
           status: sender?.tab?.status
         });
+
+        // A page with the content script just loaded: the first chance to
+        // render the Reset-and-pair-again notice where front-end push is the
+        // surface (Safari). Fire-and-forget, never throws, no-op when nothing
+        // is pending.
+        remindSigningRepairInTab(sender.tab.id);
 
         break;
       }
@@ -240,7 +249,9 @@ const onMessage = (request, sender, sendResponse) => {
         // Backend log proxied from a content script (storeLog partial): the
         // background signs the store_log request with the extension's signing
         // key — content scripts cannot. The payload arrives pre-sanitized and
-        // pre-debounced by the sender's storeLog.
+        // pre-debounced by the sender's storeLog. It is redacted again here: the
+        // background is the last stop before the backend and must not trust the
+        // sender to have stripped key material (redaction is idempotent).
         if (!LOG_LEVELS.includes(request?.level) || typeof request?.message !== 'string') {
           sendResponse({ status: 'error', message: 'Invalid storeLogEvent request' });
           return true;
@@ -252,14 +263,20 @@ const onMessage = (request, sender, sendResponse) => {
               return null;
             }
 
-            return new SDK().storeLog(storage.extensionID, request.level, request.message, request.context);
+            return new SDK().storeLog(
+              storage.extensionID,
+              request.level,
+              redactLogString(request.message),
+              redactLogValue(request.context)
+            );
           })
           .then(() => {
             sendResponse({ status: 'ok' });
           })
           .catch(err => {
-            // Never route this failure back into storeLog — it would loop.
-            console.error('onMessage - storeLogEvent', err);
+            // Never route this failure back into storeLog — it would loop. Printed
+            // redacted: a rejection body can echo what the request carried.
+            safeConsole.error('onMessage - storeLogEvent', err);
             sendResponse({ status: 'error' });
           });
 
