@@ -27,6 +27,7 @@ import closeWSChannel from '@background/functions/closeWSChannel.js';
 import { startKeepAlive, stopKeepAlive } from '@background/functions/keepAlive.js';
 import wsTabChanged from '@background/functions/wsTabChanged.js';
 import wsTabClosed from '@background/functions/wsTabClosed.js';
+import getWebSocketProtocols from '@background/functions/signing/getWebSocketProtocols.js';
 import storeLog from '@partials/storeLog.js';
 import safeConsole from '@partials/safeConsole.js';
 
@@ -93,6 +94,9 @@ const subscribeChannel = (storage, tabID, options = {}) => {
   // release is gated to exactly one stopKeepAlive() call — otherwise a single
   // channel would decrement the shared count twice and starve a concurrent request.
   let keepAliveActive = false;
+  // Counts connect() calls, so a connect still waiting for its signature knows
+  // that a newer one (reconnect, QR regenerate) has replaced it.
+  let connectSeq = 0;
   const channel = { ws: null, closing: false };
 
   const tabChangedFunc = (tabIDChanged, changeInfo) => wsTabChanged(tabIDChanged, changeInfo, tabID, channel, timeoutID, origin);
@@ -275,7 +279,7 @@ const subscribeChannel = (storage, tabID, options = {}) => {
     }
   };
 
-  channel.connect = () => {
+  channel.connect = async () => {
     // Set once on the first connect so reconnects share the same overall budget
     // instead of restarting the timeout from scratch on every onopen.
     if (deadline === null) {
@@ -284,6 +288,33 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       // the WS budget so a hard SW eviction can't leave the keep-alive running.
       keepAliveActive = true;
       startKeepAlive(WS_TIMEOUT_MS);
+    }
+
+    connectSeq += 1;
+    const attempt = connectSeq;
+    const wasClosing = channel.closing;
+    const wsURL = buildWebSocketURL();
+
+    // A browser WebSocket cannot set headers, so the handshake carries its
+    // signature as subprotocols. Signed on every connect: the nonce is
+    // single-use. null (inactive, conflict, failed signature) = unsigned.
+    let protocols = null;
+
+    try {
+      protocols = await getWebSocketProtocols(wsURL);
+    } catch (err) {
+      safeConsole.error('subscribeChannel - WebSocket signing', err);
+    }
+
+    if (attempt !== connectSeq) {
+      return channel;
+    }
+
+    // Answered, or torn down (tab closed, navigated) while signing: no open
+    // socket is left to fire onclose, so release the keep-alive here.
+    if (handled || (channel.closing && !wasClosing)) {
+      cleanupListeners();
+      return channel;
     }
 
     // Detach the previous socket's handlers before replacing it on reconnect, so a
@@ -296,10 +327,8 @@ const subscribeChannel = (storage, tabID, options = {}) => {
       channel.ws.onmessage = null;
     }
 
-    const wsURL = buildWebSocketURL();
-
     try {
-      channel.ws = new WebSocket(wsURL);
+      channel.ws = protocols ? new WebSocket(wsURL, protocols) : new WebSocket(wsURL);
     } catch (err) {
       // The constructor threw before any handler was attached (bad URL, CSP block,
       // resource exhaustion): nothing will ever fire onclose/onerror to release the

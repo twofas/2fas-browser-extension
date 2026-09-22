@@ -53,6 +53,9 @@ vi.mock('@background/functions/wsTabClosed.js', () => ({ default: vi.fn() }));
 const storeLog = vi.fn().mockResolvedValue(undefined);
 vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
 
+const getWebSocketProtocols = vi.fn();
+vi.mock('@background/functions/signing/getWebSocketProtocols.js', () => ({ default: (...a) => getWebSocketProtocols(...a) }));
+
 // Controllable fake WebSocket. Construction can be told to throw to exercise the
 // constructor-leak path; instances expose helpers to drive open/message/close.
 let sockets = [];
@@ -64,12 +67,14 @@ class FakeWebSocket {
   static CLOSING = 2;
   static CLOSED = 3;
 
-  constructor (url) {
+  constructor (url, protocols) {
     if (throwOnConstruct) {
       throw new Error('constructor blew up');
     }
 
     this.url = url;
+    this.protocols = protocols;
+    this.argCount = arguments.length;
     this.readyState = FakeWebSocket.OPEN;
     this.onopen = null;
     this.onclose = null;
@@ -99,6 +104,7 @@ class FakeWebSocket {
 globalThis.WebSocket = FakeWebSocket;
 
 const { default: subscribeChannel } = await import('./subscribeChannel.js');
+const { default: closeWSChannel } = await import('./closeWSChannel.js');
 
 const baseOpts = { login: true, requestID: 'req-1', origin: 'https://example.test' };
 
@@ -111,10 +117,19 @@ const generateP256Spki = async () => {
 
 const log13Payloads = () => storeLog.mock.calls.filter(call => call[1] === 13).map(call => call[2]);
 
+const deferred = () => {
+  let settle;
+  const promise = new Promise(resolve => { settle = resolve; });
+
+  return { promise, resolve: settle };
+};
+
 beforeEach(() => {
   sockets = [];
   throwOnConstruct = false;
   vi.clearAllMocks();
+  getWebSocketProtocols.mockReset();
+  getWebSocketProtocols.mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -122,11 +137,11 @@ afterEach(() => {
 });
 
 describe('subscribeChannel — keep-alive on WebSocket constructor throw', () => {
-  it('releases the keep-alive and closes the request when the constructor throws', () => {
+  it('releases the keep-alive and closes the request when the constructor throws', async () => {
     throwOnConstruct = true;
 
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
-    channel.connect();
+    await channel.connect();
 
     // Keep-alive was started (deadline set on first connect) then released via the
     // terminal failure path — no leak until the backstop deadline.
@@ -138,9 +153,9 @@ describe('subscribeChannel — keep-alive on WebSocket constructor throw', () =>
 });
 
 describe('subscribeChannel — malformed frame handling', () => {
-  it('skips a malformed JSON frame without releasing the keep-alive, then handles a later valid frame', () => {
+  it('skips a malformed JSON frame without releasing the keep-alive, then handles a later valid frame', async () => {
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
-    channel.connect();
+    await channel.connect();
     const ws = sockets[0];
     ws.open();
 
@@ -162,7 +177,7 @@ describe('subscribeChannel — log 13 carries no frame content', () => {
   it('logs the event name and field names only for an unknown event', async () => {
     const spki = await generateP256Spki();
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
-    channel.connect();
+    await channel.connect();
     const ws = sockets[0];
     ws.open();
 
@@ -180,7 +195,7 @@ describe('subscribeChannel — log 13 carries no frame content', () => {
     // A 40-char slice past the constant DER header: random key bytes only.
     const slice = (await generateP256Spki()).slice(40, 80);
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
-    channel.connect();
+    await channel.connect();
     const ws = sockets[0];
     ws.open();
 
@@ -207,7 +222,7 @@ describe('subscribeChannel — accept-then-drop does not reconnect forever', () 
     vi.useFakeTimers();
 
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
-    channel.connect();
+    await channel.connect();
 
     // Simulate a server that accepts then instantly drops the socket, repeatedly.
     // Each cycle: open (well under the 5s stability threshold) then immediate drop.
@@ -227,14 +242,115 @@ describe('subscribeChannel — accept-then-drop does not reconnect forever', () 
 });
 
 describe('subscribeChannel — happy path', () => {
-  it('handles a pairing success frame', () => {
+  it('handles a pairing success frame', async () => {
     const channel = subscribeChannel({ extensionID: 'ext' }, 1, { login: false });
-    channel.connect();
+    await channel.connect();
     const ws = sockets[0];
     ws.open();
     ws.message(JSON.stringify({ event: 'browser_extensions.pairing.success', id: 'x' }));
 
     expect(handleConfigurationRequest).toHaveBeenCalledTimes(1);
+    expect(stopKeepAlive).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('subscribeChannel — signed handshake', () => {
+  it('offers the signature subprotocols made for the very URL it connects to', async () => {
+    getWebSocketProtocols.mockResolvedValueOnce(['2FAS', 'payload']);
+
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    await channel.connect();
+
+    expect(sockets.length).toBe(1);
+    expect(sockets[0].protocols).toEqual(['2FAS', 'payload']);
+    expect(getWebSocketProtocols).toHaveBeenCalledTimes(1);
+    expect(getWebSocketProtocols).toHaveBeenCalledWith(sockets[0].url);
+    expect(sockets[0].url.endsWith('/browser_extensions/ext/2fa_requests/req-1')).toBe(true);
+  });
+
+  it('opens an unsigned socket, without a protocols argument, when the handshake is not signed', async () => {
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    await channel.connect();
+
+    expect(sockets.length).toBe(1);
+    expect(sockets[0].argCount).toBe(1);
+  });
+
+  it('still connects unsigned when signing throws', async () => {
+    getWebSocketProtocols.mockRejectedValueOnce(new Error('signing broke'));
+
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    await channel.connect();
+
+    expect(sockets.length).toBe(1);
+    expect(sockets[0].argCount).toBe(1);
+    expect(closeRequest).not.toHaveBeenCalled();
+  });
+
+  it('signs every reconnect afresh: the nonce is single-use', async () => {
+    vi.useFakeTimers();
+    getWebSocketProtocols.mockResolvedValue(['2FAS', 'payload']);
+
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    await channel.connect();
+    sockets[0].open();
+    sockets[0].drop();
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(sockets.length).toBe(2);
+    expect(getWebSocketProtocols).toHaveBeenCalledTimes(2);
+    expect(sockets[1].protocols).toEqual(['2FAS', 'payload']);
+
+    sockets[1].message(JSON.stringify({ event: 'browser_extensions.device.2fa_response', token: 'x' }));
+  });
+
+  it('opens nothing and releases the keep-alive when the channel is closed while signing', async () => {
+    const signing = deferred();
+    getWebSocketProtocols.mockReturnValueOnce(signing.promise);
+
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    const connecting = channel.connect();
+    closeWSChannel(channel);
+    signing.resolve(['2FAS', 'payload']);
+    await connecting;
+
+    expect(sockets.length).toBe(0);
+    expect(startKeepAlive).toHaveBeenCalledTimes(1);
+    expect(stopKeepAlive).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets a newer connect win over one still signing', async () => {
+    const slow = deferred();
+    getWebSocketProtocols.mockReturnValueOnce(slow.promise);
+
+    const channel = subscribeChannel({ extensionID: 'ext' }, 1, baseOpts);
+    const first = channel.connect();
+    await channel.connect();
+    slow.resolve(['2FAS', 'stale']);
+    await first;
+
+    expect(sockets.length).toBe(1);
+    expect(sockets[0].argCount).toBe(1);
+    expect(channel.ws === sockets[0]).toBe(true);
+    expect(stopKeepAlive).not.toHaveBeenCalled();
+
+    sockets[0].message(JSON.stringify({ event: 'browser_extensions.device.2fa_response', token: 'x' }));
+  });
+
+  it('opens nothing when the open socket delivers the answer while a regenerate is signing', async () => {
+    const channel = subscribeChannel({ extensionID: 'ext' }, null, { login: false });
+    await channel.connect();
+    sockets[0].open();
+
+    const signing = deferred();
+    getWebSocketProtocols.mockReturnValueOnce(signing.promise);
+    const regenerating = channel.connect();
+    sockets[0].message(JSON.stringify({ event: 'browser_extensions.pairing.success', id: 'x' }));
+    signing.resolve(['2FAS', 'payload']);
+    await regenerating;
+
+    expect(handleConfigurationRequest).toHaveBeenCalledTimes(1);
+    expect(sockets.length).toBe(1);
     expect(stopKeepAlive).toHaveBeenCalledTimes(1);
   });
 });
