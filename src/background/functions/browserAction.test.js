@@ -57,6 +57,7 @@ import config from '@/config.js';
 import browserAction from './browserAction.js';
 import { saveToLocalStorage } from '@localStorage/index.js';
 import browserActionConfigured from '@background/functions/browserActionConfigured.js';
+import syncDevicesWithAPI from '@background/functions/syncDevicesWithAPI.js';
 import storeLog from '@partials/storeLog.js';
 
 const EXT_BASE = 'safari-web-extension://0F3B1C2D-1111-2222-3333-444455556666';
@@ -176,5 +177,31 @@ describe('browserAction — pre-flight key check', () => {
 
     expect(selfHealMissingPrivateKey).not.toHaveBeenCalled();
     expect(storeLog).toHaveBeenCalledWith('error', 4, expect.any(Error), 'https://example.test/login');
+  });
+});
+
+describe('browserAction — device sync failures', () => {
+  beforeEach(async () => {
+    await saveToLocalStorage({ configured: true, keys: { publicKey: 'pub' }, extensionID: 'ext-1' });
+  });
+
+  it('points at the missing site access when the browser blocked the request', async () => {
+    // "Cannot reach 2FAS service" sends the user after their network, which is
+    // fine: the browser refused the request (no host access, CORS).
+    vi.mocked(syncDevicesWithAPI).mockResolvedValueOnce({ storage: {}, hasDevices: false, apiError: true, blocked: true });
+
+    await browserAction({ id: 7, url: 'https://example.test/login' });
+
+    expect(config.Texts.Error.ApiAccessBlocked).toBeDefined();
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.ApiAccessBlocked, 7);
+    expect(browserActionConfigured).not.toHaveBeenCalled();
+  });
+
+  it('keeps the generic message for an API failure the browser did not cause', async () => {
+    vi.mocked(syncDevicesWithAPI).mockResolvedValueOnce({ storage: {}, hasDevices: false, apiError: true, blocked: false });
+
+    await browserAction({ id: 7, url: 'https://example.test/login' });
+
+    expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.DevicesUnavailable, 7);
   });
 });

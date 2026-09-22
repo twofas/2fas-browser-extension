@@ -191,6 +191,14 @@
     "message": "We could not verify your paired devices. Please check your connection and try again.",
     "description": ""
   },
+  "errorApiAccessBlockedTitle": {
+    "message": "Browser is blocking 2FAS",
+    "description": ""
+  },
+  "errorApiAccessBlockedMessage": {
+    "message": "Your browser does not let this extension connect to the 2FAS server. Open the extension options to see how to allow it.",
+    "description": ""
+  },
   "errorSigningRequiredTitle": {
     "message": "Connection needs to be renewed",
     "description": ""

@@ -166,5 +166,37 @@
   "optionsIconDesc": {
     "message": "Choose an icon for the 2FAS Browser Extension to personalize its appearance in your browser.",
     "description": ""
+  },
+  "apiBlockedTitle": {
+    "message": "Browser is blocking 2FAS",
+    "description": ""
+  },
+  "apiBlockedMessage": {
+    "message": "Your browser does not let this extension connect to the 2FAS server, so it cannot load your paired devices or request tokens. To fix it:",
+    "description": ""
+  },
+  "apiBlockedSafariStep1": {
+    "message": "Open Safari → Settings → Extensions.",
+    "description": ""
+  },
+  "apiBlockedSafariStep2": {
+    "message": "Select 2FAS and click Edit Websites.",
+    "description": ""
+  },
+  "apiBlockedSafariStep3": {
+    "message": "Set 2fas.com (or api2.2fas.com) to Allow, then click Refresh below. If neither is listed, set “When visiting other websites” to Allow.",
+    "description": ""
+  },
+  "apiBlockedStep1": {
+    "message": "Open your browser's extensions page and the details of 2FAS.",
+    "description": ""
+  },
+  "apiBlockedStep2": {
+    "message": "Under Site access (Permissions in Firefox), allow access to 2fas.com, then click Refresh below.",
+    "description": ""
+  },
+  "apiBlockedRefresh": {
+    "message": "Refresh",
+    "description": ""
   }
 }

@@ -27,6 +27,7 @@
     "loco-export": "node webpack/utils/locoExport.js",
     "loco-import": "node webpack/utils/locoImport.js",
     "check-build-directory": "node webpack/utils/checkBuildDirectoryExists.js",
+    "check-api-cors": "node webpack/utils/checkApiCors.js",
     "generate-locales": "node webpack/utils/generateLocales.js",
     "generate-license-info-html": "npx -y license-report --output=html >> open-source-licenses.html",
     "generate-license-info-json": "npx -y license-report --output=json >> open-source-licenses.json",

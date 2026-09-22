@@ -146,6 +146,11 @@ const browser = {
   notifications: {
     create: async () => 'notification-id'
   },
+  // Host access granted by default (Chromium grants host_permissions at install);
+  // Safari-style tests spy on contains() to report a missing grant.
+  permissions: {
+    contains: async () => true
+  },
   i18n: { getMessage: () => '' }
 };
 

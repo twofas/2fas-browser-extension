@@ -20,12 +20,19 @@
 import browser from 'webextension-polyfill';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import createFirefoxOptionsMenu from './createFirefoxOptionsMenu.js';
+import createMenuItem from './createMenuItem.js';
+
+// Every call rebuilds the menus from scratch, one call after another. The
+// background calls this at load and again from onStartup/onInstalled; run side
+// by side, the two removeAll()s finished before either create(), and the second
+// create failed with "Identifier is already used" on every browser start.
+let queue = Promise.resolve();
 
 /**
- * Creates context menu items for the extension.
+ * Removes the extension's context menu items and creates them again.
  * @return {Promise<void>}
  */
-const createContextMenus = async () => {
+const rebuildContextMenus = async () => {
   let storage;
 
   try {
@@ -34,6 +41,9 @@ const createContextMenus = async () => {
     if (!('contextMenu' in storage)) {
       storage = await saveToLocalStorage({ contextMenu: true }, storage);
     }
+
+    // From scratch, the Firefox options item included.
+    await browser.contextMenus.removeAll();
 
     if (storage.contextMenu) {
       const options = {
@@ -52,16 +62,26 @@ const createContextMenus = async () => {
         };
       }
 
-      await browser.contextMenus.removeAll();
-      browser.contextMenus.create(options);
+      await createMenuItem(options);
     }
 
-    createFirefoxOptionsMenu();
+    await createFirefoxOptionsMenu();
   } catch (err) {
     // Silently fail - context menu is not critical
   } finally {
     storage = null;
   }
+};
+
+/**
+ * Creates context menu items for the extension. Calls are queued, so overlapping
+ * callers never interleave removeAll() and create().
+ * @return {Promise<void>}
+ */
+const createContextMenus = () => {
+  queue = queue.then(rebuildContextMenus, rebuildContextMenus);
+
+  return queue;
 };
 
 export default createContextMenus;

@@ -150,6 +150,10 @@ const config = {
         Title: msg('errorDevicesUnavailableTitle'),
         Message: msg('errorDevicesUnavailableMessage')
       },
+      ApiAccessBlocked: {
+        Title: msg('errorApiAccessBlockedTitle'),
+        Message: msg('errorApiAccessBlockedMessage')
+      },
       SigningRequired: {
         Title: msg('errorSigningRequiredTitle'),
         Message: msg('errorSigningRequiredMessage')

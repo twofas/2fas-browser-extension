@@ -23,12 +23,11 @@ import i18n from '@partials/i18n.js';
 import loadFromLocalStorage from '@localStorage/loadFromLocalStorage.js';
 import TwoFasNotification from '@notification';
 import pageError from '@partials/pageError.js';
-import SDK from '@sdk';
 import extPageOnMessage from '@partials/extPageOnMessage.js';
-import { awaitRegistration, delay, handleTargetBlank, hidePreloader, isRegistrationPending, isTransportError, showIntegrityError, storageValidation, storeLog } from '@partials';
+import { awaitRegistration, delay, handleTargetBlank, hidePreloader, isRegistrationPending, showIntegrityError, storageValidation, storeLog } from '@partials';
 import S from '@/selectors.js';
 import { REGISTRATION_STORAGE_KEY } from '@background/functions/update/registrationRetryPolicy.js';
-import { generateDevicesList, generateDevicesErrorRow, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect, handleStorageChange } from '@optionsPage/functions';
+import { generateDevicesList, generateDevicesErrorRow, loadDevicesList, devicesErrorNotification, showApiBlockedOverlay, setLoggingToggle, setContextMenuToggle, setPushRadio, setPinInfo, setExtName, setExtNameUpdateForm, setModalsListeners, setAdvanced, setMenuLinks, setPinInfoBtns, setShortcutBox, setHamburger, setExtVersion, generateShortcutBox, generateShortcutLink, generateDomainsList, setImportDefaultExcludedDomains, setAutoSubmitSwitch, setIconSelect, handleStorageChange } from '@optionsPage/functions';
 
 const init = async storage => {
   i18n();
@@ -101,34 +100,23 @@ const init = async storage => {
   }
 
   const devicesTbody = document.querySelector(S.optionsPage.devicesList);
-  let devicesList = null;
-  let devicesErrorReason = null;
+  const { devices: devicesList, errorReason: devicesErrorReason } = await loadDevicesList(storage.extensionID);
 
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-    devicesErrorReason = 'offline';
-    TwoFasNotification.show(config.Texts.Error.NoInternet);
-  } else {
-    try {
-      const apiResponse = await new SDK().getAllPairedDevices(storage.extensionID);
-
-      if (Array.isArray(apiResponse)) {
-        devicesList = apiResponse;
-      } else {
-        devicesErrorReason = 'apiError';
-      }
-    } catch (err) {
-      if (!isTransportError(err)) {
-        await storeLog('error', 21, err, 'optionsPage:getAllPairedDevices');
-      }
-      devicesErrorReason = 'apiError';
-    }
-
-    if (devicesErrorReason) {
-      TwoFasNotification.show(config.Texts.Error.DevicesUnavailable);
-    }
+  // The browser refuses our API requests (no host access to the API, so CORS
+  // applied): nothing on this page can work until the user allows the access.
+  if (devicesErrorReason === 'blocked') {
+    showApiBlockedOverlay();
+    hidePreloader();
+    return false;
   }
 
   if (devicesErrorReason) {
+    const notification = devicesErrorNotification(devicesErrorReason);
+
+    if (notification) {
+      TwoFasNotification.show(notification);
+    }
+
     generateDevicesErrorRow(devicesTbody, devicesErrorReason);
   } else {
     generateDevicesList(devicesList);
