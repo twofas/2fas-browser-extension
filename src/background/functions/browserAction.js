@@ -115,6 +115,10 @@ const browserAction = async tab => {
       return TwoFasNotification.show(config.Texts.Error.NoInternet, tab.id);
     }
 
+    if (syncResult.blocked) {
+      return TwoFasNotification.show(config.Texts.Error.ApiAccessBlocked, tab.id);
+    }
+
     if (syncResult.apiError) {
       return TwoFasNotification.show(config.Texts.Error.DevicesUnavailable, tab.id);
     }

@@ -42,7 +42,10 @@ const isDevicePaired = async (storage, deviceId) => {
   // the narrow residual of honouring a device that was unpaired while we were
   // offline. Freshness is therefore best-effort: guaranteed only when the API is
   // reachable, cache-backed otherwise.
-  const syncResult = await syncDevicesWithAPI(storage, { fresh: true });
+  //
+  // No block diagnosis: the user is waiting for this token, and the extra probes
+  // would only delay the fail-open.
+  const syncResult = await syncDevicesWithAPI(storage, { fresh: true, diagnose: false });
   const devices = syncResult.storage?.devices || [];
 
   return deviceListHasId(devices, deviceId);

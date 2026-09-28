@@ -17,7 +17,7 @@
 //  along with this program. If not, see <https://www.gnu.org/licenses/>
 //
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 
@@ -30,7 +30,9 @@ vi.mock('@sdk/index.js', () => ({
   }
 }));
 
+import browser from 'webextension-polyfill';
 import syncDevicesWithAPI from './syncDevicesWithAPI.js';
+import storeLog from '@partials/storeLog.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 
 beforeEach(() => {
@@ -154,6 +156,170 @@ describe('syncDevicesWithAPI', () => {
       const res = await syncDevicesWithAPI({ extensionID: 'ext-unpair', devices: [{ device_id: 'd1', device_public_key: 'k1' }] }, { fresh: true });
 
       expect(res.storage.devices).toEqual([]);
+    });
+  });
+  describe('request blocked by the browser (no host access, CORS)', () => {
+    const loadFailed = () => ({ name: 'TypeError', message: 'Load failed' });
+
+    // The plain GET /health answers; the one carrying our headers dies in the
+    // browser, the way a rejected CORS preflight does.
+    const stubCorsBlock = () => vi.stubGlobal('fetch', vi.fn(async (url, init = {}) => {
+      if (init.headers) {
+        throw new TypeError('Load failed');
+      }
+
+      return new Response('{}', { status: 200 });
+    }));
+
+    const blockedLogs = () => vi.mocked(storeLog).mock.calls.filter(([level, id]) => level === 'warning' && id === 76);
+
+    beforeEach(() => {
+      vi.mocked(storeLog).mockClear();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
+
+    it('flags blocked when the browser refuses the request', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      const res = await syncDevicesWithAPI({ extensionID: 'ext-blocked', devices: [] }, { fresh: true });
+
+      expect(res.apiError).toBe(true);
+      expect(res.blocked).toBe(true);
+    });
+
+    it('does not flag blocked for a network failure while host access is granted', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+
+      const res = await syncDevicesWithAPI({ extensionID: 'ext-net', devices: [] }, { fresh: true });
+
+      expect(res.apiError).toBe(true);
+      expect(res.blocked).toBe(false);
+    });
+
+    it('skips the diagnosis when the caller does not need it', async () => {
+      // isDevicePaired gates a token the user is waiting for: no extra probes there.
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      const contains = vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      const res = await syncDevicesWithAPI({ extensionID: 'ext-nodiag', devices: [] }, { fresh: true, diagnose: false });
+
+      expect(res.blocked).toBe(false);
+      expect(contains).not.toHaveBeenCalled();
+    });
+
+    it('holds log 76 while the block lasts: store_log goes through the same blocked API', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      await syncDevicesWithAPI({ extensionID: 'ext-hold', devices: [] }, { fresh: true });
+      await syncDevicesWithAPI({ extensionID: 'ext-hold', devices: [] }, { fresh: true });
+
+      expect(blockedLogs().length).toBe(0);
+    });
+
+    it('reports log 76 on the first sync that succeeds after the block', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      await syncDevicesWithAPI({ extensionID: 'ext-after', devices: [] }, { fresh: true });
+
+      getAllPairedDevices.mockResolvedValue([]);
+      await syncDevicesWithAPI({ extensionID: 'ext-after', devices: [] }, { fresh: true });
+
+      await vi.waitFor(() => expect(blockedLogs().length).toBe(1));
+    });
+
+    it('reports one 76 per browser session, even when the block comes back', async () => {
+      const contains = vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      await syncDevicesWithAPI({ extensionID: 'ext-session', devices: [] }, { fresh: true });
+      getAllPairedDevices.mockResolvedValue([]);
+      await syncDevicesWithAPI({ extensionID: 'ext-session', devices: [] }, { fresh: true });
+      await vi.waitFor(() => expect(blockedLogs().length).toBe(1));
+
+      // Second episode in the same session: nothing is held for it.
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      const again = await syncDevicesWithAPI({ extensionID: 'ext-session', devices: [] }, { fresh: true });
+      const held = await browser.storage.session.get('apiAccessBlockedPending');
+
+      expect(again.blocked).toBe(true);
+      expect(held.apiAccessBlockedPending === undefined).toBe(true);
+      expect(contains).toHaveBeenCalled();
+    });
+
+    it('sends a typed, key-free 76: constant message and the cause fields only', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      await syncDevicesWithAPI({ extensionID: 'ext-payload', devices: [] }, { fresh: true });
+      getAllPairedDevices.mockResolvedValue([]);
+      await syncDevicesWithAPI({ extensionID: 'ext-payload', devices: [] }, { fresh: true });
+      await vi.waitFor(() => expect(blockedLogs().length).toBe(1));
+
+      const [, , err, context] = blockedLogs()[0];
+
+      expect(err.message).toBe('API requests were blocked by the browser: no host access, API reachable');
+      expect(Object.keys(err.cause).sort()).toEqual(['blockedForMinutes', 'errorName', 'hostAccessNow']);
+      expect(typeof err.cause.errorName).toBe('string');
+      expect(typeof err.cause.blockedForMinutes).toBe('number');
+      expect(err.cause.hostAccessNow).toBe(false);
+      expect(context).toBe('syncDevicesWithAPI');
+    });
+
+    it('keeps the sync result when storage.session fails', async () => {
+      vi.spyOn(browser.storage.session, 'get').mockRejectedValue(new Error('session unavailable'));
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      const blocked = await syncDevicesWithAPI({ extensionID: 'ext-session-fail', devices: [] }, { fresh: true });
+
+      getAllPairedDevices.mockResolvedValue([{ id: 'd1', public_key: 'k1' }]);
+      const recovered = await syncDevicesWithAPI({ extensionID: 'ext-session-fail', devices: [] }, { fresh: true });
+
+      expect(blocked.blocked).toBe(true);
+      expect(recovered.apiError).toBe(false);
+      expect(recovered.hasDevices).toBe(true);
+    });
+
+    it('does not hold up the caller while log 76 goes out', async () => {
+      // The first success after a block may be the token-delivery check.
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      vi.spyOn(browser.permissions, 'contains').mockResolvedValue(false);
+      stubCorsBlock();
+      await syncDevicesWithAPI({ extensionID: 'ext-nowait', devices: [] }, { fresh: true });
+
+      let releaseLog;
+      vi.mocked(storeLog).mockImplementationOnce(() => new Promise(resolve => { releaseLog = resolve; }));
+      getAllPairedDevices.mockResolvedValue([]);
+
+      const res = await syncDevicesWithAPI({ extensionID: 'ext-nowait', devices: [] }, { fresh: true, diagnose: false });
+
+      expect(res.apiError).toBe(false);
+      await vi.waitFor(() => expect(typeof releaseLog).toBe('function'));
+      releaseLog();
+    });
+
+    it('reports nothing when no block happened', async () => {
+      getAllPairedDevices.mockRejectedValue(loadFailed());
+      await syncDevicesWithAPI({ extensionID: 'ext-net-log', devices: [] }, { fresh: true });
+
+      getAllPairedDevices.mockResolvedValue([]);
+      await syncDevicesWithAPI({ extensionID: 'ext-net-log', devices: [] }, { fresh: true });
+
+      expect(vi.mocked(storeLog).mock.calls.some(([, id]) => id === 76)).toBe(false);
     });
   });
 });

@@ -59,7 +59,8 @@ const installContainerHandlers = (channel, imageURL, extensionID) => {
     qr.classList.toggle('active');
 
     if (step === '1') {
-      if (channel.ws.readyState === WebSocket.OPEN) {
+      // No socket yet while the first connect is still signing its handshake.
+      if (channel.ws?.readyState === WebSocket.OPEN) {
         cleanupQrTimeout = closeChannelAndCleanup(channel, cleanupQrTimeout);
       }
     } else {

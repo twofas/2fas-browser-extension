@@ -97,7 +97,10 @@ const selectors = {
     toggle: '.twofas-toggle',
     safariReset: '.js-twofas-safari-reset',
     integrityError: '.js-twofas-integrity-error',
-    integrityReset: '.js-twofas-integrity-reset'
+    integrityReset: '.js-twofas-integrity-reset',
+    apiBlocked: '.js-twofas-api-blocked',
+    apiBlockedSteps: '.js-twofas-api-blocked-steps',
+    apiBlockedRefresh: '.js-twofas-api-blocked-refresh'
   },
   notification: {
     container: 'div.twofas-be-notifications',

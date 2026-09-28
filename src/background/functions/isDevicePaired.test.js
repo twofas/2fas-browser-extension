@@ -35,7 +35,7 @@ describe('isDevicePaired', () => {
 
     await isDevicePaired(storage, 'dev-1');
 
-    expect(syncDevicesWithAPI).toHaveBeenCalledWith(storage, { fresh: true });
+    expect(syncDevicesWithAPI).toHaveBeenCalledWith(storage, { fresh: true, diagnose: false });
   });
 
   it('is true when the synced device list contains the device', async () => {

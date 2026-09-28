@@ -21,6 +21,7 @@ export { default as buildCanonicalRequest, SIGNATURE_VERSION } from './canonical
 export { default as p1363ToDer } from './p1363ToDer.js';
 export { default as signRequest, NONCE_BYTES } from './signRequest.js';
 export { default as getSigningHeaders } from './getSigningHeaders.js';
+export { default as getWebSocketProtocols, encodeWebSocketSigningProtocols, WS_SIGNING_PROTOCOL } from './getWebSocketProtocols.js';
 export { default as bytesToB64url } from './bytesToB64url.js';
 export { default as b64urlToBytes } from './b64urlToBytes.js';
 export { default as hashBody } from './hashBody.js';

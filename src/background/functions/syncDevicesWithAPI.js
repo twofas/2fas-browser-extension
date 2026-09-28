@@ -24,12 +24,69 @@ import createAsyncThrottle from '@partials/createAsyncThrottle.js';
 import { mutateDevices } from '@background/functions/listStore.js';
 import reconcileDevices from '@background/functions/reconcileDevices.js';
 import isTransportError from '@partials/isTransportError.js';
+import { hasApiHostAccess, isApiBlockedByBrowser } from '@partials/apiHostAccess.js';
+import { loadFromSessionStorage, removeFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 
 // Collapse bursts of sync requests (rapid action triggers, duplicate WebSocket
 // responses, concurrent callers) into a single backend request. Without this a
 // flaky network turns every retry into another getAllPairedDevices call and
 // another error-39 log, which is how a single user can flood the backend.
 const SYNC_THROTTLE_MS = 2000;
+
+// storage.session markers for log 76. The log cannot go out while the block lasts:
+// store_log goes through the same API with the same headers, so it is held as
+// pending and sent by the first sync that succeeds afterwards, once per session.
+const BLOCKED_PENDING_KEY = 'apiAccessBlockedPending';
+const BLOCKED_REPORTED_KEY = 'apiAccessBlockedReported';
+
+/**
+ * Remembers that the browser blocked the device sync, for log 76.
+ *
+ * @param {Object} err - The SDK-normalized error of the blocked request.
+ * @returns {Promise<void>}
+ */
+const noteBlocked = async err => {
+  try {
+    const session = await loadFromSessionStorage([BLOCKED_PENDING_KEY, BLOCKED_REPORTED_KEY]);
+
+    if (session?.[BLOCKED_PENDING_KEY] || session?.[BLOCKED_REPORTED_KEY]) {
+      return;
+    }
+
+    await saveToSessionStorage({ [BLOCKED_PENDING_KEY]: { errorName: String(err?.name || 'Error'), at: Date.now() } });
+  } catch (sessionErr) {
+    safeConsole.error('syncDevicesWithAPI - noteBlocked', sessionErr);
+  }
+};
+
+/**
+ * Sends a held log 76 now that the API answers again. `hostAccessNow` tells how the
+ * block ended: true = the user granted access, false = the API's CORS policy now
+ * lets our headers through.
+ *
+ * @returns {Promise<void>}
+ */
+const reportBlockAfterRecovery = async () => {
+  try {
+    const session = await loadFromSessionStorage(BLOCKED_PENDING_KEY);
+    const pending = session?.[BLOCKED_PENDING_KEY];
+
+    if (!pending) {
+      return;
+    }
+
+    await removeFromSessionStorage(BLOCKED_PENDING_KEY);
+    await saveToSessionStorage({ [BLOCKED_REPORTED_KEY]: Date.now() });
+
+    const blockedForMinutes = Number.isFinite(pending.at) ? Math.max(0, Math.round((Date.now() - pending.at) / 60000)) : null;
+
+    await storeLog('warning', 76, new Error('API requests were blocked by the browser: no host access, API reachable', {
+      cause: { errorName: pending.errorName, blockedForMinutes, hostAccessNow: await hasApiHostAccess() }
+    }), 'syncDevicesWithAPI');
+  } catch (logErr) {
+    safeConsole.error('syncDevicesWithAPI - reportBlockAfterRecovery', logErr);
+  }
+};
 
 /**
  * Fetches the API device list and reconciles it into the cache. Returns ONLY the
@@ -41,15 +98,19 @@ const SYNC_THROTTLE_MS = 2000;
  * the caller's storage untouched.
  *
  * @param {Object} storage - Current local storage; only `extensionID` is read here.
- * @returns {Promise<Object>} { devices, hasDevices, devicesChanged, apiError, offline }
+ * @param {Object} [options]
+ * @param {boolean} [options.diagnose=true] - Tell a browser block from a network
+ *   failure (up to two GET /health probes on a transport failure).
+ * @returns {Promise<Object>} { devices, hasDevices, devicesChanged, apiError, offline, blocked }
  */
-const fetchAndReconcileDevices = async storage => {
+const fetchAndReconcileDevices = async (storage, { diagnose = true } = {}) => {
   const result = {
     devices: null,
     hasDevices: false,
     devicesChanged: false,
     apiError: false,
-    offline: false
+    offline: false,
+    blocked: false
   };
 
   if (!storage?.extensionID) {
@@ -89,6 +150,10 @@ const fetchAndReconcileDevices = async storage => {
     result.hasDevices = devices.length > 0;
     result.devicesChanged = changed;
 
+    // Not awaited: the first success after a block may be the token-delivery check,
+    // which must not wait for a store_log POST. It never rejects.
+    reportBlockAfterRecovery();
+
     return result;
   } catch (err) {
     // Offline is short-circuited above, but a captive portal, VPN, DNS failure or
@@ -101,6 +166,13 @@ const fetchAndReconcileDevices = async storage => {
       await storeLog('error', 72, err, 'syncDevicesWithAPI');
     } else {
       safeConsole.error('syncDevicesWithAPI', err);
+
+      // A request refused by the browser (CORS without host access) looks exactly
+      // like being offline. Tell them apart so the user gets advice that works.
+      if (diagnose && await isApiBlockedByBrowser(err)) {
+        result.blocked = true;
+        await noteBlocked(err);
+      }
     }
     result.apiError = true;
     return result;
@@ -118,14 +190,15 @@ const throttledFetchAndReconcile = createAsyncThrottle(fetchAndReconcileDevices,
  *
  * @param {Object} storage - The caller's storage.
  * @param {Object} sync - Output of fetchAndReconcileDevices.
- * @returns {Object} { storage, hasDevices, devicesChanged, apiError, offline }
+ * @returns {Object} { storage, hasDevices, devicesChanged, apiError, offline, blocked }
  */
 const composeResult = (storage, sync) => {
   const base = {
     hasDevices: sync.hasDevices,
     devicesChanged: sync.devicesChanged,
     apiError: sync.apiError,
-    offline: sync.offline
+    offline: sync.offline,
+    blocked: sync.blocked
   };
 
   if (sync.devices === null) {
@@ -144,13 +217,16 @@ const composeResult = (storage, sync) => {
  * @param {boolean} [options.fresh=false] - Bypass the throttle and always hit the API.
  *   Used by the token-delivery pairing check, where a ≤2s-stale cache could accept a
  *   token from a device unpaired moments earlier — a security check must be fresh.
+ * @param {boolean} [options.diagnose=true] - Tell a browser block apart (flag
+ *   `blocked`). Honoured on fresh calls; the throttled path always diagnoses.
  * @returns {Promise<Object>} Object with updated storage, hasDevices flag, devicesChanged flag,
  *   apiError flag (true when the API request failed or returned an unexpected payload),
- *   and offline flag (true when no internet connection was detected before the request).
+ *   offline flag (true when no internet connection was detected before the request),
+ *   and blocked flag (true when the browser refused the request: no host access, API reachable).
  */
-const syncDevicesWithAPI = async (storage, { fresh = false } = {}) => {
+const syncDevicesWithAPI = async (storage, { fresh = false, diagnose = true } = {}) => {
   const sync = fresh
-    ? await fetchAndReconcileDevices(storage)
+    ? await fetchAndReconcileDevices(storage, { diagnose })
     : await throttledFetchAndReconcile(storage);
 
   return composeResult(storage, sync);

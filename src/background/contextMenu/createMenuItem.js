@@ -18,25 +18,23 @@
 //
 
 import browser from 'webextension-polyfill';
-import createMenuItem from './createMenuItem.js';
 
 /**
- * Creates Firefox-specific options menu in the action context.
- * @return {Promise<boolean>} true when the item was created.
+ * Creates one context-menu item and resolves once the browser has processed it.
+ * The callback reads runtime.lastError, so a rejected item (e.g. an id that is
+ * already registered) is handled here instead of surfacing as "Unchecked
+ * runtime.lastError". A context menu is never critical: this never rejects.
+ *
+ * @param {Object} createProperties - contextMenus.create properties.
+ * @returns {Promise<boolean>} true when the item was created.
  */
-const createFirefoxOptionsMenu = () => {
-  if (process.env.EXT_PLATFORM === 'Firefox') {
-    return createMenuItem({
-      title: browser.i18n.getMessage('options'),
-      id: 'twofas-firefox-options-menu',
-      contexts: ['action'],
-      enabled: true,
-      type: 'normal',
-      visible: true
-    });
+const createMenuItem = createProperties => new Promise(resolve => {
+  try {
+    // Reading lastError inside the callback marks it as handled.
+    browser.contextMenus.create(createProperties, () => resolve(!browser.runtime.lastError));
+  } catch {
+    resolve(false);
   }
+});
 
-  return Promise.resolve(false);
-};
-
-export default createFirefoxOptionsMenu;
+export default createMenuItem;
