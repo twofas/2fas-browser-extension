@@ -49,6 +49,14 @@ const PAIRED_DEVICES_RETRY_BACKOFF_MS = [1000, 2000];
 const signedResponses = new WeakSet();
 
 /**
+ * Responses that are a clock-skew 401 even after the corrected retry. The tap
+ * never counts them (see trackAuth), so a caller that wants to report the one
+ * rejection nothing else reports (the server's own Date could not satisfy the
+ * server) reads `clockSkew` off the error.
+ */
+const skewResponses = new WeakSet();
+
+/**
  * SDK class for communicating with the 2FAS REST API.
  */
 class SDK {
@@ -189,6 +197,10 @@ class SDK {
 
     if (signedTimestamp && res) {
       signedResponses.add(res);
+
+      if (res.status === 401 && isClockSkewRejection(signedTimestamp, res.headers?.get?.('date'))) {
+        skewResponses.add(res);
+      }
     }
 
     return track ? this.trackAuth(res, signedTimestamp) : res;
@@ -258,8 +270,9 @@ class SDK {
   /**
    * Handles API errors and formats error objects.
    * Extracts as much useful information as possible from either:
-   *   - a Response (HTTP error) — status, statusText, body (json or text), and
-   *     `signed`: whether the rejected request carried a signature
+   *   - a Response (HTTP error) — status, statusText, body (json or text),
+   *     `signed`: whether the rejected request carried a signature, and
+   *     `clockSkew: true` on a 401 the corrected retry could not get past
    *   - a network/parse Error — name, message, stack
    * @param {Response|Error} err - The error to format
    * @returns {Promise<never>} Rejected promise with formatted error
@@ -272,6 +285,10 @@ class SDK {
       errObj.statusText = err.statusText;
       errObj.url = err.url;
       errObj.signed = signedResponses.has(err);
+
+      if (skewResponses.has(err)) {
+        errObj.clockSkew = true;
+      }
 
       try {
         const text = await err.text();

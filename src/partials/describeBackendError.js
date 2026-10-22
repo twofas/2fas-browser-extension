@@ -26,8 +26,30 @@ const BACKEND_ERROR_TYPES = Object.freeze(['BadRequest', 'InternalServerError', 
 /** Names of status-less failures (SDK.onError network shape) worth telling apart. */
 const NETWORK_ERROR_NAMES = Object.freeze(['AbortError', 'TypeError', 'SyntaxError']);
 
-// Same sentinel as isSigningKeyConflictError: ErrBrowserExtensionAlreadyHasSigningKey.
-const SIGNING_KEY_CONFLICT_SENTINEL = 'already has public signing key';
+// ErrBrowserExtensionAlreadyHasSigningKey, as the backend has worded it over time.
+// Until 2026-09-24 the Reason quoted both keys and ended in the first sentence
+// below; 2fas-server 103b060 ("don't send public key on update") made the whole
+// Reason the second one — the sentinel 1.9.1/1.9.2 looked for was gone with the
+// keys, so every conflict read as a plain 400 (log 27 on every start, no 64, no
+// keyless retry). Both are kept: a message change must never silence the state.
+const SIGNING_KEY_CONFLICT_SENTINELS = Object.freeze([
+  'already has public signing key',
+  'updating public signing key is not supported'
+]);
+
+/**
+ * Whether a backend body (JSON or text, any casing) carries the signing-key
+ * conflict: the row already holds a different public_signing_key. Shared with
+ * registrationRetryPolicy.isSigningKeyConflictError so the two never drift.
+ *
+ * @param {string} haystack - The body text, or its JSON serialization.
+ * @returns {boolean}
+ */
+const isSigningKeyConflictReason = haystack => {
+  const text = typeof haystack === 'string' ? haystack.toLowerCase() : '';
+
+  return SIGNING_KEY_CONFLICT_SENTINELS.some(sentinel => text.includes(sentinel));
+};
 
 // go-playground/validator: "Key: 'Cmd.Field' Error:Field validation for 'Field' failed on the 'tag' tag".
 const VALIDATION_FIELD = /Field validation for '([^']*)'/;
@@ -142,7 +164,7 @@ const describeBackendError = err => {
     descriptor.validationField = captureName(fieldMatch, GO_FIELD_NAME);
     descriptor.validationTag = captureName(VALIDATION_TAG.exec(haystack), VALIDATOR_TAG_NAME);
 
-    if (haystack.toLowerCase().includes(SIGNING_KEY_CONFLICT_SENTINEL)) {
+    if (isSigningKeyConflictReason(haystack)) {
       descriptor.reasonClass = 'signingKeyConflict';
     } else if (fieldMatch) {
       descriptor.reasonClass = 'validation';
@@ -161,4 +183,4 @@ const describeBackendError = err => {
 };
 
 export default describeBackendError;
-export { BACKEND_ERROR_TYPES };
+export { BACKEND_ERROR_TYPES, isSigningKeyConflictReason };

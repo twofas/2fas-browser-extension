@@ -214,7 +214,8 @@ describe('Safari upgrade 1.8.4 → 1.9.0, first launch', () => {
     expect(after.keys.publicKey).not.toBe('rsa-pub-184');
     expect(removeAllPairedDevices).toHaveBeenCalledWith('ext-184');
     expect(openInstallPage).toHaveBeenCalledWith('recovered', { focusWindow: false });
-    expect(storeLog).toHaveBeenCalledWith('warning', 69, expect.anything(), expect.any(String));
+    // Neither the loss (57) nor the heal (69) goes to the backend since 1.9.3.
+    expect(storeLog.mock.calls.some(call => call[1] === 57 || call[1] === 69)).toBe(false);
     // Exactly one regeneration despite onStartup and onInstalled racing.
     expect(createExtensionInstance).toHaveBeenCalledTimes(1);
     // Preferences survived; the healed install is registered and keeps signing active.
@@ -252,9 +253,10 @@ describe('Safari upgrade 1.8.4 → 1.9.0, first launch', () => {
     expect(notificationShow).not.toHaveBeenCalled();
     expect(openInstallPage).not.toHaveBeenCalled();
     expect(storeLog).not.toHaveBeenCalledWith('warning', 69, expect.anything(), expect.anything());
-    // Reported once, as a signing-key loss — not as an RSA loss, not as a heal.
-    const calls57 = storeLog.mock.calls.filter(call => call[1] === 57);
-    expect(calls57.length).toBeGreaterThanOrEqual(1);
-    expect(calls57.every(call => call[2]?.cause?.key === 'signing' && !call[2]?.cause?.selfHealed)).toBe(true);
+    // Flagged once, as a signing-key loss — not as an RSA loss, not as a heal
+    // (the report itself is console only since 1.9.3).
+    expect(storeLog.mock.calls.some(call => call[1] === 57)).toBe(false);
+    expect(after.signingKeyMissingReported).toBe(true);
+    expect(after.privateKeyMissingReported).toBeUndefined();
   });
 });

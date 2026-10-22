@@ -193,7 +193,7 @@ describe('handleLoginRequest — token delivery tail', () => {
 });
 
 describe('handleLoginRequest — missing private key', () => {
-  it('routes through the deduped log-57 reporter, shows the re-pair notification per request, closes the request — no error 8', async () => {
+  it('routes through the deduped missing-key reporter, shows the re-pair notification per request, closes the request — no error 8', async () => {
     getOrMigratePrivateKey.mockResolvedValue(null);
     resolveTokenTargetFrame.mockResolvedValue(0);
     selfHealMissingPrivateKey.mockResolvedValue(false);
@@ -201,7 +201,7 @@ describe('handleLoginRequest — missing private key', () => {
 
     await handleLoginRequest(TAB, DATA);
 
-    // Log 57 (deduped by the helper) instead of a per-request error 8 flood.
+    // The deduped helper (console only since 1.9.3) instead of a per-request error 8 flood.
     expect(reportMissingPrivateKey).toHaveBeenCalledWith(expect.anything(), 'handleLoginRequest', { notify: false });
     expect(storeLog).not.toHaveBeenCalled();
 

@@ -95,6 +95,36 @@ describe('syncDevicesWithAPI', () => {
     expect(res.apiError).toBe(true);
   });
 
+  it('does not log 72 for a 401: the signing state machine owns that status', async () => {
+    // A rejected signature (a reused nonce, a key the row no longer verifies
+    // against) is counted by the SDK tap and reported once through log 66 when
+    // it persists; a 72 per toolbar click on top of it is noise.
+    getAllPairedDevices.mockRejectedValue({ status: 401, statusText: '', url: 'https://api.example.test/browser_extensions/ext-401/devices', signed: true, content: '' });
+
+    const res = await syncDevicesWithAPI({ extensionID: 'ext-401', devices: [] });
+
+    expect(res.apiError).toBe(true);
+    expect(storeLog).not.toHaveBeenCalled();
+  });
+
+  it('logs 72 for a 401 the SDK marked as uncorrectable clock skew: nothing else reports it', async () => {
+    getAllPairedDevices.mockRejectedValue({ status: 401, statusText: '', url: 'https://api.example.test/browser_extensions/ext-skew/devices', signed: true, clockSkew: true, content: '' });
+
+    const res = await syncDevicesWithAPI({ extensionID: 'ext-skew', devices: [] });
+
+    expect(res.apiError).toBe(true);
+    expect(storeLog).toHaveBeenCalledWith('error', 72, expect.objectContaining({ status: 401, clockSkew: true }), 'syncDevicesWithAPI');
+  });
+
+  it('still logs 72 for another deterministic 4xx', async () => {
+    getAllPairedDevices.mockRejectedValue({ status: 400, statusText: '', url: 'https://api.example.test/browser_extensions/ext-400/devices', signed: true, content: '' });
+
+    const res = await syncDevicesWithAPI({ extensionID: 'ext-400', devices: [] });
+
+    expect(res.apiError).toBe(true);
+    expect(storeLog).toHaveBeenCalledWith('error', 72, expect.objectContaining({ status: 400 }), 'syncDevicesWithAPI');
+  });
+
   it('returns the default result without calling the API when there is no extensionID', async () => {
     const res = await syncDevicesWithAPI({});
 

@@ -24,6 +24,7 @@ import createAsyncThrottle from '@partials/createAsyncThrottle.js';
 import { mutateDevices } from '@background/functions/listStore.js';
 import reconcileDevices from '@background/functions/reconcileDevices.js';
 import isTransportError from '@partials/isTransportError.js';
+import describeBackendError from '@partials/describeBackendError.js';
 import { hasApiHostAccess, isApiBlockedByBrowser } from '@partials/apiHostAccess.js';
 import { loadFromSessionStorage, removeFromSessionStorage, saveToSessionStorage } from '@sessionStorage/index.js';
 
@@ -160,7 +161,16 @@ const fetchAndReconcileDevices = async (storage, { diagnose = true } = {}) => {
     // a 2FAS outage still lands here — environment, not a defect. `result.apiError`
     // already drives the "devices unavailable" UI. Anything else (a shape/logic
     // error from reconcileDevices) is ours and still reported.
-    if (!isTransportError(err)) {
+    if (err?.status === 401 && err?.clockSkew !== true) {
+      // A rejected signature (a nonce the backend saw twice, a key the row no
+      // longer verifies against) is already counted by the SDK tap: three in a
+      // row report once through 66 and the Reset notice. One 72 per toolbar
+      // click on top of that is noise nobody can act on. The exception stays
+      // logged: a 401 still outside the clock window after the retry signed
+      // with the server's own Date is the one 401 the tap never counts.
+      // Typed descriptor only: the backend body is never forwarded.
+      safeConsole.error('syncDevicesWithAPI - rejected signature', describeBackendError(err));
+    } else if (!isTransportError(err)) {
       // 72, not 39: the catalogue documents 39 as a retired content-script code, so
       // every device-sync failure landed in a bucket nobody was watching.
       await storeLog('error', 72, err, 'syncDevicesWithAPI');

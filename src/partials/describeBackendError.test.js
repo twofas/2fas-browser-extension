@@ -84,6 +84,24 @@ describe('describeBackendError', () => {
     expect(longestSurvivor(wire, next)).toBe(0);
   });
 
+  it('recognises the key-free Reason the backend sends since 2026-09-24', () => {
+    // 2fas-server 103b060: the conflict no longer quotes either key; the whole
+    // Reason is this sentence (44 characters, the length seen in log 27).
+    const reason = 'updating public signing key is not supported';
+
+    expect(describeBackendError(badRequest(apiError(reason)))).toEqual({
+      status: 400,
+      signed: false,
+      bodyShape: 'json',
+      type: 'BadRequest',
+      reasonClass: 'signingKeyConflict',
+      validationField: 'none',
+      validationTag: 'none',
+      reasonLength: 44,
+      networkName: 'none'
+    });
+  });
+
   it('still recognises the sentinel when only the Description carries it', () => {
     expect(describeBackendError(badRequest({ Code: 400, Description: SENTINEL }))).toMatchObject({
       bodyShape: 'json',

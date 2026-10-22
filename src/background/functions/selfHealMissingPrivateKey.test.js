@@ -22,6 +22,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const storeLog = vi.fn().mockResolvedValue(undefined);
 vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
 
+const safeConsoleWarn = vi.fn();
+vi.mock('@partials/safeConsole.js', () => ({ default: { error: vi.fn(), warn: (...a) => safeConsoleWarn(...a), log: vi.fn() } }));
+
 const reportMissingPrivateKey = vi.fn().mockResolvedValue(undefined);
 const clearMissingPrivateKeyReport = vi.fn().mockResolvedValue(undefined);
 vi.mock('@background/functions/reportMissingPrivateKey.js', () => ({
@@ -207,16 +210,18 @@ describe('selfHealMissingPrivateKey — Safari', () => {
     expect(generateDefaultStorage).not.toHaveBeenCalled();
   });
 
-  it('reports (57, selfHealed) and logs the heal (69) BEFORE wiping storage, then regenerates and opens the install page', async () => {
+  it('reports (selfHealed, console only) BEFORE wiping storage, then regenerates and opens the install page', async () => {
     expect(await selfHealMissingPrivateKey(BROKEN_STORAGE, 'handleLoginRequest')).toBe(HEAL_REGENERATED);
 
     expect(reportMissingPrivateKey).toHaveBeenCalledWith(BROKEN_STORAGE, 'handleLoginRequest', { notify: false, cause: { selfHealed: true, key: 'rsa' } });
-    expect(storeLog).toHaveBeenCalledWith('warning', 69, expect.objectContaining({ cause: { key: 'rsa' } }), 'handleLoginRequest');
+    // Informational (the install page explains the re-pair): console only,
+    // nothing for the backend.
+    expect(storeLog.mock.calls.some(call => call[1] === 69)).toBe(false);
+    expect(safeConsoleWarn).toHaveBeenCalledWith('handleLoginRequest', expect.stringContaining('storage regenerated'), { key: 'rsa' });
 
     // storeLog needs `logging` + `extensionID` in storage.local to reach the backend —
-    // both are gone after generateDefaultStorage's clear, so the order is load-bearing.
+    // it is gone after generateDefaultStorage's clear, so the order is load-bearing.
     expect(reportMissingPrivateKey.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
-    expect(storeLog.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
 
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
     expect(openInstallPage).toHaveBeenCalledTimes(1);
@@ -294,7 +299,7 @@ describe('selfHealMissingPrivateKey — Safari', () => {
     expect(after.autoSubmitExcludedDomains).toEqual(['bank.test']);
   });
 
-  it('still counts as regenerated when only the install-page tab fails to open (logs a warning 70, no 57 re-report)', async () => {
+  it('still counts as regenerated when only the install-page tab fails to open (logs a warning 70, no re-report)', async () => {
     openInstallPage.mockRejectedValueOnce(new Error('No window'));
 
     expect(await selfHealMissingPrivateKey(BROKEN_STORAGE, 'handleLoginRequest')).toBe(HEAL_REGENERATED);
@@ -344,7 +349,9 @@ describe('selfHealMissingPrivateKey — Safari', () => {
     expect(results).toEqual([HEAL_REGENERATED, HEAL_REGENERATED]);
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
     expect(openInstallPage).toHaveBeenCalledTimes(1);
-    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(reportMissingPrivateKey).toHaveBeenCalledTimes(1);
+    // Nothing else goes to the backend: the heal itself is console only.
+    expect(storeLog).not.toHaveBeenCalled();
   });
 
   it('runs again for a later, separate incident once the first heal has finished', async () => {
@@ -367,12 +374,9 @@ describe('selfHealMissingPrivateKey — Safari', () => {
     // The heal fails, and the error-70 log fails too. Both mocks must actually be
     // consumed: an unconsumed `...Once` survives `vi.clearAllMocks()` and leaks into
     // whichever test runs next (the suite was order-dependent because of it), and
-    // rejecting the FIRST storeLog call would only exercise the log-69 path, not the
-    // failure log this test is named after.
+    // the first storeLog call of the heal is the 70 from the catch (69 is console only).
     generateDefaultStorage.mockRejectedValueOnce(new Error('boom'));
-    storeLog
-      .mockResolvedValueOnce(undefined) // 69, before the wipe
-      .mockRejectedValueOnce(new Error('storage dead')); // 70, from the catch
+    storeLog.mockRejectedValueOnce(new Error('storage dead')); // 70, from the catch
 
     await expect(selfHealMissingPrivateKey(BROKEN_STORAGE, 'handleLoginRequest')).resolves.toBe(false);
 

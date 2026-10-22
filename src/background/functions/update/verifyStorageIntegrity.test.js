@@ -80,7 +80,7 @@ describe('verifyStorageIntegrity', () => {
     expect(after.keys.privateKey).toBeDefined();
   });
 
-  it('flags a lost signing key while signing is active — log 57 (cause.key signing), NO notification, no regeneration', async () => {
+  it('flags a lost signing key while signing is active — console report (cause.key signing), NO notification, no regeneration', async () => {
     const pair = await crypto.subtle.generateKey(GEN_PARAMS, false, ['encrypt', 'decrypt']);
     await savePrivateKey(pair.privateKey);
     await saveToLocalStorage({
@@ -92,7 +92,8 @@ describe('verifyStorageIntegrity', () => {
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
 
     expect(generateDefaultStorage).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.objectContaining({ cause: expect.objectContaining({ key: 'signing' }) }), 'verifyStorageIntegrity');
+    expect(storeLog).not.toHaveBeenCalled();
+    expect((await loadFromLocalStorage(['signingKeyMissingReported'])).signingKeyMissingReported).toBe(true);
     // Tokens still decrypt — the 401 path owns the user-facing side later.
     expect(notificationShow).not.toHaveBeenCalled();
   });
@@ -120,11 +121,11 @@ describe('verifyStorageIntegrity', () => {
 
     // Crucially: no silent regeneration (which would orphan every paired device).
     expect(generateDefaultStorage).not.toHaveBeenCalled();
-    // A re-pair prompt is shown and the state is logged under its own ID, with a
-    // diagnostic cause telling an empty IndexedDB apart from a corrupt fallback key.
+    // A re-pair prompt is shown and the state is flagged (the report is console
+    // only since 1.9.3: a lost key is the environment, nothing to act on).
     expect(notificationShow).toHaveBeenCalledTimes(1);
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'verifyStorageIntegrity');
-    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'rsa', corruptFallbackKey: false });
+    expect(storeLog).not.toHaveBeenCalled();
+    expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBe(true);
 
     // Storage is left untouched — recovery is an explicit reset/re-pair.
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
@@ -140,8 +141,9 @@ describe('verifyStorageIntegrity', () => {
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
 
-    // One log + one notification total — the flood collapses to one report per incident.
-    expect(storeLog).toHaveBeenCalledTimes(1);
+    // One notification total — the flood collapses to one report per incident
+    // (the report itself is console only since 1.9.3, nothing reaches the backend).
+    expect(storeLog).not.toHaveBeenCalled();
     expect(notificationShow).toHaveBeenCalledTimes(1);
     const after = await loadFromLocalStorage(['privateKeyMissingReported']);
     expect(after.privateKeyMissingReported).toBe(true);
@@ -154,14 +156,15 @@ describe('verifyStorageIntegrity', () => {
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
 
-    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(notificationShow).toHaveBeenCalledTimes(1);
+    expect(storeLog).not.toHaveBeenCalled();
     expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBe(true);
   });
 
   it('clears the reported flag once the private key is usable again, so a new incident reports anew', async () => {
     await saveToLocalStorage({ keys: { publicKey: 'pub' }, extensionID: 'id' });
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
-    expect(storeLog).toHaveBeenCalledTimes(1);
+    expect(notificationShow).toHaveBeenCalledTimes(1);
 
     // The key comes back (e.g. the user re-imported / storage recovered).
     const pair = await crypto.subtle.generateKey(GEN_PARAMS, false, ['encrypt', 'decrypt']);
@@ -173,7 +176,8 @@ describe('verifyStorageIntegrity', () => {
     const { deletePrivateKey } = await import('@background/functions/privateKeyStore.js');
     await deletePrivateKey();
     expect(await verifyStorageIntegrity({ name: 'Chrome' })).toBe(false);
-    expect(storeLog).toHaveBeenCalledTimes(2);
+    expect(notificationShow).toHaveBeenCalledTimes(2);
+    expect(storeLog).not.toHaveBeenCalled();
   });
 
   it('becomes valid via the storage.local fallback key when IndexedDB is unavailable (fresh install)', async () => {
@@ -233,11 +237,10 @@ describe('verifyStorageIntegrity — Safari self-heal (issue #142)', () => {
     expect(fetchMock.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
     // Background trigger: the page opens, but must not yank the window forward.
     expect(openInstallPage).toHaveBeenCalledWith('recovered', { focusWindow: false });
-    // 57 (self-heal marker) + 69, both before the wipe; the deduped re-pair
-    // notification is NOT shown (invisible on Safari anyway — the install page explains).
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.objectContaining({ cause: expect.objectContaining({ selfHealed: true }) }), 'verifyStorageIntegrity');
-    expect(storeLog).toHaveBeenCalledWith('warning', 69, expect.any(Error), 'verifyStorageIntegrity');
-    expect(storeLog.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
+    // Neither the loss (57) nor the heal (69) goes to the backend since 1.9.3; the
+    // deduped re-pair notification is NOT shown (invisible on Safari anyway — the
+    // install page explains).
+    expect(storeLog).not.toHaveBeenCalled();
     expect(notificationShow).not.toHaveBeenCalled();
 
     const after = await loadFromLocalStorage(['keys', 'extensionID', 'privateKeyMissingReported']);
@@ -263,8 +266,8 @@ describe('verifyStorageIntegrity — Safari self-heal (issue #142)', () => {
     // request signing, which the 401 -> registrationRequired path owns instead.
     expect(generateDefaultStorage).not.toHaveBeenCalled();
     expect(openInstallPage).not.toHaveBeenCalled();
-    expect(storeLog).not.toHaveBeenCalledWith('warning', 69, expect.anything(), expect.anything());
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.objectContaining({ cause: expect.objectContaining({ key: 'signing' }) }), 'verifyStorageIntegrity');
+    expect(storeLog).not.toHaveBeenCalled();
+    expect((await loadFromLocalStorage(['signingKeyMissingReported'])).signingKeyMissingReported).toBe(true);
   });
 
   it('returns false (no install page) when the regeneration could not register yet', async () => {
@@ -287,7 +290,8 @@ describe('verifyStorageIntegrity — Safari self-heal (issue #142)', () => {
     expect(await verifyStorageIntegrity({ name: 'Safari' })).toBe(false);
 
     expect(storeLog).toHaveBeenCalledWith('error', 70, expect.any(Error), 'verifyStorageIntegrity');
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'verifyStorageIntegrity');
+    // The report-only fallback re-arms and flags the loss (console only since 1.9.3).
+    expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBe(true);
     expect(openInstallPage).not.toHaveBeenCalled();
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
     expect(after.extensionID).toBe('id');

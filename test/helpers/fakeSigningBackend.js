@@ -24,7 +24,8 @@
 // echoes both), and no accessor returns a stored key. A failing assertion on a
 // logged payload or a thrown error therefore cannot print key material.
 
-const SIGNING_KEY_CONFLICT_SENTINEL = 'browser extension already has public signing key: updating public signing key is not supported';
+// The Reason of 2fas-server since 103b060 (2026-09-24): no key is quoted any more.
+const SIGNING_KEY_CONFLICT_SENTINEL = 'updating public signing key is not supported';
 const API_URL = 'https://api.example.test/browser_extensions';
 
 /**
