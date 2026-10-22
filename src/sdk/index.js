@@ -98,7 +98,10 @@ class SDK {
   };
 
   /**
-   * Performs a fetch with an optional hard timeout.
+   * Performs a fetch with an optional hard timeout. Every request goes out with
+   * `cache: 'no-store'`: the HTTP cache must never answer for the backend (a
+   * stale device list, a stale Date feeding the clock offset) nor turn a request
+   * into a conditional one the signing middleware never sees.
    * When `timeoutMs` is falsy the call behaves exactly like a bare fetch (no
    * AbortController), preserving the original behaviour for user-initiated calls.
    * When set, a hung connection is aborted so the promise rejects deterministically
@@ -110,14 +113,16 @@ class SDK {
    * @returns {Promise<Response>}
    */
   fetchWithTimeout (url, options, timeoutMs) {
+    const request = { cache: 'no-store', ...options };
+
     if (!timeoutMs) {
-      return fetch(url, options);
+      return fetch(url, request);
     }
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    return fetch(url, { ...options, signal: controller.signal })
+    return fetch(url, { ...request, signal: controller.signal })
       .finally(() => clearTimeout(timer));
   }
 

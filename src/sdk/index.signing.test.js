@@ -93,6 +93,24 @@ describe('SDK request signing', () => {
     expect(headers[HEADER_SIGNATURE]).toBeUndefined();
   });
 
+  it('sends every request with cache: no-store, signed or not', async () => {
+    // A cached or revalidated answer can never stand in for the backend: a
+    // stale device list, a stale Date for the clock offset, a conditional
+    // request the signing middleware never sees.
+    // A fresh Response per call: a body can be read only once.
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(200, '{"id":"ext-1"}')));
+    await activateSigning();
+    const sdk = new SDK();
+
+    await sdk.createExtensionInstance({ name: 'n', browser_name: 'Chrome', browser_version: '1', public_key: 'pk' });
+    await sdk.request2FAToken('ext-1', 'example.com');
+    await sdk.getAllPairedDevices('ext-1');
+    await sdk.storeLog('ext-1', 'info', 'm', {});
+
+    expect(fetchMock.mock.calls.length).toBe(4);
+    expect(fetchMock.mock.calls.every(call => call[1]?.cache === 'no-store')).toBe(true);
+  });
+
   it('NEVER signs createExtensionInstance — the create route is public', async () => {
     await activateSigning();
     fetchMock.mockResolvedValue(jsonResponse(200, '{"id":"new"}'));
