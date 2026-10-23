@@ -25,6 +25,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // runtime and only ever compared inside a boolean, or scanned with longestSurvivor.
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@partials/safeConsole.js', () => ({ default: { error: vi.fn(), warn: vi.fn(), log: vi.fn() } }));
 vi.mock('@notification/index.js', () => ({ default: { show: vi.fn().mockResolvedValue(undefined) } }));
 
 let backend;
@@ -37,6 +38,7 @@ vi.mock('@sdk/index.js', () => ({
 
 import browser from 'webextension-polyfill';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import flushBrowserRegistration from './flushBrowserRegistration.js';
 import { REGISTRATION_STORAGE_KEY } from './registrationRetryPolicy.js';
 import { deleteSigningKey, getSigningKey, signingKeyPairMatches } from '@background/functions/signing/signingKeyStore.js';
@@ -115,7 +117,8 @@ describe('flushBrowserRegistration — M3 lost response', () => {
     expect(backend.sentMatchedStored === true).toBe(true);
     expect(backend.holdsSameSigningKey('ext-1', await storedSigningPublicKey())).toBe(true);
     expect((await loadFromLocalStorage(['signing'])).signing?.active === true).toBe(true);
-    expect(logsWithId(75).length).toBe(1);
+    expect(safeConsole.warn.mock.calls.filter(call => call[1] === 'Signing public key restored').length).toBe(1);
+    expect(logsWithId(75).length).toBe(0);
     expect(logsWithId(74).length).toBe(0);
     expect(logsWithId(64).length).toBe(0);
   });

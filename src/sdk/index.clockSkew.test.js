@@ -195,6 +195,33 @@ describe('SDK — clock-skew 401 recovery when /health could not be reached', ()
     expect(await getSigningState()).toMatchObject({ auth401Count: 0, registrationRequired: false });
   });
 
+  it('marks a 401 that is still skew after the corrected retry, so a caller can report it', async () => {
+    // Not counted toward registrationRequired, but no longer invisible either:
+    // the offset from the server's own Date could not satisfy the server.
+    await activateSigning();
+    fetchMock.mockImplementation((url, options) => {
+      if (isHealth(url)) {
+        return unreachable();
+      }
+
+      const signedMs = Date.parse(options.headers[HEADER_SIGNATURE_TIMESTAMP]);
+
+      return Promise.resolve(response(401, '', { Date: new Date(signedMs + 803000).toUTCString() }));
+    });
+
+    await expect(new SDK().removePairedDevice('ext-id', 'd1')).rejects.toMatchObject({ status: 401, signed: true, clockSkew: true });
+  });
+
+  it('does not mark a 401 inside the clock window as skew', async () => {
+    await activateSigning();
+    fetchMock.mockImplementation(() => Promise.resolve(response(401, '', { Date: 'Mon, 14 Sep 2026 14:10:14 GMT' })));
+
+    const err = await new SDK().removePairedDevice('ext-id', 'd1').catch(e => e);
+
+    expect(err).toMatchObject({ status: 401, signed: true });
+    expect('clockSkew' in err).toBe(false);
+  });
+
   it('does not retry a 401 inside the clock window, and counts it', async () => {
     await activateSigning();
     const inWindow = () => response(401, '', { Date: 'Mon, 14 Sep 2026 14:10:14 GMT' });

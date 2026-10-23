@@ -138,7 +138,8 @@ describe('server clock priming (GET /health before the first signature of a sess
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(String(fetchMock.mock.calls[0][0])).toBe(HEALTH_URL);
-    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'GET' });
+    // Never a cached answer: a stale Date would teach a stale offset.
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'GET', cache: 'no-store' });
     expect(typeof (await loadFromSessionStorage(CLOCK_OBSERVED_KEY))[CLOCK_OBSERVED_KEY]).toBe('number');
   });
 

@@ -89,7 +89,10 @@ const primeServerClockOnce = async () => {
   try {
     // Any status will do: the Date header is what matters, and /health is
     // public, side-effect free and answered before every other middleware.
-    const res = await fetch(`${process.env.API_URL}/health`, { method: 'GET', signal: controller.signal });
+    // no-store: a cached answer (a proxy; the route sends no cache headers)
+    // would carry a stale Date and teach an offset that puts every signature
+    // in the past.
+    const res = await fetch(`${process.env.API_URL}/health`, { method: 'GET', cache: 'no-store', signal: controller.signal });
 
     return await noteServerDate(res?.headers?.get?.('date'));
   } catch (err) {

@@ -20,8 +20,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import config from '@/config.js';
 
-const storeLog = vi.fn().mockResolvedValue(undefined);
-vi.mock('@partials/storeLog.js', () => ({ default: (...a) => storeLog(...a) }));
+// The report is console only since 1.9.3: safeConsole.error(context, message, cause).
+const report = vi.fn();
+vi.mock('@partials/safeConsole.js', () => ({ default: { error: (...a) => report(...a), warn: vi.fn(), log: vi.fn() } }));
 
 const notificationShow = vi.fn().mockResolvedValue(undefined);
 vi.mock('@notification/index.js', () => ({ default: { show: (...a) => notificationShow(...a) } }));
@@ -30,17 +31,17 @@ import reportMissingPrivateKey, { clearMissingPrivateKeyReport } from './reportM
 import { loadFromLocalStorage } from '@localStorage/index.js';
 
 beforeEach(() => {
-  storeLog.mockClear();
+  report.mockClear();
   notificationShow.mockClear();
 });
 
 describe('reportMissingPrivateKey', () => {
-  it('logs error 57 with the notification once, then dedupes on later calls', async () => {
+  it('reports once with the notification, then dedupes on later calls', async () => {
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
 
-    expect(storeLog).toHaveBeenCalledTimes(1);
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'verifyStorageIntegrity');
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith('verifyStorageIntegrity', expect.stringContaining('re-pairing required'), expect.any(Object));
     expect(notificationShow).toHaveBeenCalledTimes(1);
     expect(notificationShow).toHaveBeenCalledWith(config.Texts.Error.StorageIntegrity);
 
@@ -48,21 +49,21 @@ describe('reportMissingPrivateKey', () => {
     expect(flagged.privateKeyMissingReported).toBe(true);
   });
 
-  it('notify: false logs error 57 and sets the flag WITHOUT showing the notification', async () => {
+  it('notify: false reports and sets the flag WITHOUT showing the notification', async () => {
     await reportMissingPrivateKey({ keys: {} }, 'handleLoginRequest', { notify: false });
 
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'handleLoginRequest');
+    expect(report).toHaveBeenCalledWith('handleLoginRequest', expect.stringContaining('re-pairing required'), expect.any(Object));
     expect(notificationShow).not.toHaveBeenCalled();
 
     const flagged = await loadFromLocalStorage('privateKeyMissingReported');
     expect(flagged.privateKeyMissingReported).toBe(true);
   });
 
-  it('merges a caller-supplied cause into the log entry next to the corruptFallbackKey diagnostic', async () => {
+  it('merges a caller-supplied cause into the report next to the corruptFallbackKey diagnostic', async () => {
     await reportMissingPrivateKey({ keys: { privateKey: 'corrupt' } }, 'checkSafariStorage', { notify: false, cause: { selfHealed: true } });
 
-    expect(storeLog).toHaveBeenCalledTimes(1);
-    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'rsa', corruptFallbackKey: true, selfHealed: true });
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report.mock.calls[0][2]).toEqual({ key: 'rsa', corruptFallbackKey: true, selfHealed: true });
     expect(notificationShow).not.toHaveBeenCalled();
   });
 
@@ -75,9 +76,9 @@ describe('reportMissingPrivateKey', () => {
       'verifyStorageIntegrity',
       { notify: false, cause: { key: 'signing' } }
     );
-    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'signing', corruptFallbackKey: false });
+    expect(report.mock.calls[0][2]).toEqual({ key: 'signing', corruptFallbackKey: false });
 
-    storeLog.mockClear();
+    report.mockClear();
 
     await reportMissingPrivateKey(
       { keys: { signingPrivateKey: 'corrupt' } },
@@ -85,7 +86,7 @@ describe('reportMissingPrivateKey', () => {
       { notify: false, cause: { key: 'signing' } }
     );
     // Same incident, already flagged — nothing new is sent.
-    expect(storeLog).not.toHaveBeenCalled();
+    expect(report).not.toHaveBeenCalled();
 
     await clearMissingPrivateKeyReport();
     await reportMissingPrivateKey(
@@ -93,7 +94,7 @@ describe('reportMissingPrivateKey', () => {
       'verifyStorageIntegrity',
       { notify: false, cause: { key: 'signing' } }
     );
-    expect(storeLog.mock.calls[0][2].cause).toEqual({ key: 'signing', corruptFallbackKey: true });
+    expect(report.mock.calls[0][2]).toEqual({ key: 'signing', corruptFallbackKey: true });
   });
 
   it('dedupes per key kind: a logged signing-key loss does not silence a later RSA-key loss', async () => {
@@ -101,7 +102,7 @@ describe('reportMissingPrivateKey', () => {
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity', { notify: false, cause: { key: 'signing' } });
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
 
-    expect(storeLog).toHaveBeenCalledTimes(2);
+    expect(report).toHaveBeenCalledTimes(2);
     expect(notificationShow).toHaveBeenCalledTimes(1);
     const flags = await loadFromLocalStorage(['privateKeyMissingReported', 'signingKeyMissingReported']);
     expect(flags.privateKeyMissingReported).toBe(true);
@@ -118,6 +119,6 @@ describe('reportMissingPrivateKey', () => {
     await clearMissingPrivateKeyReport();
     await reportMissingPrivateKey({ keys: {} }, 'verifyStorageIntegrity');
 
-    expect(storeLog).toHaveBeenCalledTimes(2);
+    expect(report).toHaveBeenCalledTimes(2);
   });
 });

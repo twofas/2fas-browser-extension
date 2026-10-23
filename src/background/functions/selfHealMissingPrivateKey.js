@@ -185,18 +185,17 @@ const heal = async (storage, context, key, userInitiated) => {
   // And confirm the install is still REGISTERED. Without an extensionID there is no
   // dead identity to replace — the install is merely incomplete, and generateDefaultStorage
   // / the durable create own that state. Regenerating would burn a keypair, a POST and
-  // an `attempt` for nothing, and log 57's "while registration valid" would be a lie.
+  // an `attempt` for nothing, and the missing-key report's "while registration valid"
+  // would be a lie.
   if (!current?.keys?.publicKey || !current?.extensionID) {
     return HEAL_KEY_PRESENT;
   }
 
   await reportMissingPrivateKey(storage, context, { notify: false, cause: { selfHealed: true, key } });
-  await storeLog(
-    'warning',
-    69,
-    new Error('Private key lost while registration valid; storage regenerated, re-pairing required', { cause: { key } }),
-    context
-  );
+  // The heal is reported on the console only (was log 69 until 1.9.2, the loss
+  // itself was 57): nothing in "key lost, regenerated, pairing page opened" is for
+  // the team to act on. A failed heal still logs 70, a refused one 73.
+  safeConsole.warn(context, 'Private key lost while registration valid; storage regenerated, re-pairing required', { key });
 
   await flushBrowserRegistration();
 
@@ -231,10 +230,11 @@ const heal = async (storage, context, key, userInitiated) => {
   // generateDefaultStorage never rejects — it defers a failed registration to the
   // durable retry and swallows everything else into log 28 — so a resolved promise
   // is not proof that anything changed. Without this check a failed clear/keygen
-  // would still be reported as a completed heal: 57 (selfHealed) and 69 sent, the
-  // user told "the extension has been reset, pair again", while the dead identity
-  // is still in storage. Throw instead: the caller's catch logs 70, re-arms the 57
-  // flag and falls back to the report-only path.
+  // would still be reported as a completed heal (the missing-key report with
+  // selfHealed, the console heal notice), the user told "the extension has been
+  // reset, pair again", while the dead identity is still in storage. Throw instead:
+  // the caller's catch logs 70, re-arms the missing-key report flag and falls back
+  // to the report-only path.
   const regenerated = Boolean(fresh?.keys?.publicKey) && fresh.keys.publicKey !== storage?.keys?.publicKey;
 
   if (!regenerated) {
@@ -347,7 +347,7 @@ const selfHealMissingPrivateKey = async (storage, context, { key = 'rsa', userIn
   inFlight = applyBrake(storage, context, key, userInitiated)
     .catch(async err => {
       await storeLog('error', 70, err, context).catch(() => {});
-      // The 57 report went out before the failure; re-arm it so the caller's
+      // The missing-key report went out before the failure; re-arm it so the caller's
       // report-only fallback (and the next start's retry) is not silenced.
       await clearMissingPrivateKeyReport().catch(() => {});
 

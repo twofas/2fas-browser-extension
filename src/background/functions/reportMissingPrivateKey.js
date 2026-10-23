@@ -20,7 +20,7 @@
 import config from '@/config.js';
 import { loadFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import TwoFasNotification from '@notification/index.js';
-import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 
 // The missing-private-key state is permanent until the user re-pairs, and the
 // integrity check re-runs on every extension/browser update. Without this flag
@@ -35,9 +35,11 @@ const REPORTED_FLAGS = {
 const flagFor = key => REPORTED_FLAGS[key] || REPORTED_FLAGS.rsa;
 
 /**
- * Logs the missing-private-key state (error 57) and prompts a re-pair — at most
- * once per incident. The flag lives in storage.local, so it survives restarts
- * and is wiped together with the rest of the state by any reset/regeneration.
+ * Reports the missing-private-key state on the console (was log 57 until 1.9.2:
+ * a lost IndexedDB key is the environment, nothing the team can act on) and
+ * prompts a re-pair — at most once per incident. The flag lives in storage.local,
+ * so it survives restarts and is wiped together with the rest of the state by any
+ * reset/regeneration.
  *
  * The diagnostic cause distinguishes the two ways this state arises: an empty
  * IndexedDB with no storage.local key at all, versus a storage.local key that is
@@ -71,7 +73,7 @@ const reportMissingPrivateKey = async (storage, context, { notify = true, cause 
     cause: { key: 'rsa', corruptFallbackKey: Boolean(storage?.keys?.[fallbackField]), ...cause }
   });
 
-  await storeLog('error', 57, err, context);
+  safeConsole.error(context, err.message, err.cause);
 
   if (notify) {
     try {

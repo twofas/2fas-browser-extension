@@ -21,9 +21,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@partials/safeConsole.js', () => ({ default: { error: vi.fn(), warn: vi.fn(), log: vi.fn() } }));
 
 import browser from 'webextension-polyfill';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import {
   generateSigningKeyMaterial,
   getOrMigrateSigningKey,
@@ -291,6 +293,8 @@ describe('ensureUsableSigningKeyMaterial', () => {
 const makeEcdsaPair = extractable => crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, extractable, ['sign', 'verify']);
 const exportSpki = async publicKey => Buffer.from(await crypto.subtle.exportKey('spki', publicKey)).toString('base64');
 const logsWithId = id => storeLog.mock.calls.filter(call => call[1] === id);
+// A restore is console-only (no log 75 since 1.9.3): safeConsole.warn(context, message, { source }).
+const restoreReports = () => safeConsole.warn.mock.calls.filter(call => call[1] === 'Signing public key restored');
 const ACTIVE_SIGNING = { active: true, conflict: false, registrationRequired: false, auth401Count: 0 };
 
 describe('withKeyMaterialLock', () => {
@@ -382,13 +386,11 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
 
     expect(logsWithId(74).length).toBe(0);
 
-    const logs = logsWithId(75);
-    expect(logs.length).toBe(1);
-
-    const payload = logs[0][2];
-    expect(payload instanceof Error && logs[0][0] === 'warning').toBe(true);
-    expect(longestSurvivor(payload, pubA)).toBe(0);
-    expect(longestSurvivor(payload, pubB)).toBe(0);
+    const reports = restoreReports();
+    expect(reports.length).toBe(1);
+    expect(logsWithId(75).length).toBe(0);
+    expect(longestSurvivor(reports[0], pubA)).toBe(0);
+    expect(longestSurvivor(reports[0], pubB)).toBe(0);
   });
 
   it('refuses to regenerate over an active registration (R7) unless forNewIdentity', async () => {
@@ -422,10 +424,10 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     expect(stored.keys?.signingPublicKey === material.signingPublicKey).toBe(true);
     expect(stored.keys?.publicKey === 'rsa-pub').toBe(true);
 
-    const restoredLogs = logsWithId(75);
-    expect(restoredLogs.length).toBe(1);
-    expect(restoredLogs[0][2] instanceof Error && restoredLogs[0][0] === 'warning').toBe(true);
-    expect(longestSurvivor(restoredLogs[0][2], material.signingPublicKey)).toBe(0);
+    const reports = restoreReports();
+    expect(reports.length).toBe(1);
+    expect(logsWithId(75).length).toBe(0);
+    expect(longestSurvivor(reports[0], material.signingPublicKey)).toBe(0);
     expect(logsWithId(74).length).toBe(0);
   });
 
@@ -436,7 +438,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     const result = await ensureUsableSigningKeyMaterial();
 
     expect(result.restored === true && result.signingPublicKey === material.signingPublicKey).toBe(true);
-    expect(logsWithId(75).length).toBe(1);
+    expect(restoreReports().length).toBe(1);
   });
 
   it('never restores a companion record that does not pair with the surviving private key', async () => {
@@ -452,7 +454,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     expect(result.signingPublicKey === material.signingPublicKey).toBe(true);
     expect((await getSigningKeyMeta())?.publicKey === material.signingPublicKey).toBe(true);
     expect(logsWithId(74).length).toBe(0);
-    expect(logsWithId(75)[0]?.[2]?.cause).toEqual({ source: 'derived' });
+    expect(restoreReports()[0]?.[2]).toEqual({ source: 'derived' });
   });
 
   it('reuse backfills a missing companion record (1.9.0 layout)', async () => {
@@ -467,7 +469,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
 
     expect(result.regenerated === false && result.signingPublicKey === spki).toBe(true);
     expect((await getSigningKeyMeta())?.publicKey === spki).toBe(true);
-    expect(logsWithId(74).length + logsWithId(75).length).toBe(0);
+    expect(logsWithId(74).length + restoreReports().length).toBe(0);
   });
 
   it('reuse behind a corrupt storage.local copy still backfills the companion of the IndexedDB key', async () => {
@@ -604,7 +606,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     expect(longestSurvivor(JSON.stringify(payload.cause), previous)).toBe(0);
     expect(longestSurvivor(payload, previous)).toBe(0);
     expect(longestSurvivor(payload, result.signingPublicKey || '')).toBe(0);
-    expect(logsWithId(75).length).toBe(0);
+    expect(restoreReports().length).toBe(0);
   });
 
   it('a first generation logs no 74', async () => {
@@ -613,7 +615,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     const result = await ensureUsableSigningKeyMaterial();
 
     expect(result.regenerated === true).toBe(true);
-    expect(logsWithId(74).length + logsWithId(75).length).toBe(0);
+    expect(logsWithId(74).length + restoreReports().length).toBe(0);
   });
 
   it('reports 74 only after releasing the key-material lock, and a failing log is swallowed', async () => {
@@ -694,7 +696,7 @@ describe('ensureUsableSigningKeyMaterial — serialized, pair-checked, non-overw
     const after = await loadFromLocalStorage(null);
     expect(after.keys === undefined).toBe(true);
     expect('signingKeyGenerations' in after || 'signingKeySends' in after || 'signingKeyGeneratedAt' in after).toBe(false);
-    expect(logsWithId(74).length + logsWithId(75).length).toBe(0);
+    expect(logsWithId(74).length + restoreReports().length).toBe(0);
   });
 });
 
@@ -842,7 +844,7 @@ const signsFor = async (privateKey, publicKey) => crypto.subtle.verify(
 describe('ensureUsableSigningKeyMaterial — a surviving private key is never replaced (1.9.1)', () => {
   const orphanSpki = async () => exportSpki((await makeEcdsaPair(true)).publicKey);
   const cause74 = () => logsWithId(74)[0]?.[2]?.cause;
-  const cause75 = () => logsWithId(75)[0]?.[2]?.cause;
+  const cause75 = () => restoreReports()[0]?.[2];
 
   it('pairMismatch with a companion that pairs with the survivor: restored from the companion (75, source companion)', async () => {
     const material = await generateSigningKeyMaterial();
@@ -853,7 +855,7 @@ describe('ensureUsableSigningKeyMaterial — a surviving private key is never re
     expect(result.regenerated === false && result.restored === true).toBe(true);
     expect(result.signingPublicKey === material.signingPublicKey).toBe(true);
     expect((await loadFromLocalStorage(['keys'])).keys?.signingPublicKey === material.signingPublicKey).toBe(true);
-    expect(logsWithId(75).length === 1 && logsWithId(74).length === 0).toBe(true);
+    expect(restoreReports().length === 1 && logsWithId(74).length === 0).toBe(true);
     expect(cause75()).toEqual({ source: 'companion' });
   });
 
@@ -900,7 +902,7 @@ describe('ensureUsableSigningKeyMaterial — a surviving private key is never re
     expect(first).toMatchObject({ regenerated: false, restored: true, persisted: true });
     expect(second).toMatchObject({ regenerated: false });
     expect(second.restored === undefined && second.signingPublicKey === survivorSpki).toBe(true);
-    expect(logsWithId(75).length).toBe(1);
+    expect(restoreReports().length).toBe(1);
     expect(logsWithId(74).length).toBe(0);
   });
 
@@ -1017,7 +1019,7 @@ describe('ensureUsableSigningKeyMaterial — a surviving private key is never re
     expect((await loadFromLocalStorage(['keys'])).keys.signingPublicKey === survivorSpki).toBe(true);
     expect(await signsFor(await getSigningKey(), survivor.publicKey)).toBe(true);
     expect(logsWithId(74).length).toBe(0);
-    expect(logsWithId(75).length).toBe(1);
+    expect(restoreReports().length).toBe(1);
   });
 
   it('a first generation logs no 74 and leaves the marker cleared', async () => {
@@ -1089,7 +1091,7 @@ describe('ensureUsableSigningKeyMaterial — an IndexedDB read failure never pas
     expect(Object.keys(keys || {}).join()).toBe('publicKey');
     // The write probe leaves nothing behind.
     expect((await getKeyRecord('signingKeyWriteProbe')) === undefined).toBe(true);
-    expect(logsWithId(74).length + logsWithId(75).length).toBe(0);
+    expect(logsWithId(74).length + restoreReports().length).toBe(0);
   });
 
   it('the next pass, with IndexedDB readable again, restores the same key instead of regenerating (75, no 74)', async () => {
@@ -1105,7 +1107,7 @@ describe('ensureUsableSigningKeyMaterial — an IndexedDB read failure never pas
 
     expect(second.regenerated === false && second.restored === true).toBe(true);
     expect((keys?.signingPublicKey === material.signingPublicKey) === true).toBe(true);
-    expect(logsWithId(75).length === 1 && logsWithId(74).length === 0).toBe(true);
+    expect(restoreReports().length === 1 && logsWithId(74).length === 0).toBe(true);
   });
 
   it('an IndexedDB that can be neither read nor written (Firefox permanent private browsing) still gets a first key in storage.local', async () => {

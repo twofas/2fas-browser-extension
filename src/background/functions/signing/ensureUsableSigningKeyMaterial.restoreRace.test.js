@@ -21,6 +21,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@partials/storeLog.js', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@partials/safeConsole.js', () => ({ default: { error: vi.fn(), warn: vi.fn(), log: vi.fn() } }));
 
 // The recovery is the one slow step of a restore (signatures + curve
 // arithmetic); a reset that lands meanwhile replaces the identity. Its keys
@@ -29,6 +30,7 @@ const recover = vi.fn();
 vi.mock('./recoverSigningPublicKey.js', () => ({ default: (...args) => recover(...args) }));
 
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import ensureUsableSigningKeyMaterial from './ensureUsableSigningKeyMaterial.js';
 import { saveSigningKey } from './signingKeyStore.js';
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
@@ -36,6 +38,8 @@ import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js
 const makeEcdsaPair = () => crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
 const exportSpki = async publicKey => Buffer.from(await crypto.subtle.exportKey('spki', publicKey)).toString('base64');
 const logsWithId = id => storeLog.mock.calls.filter(call => call[1] === id);
+// A restore is console-only (no log 75 since 1.9.3): safeConsole.warn(context, message, { source }).
+const restoreReports = () => safeConsole.warn.mock.calls.filter(call => call[1] === 'Signing public key restored');
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -62,7 +66,7 @@ describe('ensureUsableSigningKeyMaterial — a reset racing the restore of the p
     expect(stored.keys).toEqual({ publicKey: 'rsa-pub-2' });
     expect(stored.extensionID).toBe('ext-2');
     expect(stored.signingKeyUnregistrable).toBeUndefined();
-    expect(logsWithId(75).length + logsWithId(74).length).toBe(0);
+    expect(restoreReports().length + logsWithId(74).length).toBe(0);
   });
 
   it('control: without a reset the recovered key is written and reported', async () => {
@@ -76,6 +80,6 @@ describe('ensureUsableSigningKeyMaterial — a reset racing the restore of the p
 
     expect(result).toMatchObject({ restored: true, persisted: true });
     expect((await loadFromLocalStorage(['keys'])).keys.signingPublicKey === survivorSpki).toBe(true);
-    expect(logsWithId(75).length).toBe(1);
+    expect(restoreReports().length).toBe(1);
   });
 });

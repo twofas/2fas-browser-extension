@@ -108,7 +108,7 @@ struct ContentView: View {
             .onAppear {
                 presenter.updateState()
             }
-            .onChange(of: presenter.extensionState) { newValue in
+            .onChange(of: presenter.extensionState) {
                 withAnimation(.linear(duration: animDuration)) {
                     opacity = 1.0
                 }

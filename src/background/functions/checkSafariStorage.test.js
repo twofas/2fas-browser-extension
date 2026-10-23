@@ -109,8 +109,8 @@ describe('checkSafariStorage', () => {
     // would unpair a functioning install to fix request signing. The 401 ->
     // registrationRequired path owns that recovery. Logged only, no notification.
     expect(generateDefaultStorage).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.objectContaining({ cause: expect.objectContaining({ key: 'signing' }) }), 'checkSafariStorage');
-    expect(storeLog).not.toHaveBeenCalledWith('warning', 69, expect.anything(), expect.anything());
+    expect(storeLog).not.toHaveBeenCalled();
+    expect((await loadFromLocalStorage(['signingKeyMissingReported'])).signingKeyMissingReported).toBe(true);
     expect(notificationShow).not.toHaveBeenCalled();
   });
 
@@ -221,11 +221,8 @@ describe('checkSafariStorage', () => {
 
     await checkSafariStorage({ name: 'Safari' });
 
-    // Logged (57 with the self-heal marker + 69) BEFORE the regeneration wipes
-    // storage.local, otherwise the entries could never reach the backend.
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.objectContaining({ cause: expect.objectContaining({ selfHealed: true }) }), 'checkSafariStorage');
-    expect(storeLog).toHaveBeenCalledWith('warning', 69, expect.any(Error), 'checkSafariStorage');
-    expect(storeLog.mock.invocationCallOrder[0]).toBeLessThan(generateDefaultStorage.mock.invocationCallOrder[0]);
+    // Neither the loss (57) nor the heal (69) goes to the backend since 1.9.3.
+    expect(storeLog).not.toHaveBeenCalled();
 
     expect(generateDefaultStorage).toHaveBeenCalledTimes(1);
     // The dead identity's pairings are removed on the backend BEFORE the wipe
@@ -298,8 +295,9 @@ describe('checkSafariStorage', () => {
 
     expect(generateDefaultStorage).not.toHaveBeenCalled();
     expect(openInstallPage).not.toHaveBeenCalled();
-    expect(storeLog).toHaveBeenCalledTimes(1);
-    expect(storeLog).toHaveBeenCalledWith('error', 57, expect.any(Error), 'checkSafariStorage');
+    // Console only since 1.9.3; the dedupe flag and the one notification remain.
+    expect(storeLog).not.toHaveBeenCalled();
+    expect((await loadFromLocalStorage(['privateKeyMissingReported'])).privateKeyMissingReported).toBe(true);
     expect(notificationShow).toHaveBeenCalledTimes(1);
     const after = await loadFromLocalStorage(['keys', 'extensionID']);
     expect(after.keys.publicKey).toBe('pub');

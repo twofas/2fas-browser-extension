@@ -18,7 +18,7 @@
 //
 
 import { describe, it, expect } from 'vitest';
-import { classifyError, isRetryable } from './registrationRetryPolicy.js';
+import { classifyError, isRetryable, isSigningKeyConflictError } from './registrationRetryPolicy.js';
 
 describe('registrationRetryPolicy — classifyError', () => {
   it('retries a proxy 407: the API never answered, the proxy did', () => {
@@ -49,5 +49,30 @@ describe('registrationRetryPolicy — classifyError', () => {
   it('treats a missing status as a network failure', () => {
     expect(classifyError({ name: 'TypeError', message: 'Failed to fetch' })).toBe('network');
     expect(classifyError(null)).toBe('network');
+  });
+});
+
+describe('registrationRetryPolicy — isSigningKeyConflictError', () => {
+  const conflict = Reason => ({ status: 400, statusText: 'Bad Request', content: { Code: 400, Type: 'BadRequest', Description: 'Malformed request syntax.', Reason } });
+
+  it('recognises the Reason the backend sends since 2026-09-24 (no keys echoed)', () => {
+    expect(isSigningKeyConflictError(conflict('updating public signing key is not supported'))).toBe(true);
+  });
+
+  it('still recognises the Reason of the previous backend (both keys quoted)', () => {
+    expect(isSigningKeyConflictError(conflict('cannot update key from "key-A" to "key-B": browser extension already has public signing key: updating public signing key is not supported'))).toBe(true);
+  });
+
+  it('recognises the sentinel in a text body too', () => {
+    expect(isSigningKeyConflictError({ status: 400, content: 'updating public signing key is not supported' })).toBe(true);
+  });
+
+  it('does not mistake a validator rejection of the key field for a conflict', () => {
+    expect(isSigningKeyConflictError(conflict("Key: 'UpdateBrowserExtension.PublicSigningKey' Error:Field validation for 'PublicSigningKey' failed on the 'ecdsa_p256_public_key' tag"))).toBe(false);
+  });
+
+  it('needs a 400', () => {
+    expect(isSigningKeyConflictError({ status: 401, content: 'updating public signing key is not supported' })).toBe(false);
+    expect(isSigningKeyConflictError({ name: 'TypeError', message: 'updating public signing key is not supported' })).toBe(false);
   });
 });

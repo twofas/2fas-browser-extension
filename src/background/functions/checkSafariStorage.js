@@ -104,7 +104,8 @@ const runCheck = async browserInfo => {
  *
  * A fully registered install whose private key vanished (storage.local intact,
  * IndexedDB record gone — GitHub issue #142; RSA token key or, once signing is
- * active, the ECDSA signing key) is self-healed: reported (log 57 + 69),
+ * active, the ECDSA signing key) is self-healed: reported (console only since
+ * 1.9.3, was log 57 + 69),
  * regenerated and sent to the install page to pair again. On Safari the
  * reinstall this path handles cannot clear that state by itself (storage.local
  * outlives the app), the devices are already unusable, and the only manual way

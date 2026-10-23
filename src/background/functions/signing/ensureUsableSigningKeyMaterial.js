@@ -19,6 +19,7 @@
 
 import { loadFromLocalStorage, saveToLocalStorage } from '@localStorage/index.js';
 import storeLog from '@partials/storeLog.js';
+import safeConsole from '@partials/safeConsole.js';
 import b642ab from '@background/functions/b642ab.js';
 import { preferIdb } from '@background/functions/keyStoragePolicy.js';
 import recoverSigningPublicKey from './recoverSigningPublicKey.js';
@@ -343,8 +344,9 @@ const settleSigningKeyMaterial = async forNewIdentity => {
 };
 
 /**
- * Logs a restore (75), or a kept or regenerated unusable key (74). Enum-only
- * payloads; never a key. Best effort.
+ * Reports a restore on the console (was log 75 until 1.9.2: the public key is
+ * back, the keyed PUT confirms it, nothing to act on), or logs a kept or
+ * regenerated unusable key (74). Enum-only payloads; never a key. Best effort.
  *
  * @async
  * @param {Object|null} report - From settleSigningKeyMaterial.
@@ -357,7 +359,7 @@ const reportSigningKeyMaterial = async report => {
 
   try {
     if (report.restored) {
-      await storeLog('warning', 75, new Error('Signing public key restored', { cause: { source: report.source } }), LOG_CONTEXT);
+      safeConsole.warn(LOG_CONTEXT, 'Signing public key restored', { source: report.source });
       return;
     }
 

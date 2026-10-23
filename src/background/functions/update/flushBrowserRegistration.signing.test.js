@@ -1082,7 +1082,7 @@ describe('sendUpdate — a held signing key whose public half was lost (1.9.1)',
     expect(after.signingKeySends).toBe(1);
     expect(after.keys.signingPublicKey === survivorSpki).toBe(true);
     expect(await storedRecord()).toBeNull();
-    expect(storeLog).toHaveBeenCalledWith('warning', 75, expect.anything(), expect.anything());
-    expect(storeLog).not.toHaveBeenCalledWith('warning', 74, expect.anything(), expect.anything());
+    // The restore is console only (no log 75 since 1.9.3) and never a regeneration (74).
+    expect(storeLog.mock.calls.some(call => call[1] === 75 || call[1] === 74)).toBe(false);
   });
 });

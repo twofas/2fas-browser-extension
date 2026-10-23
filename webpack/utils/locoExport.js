@@ -32,7 +32,7 @@ getDirectories('./src/_locales')
         locale,
         files: fs.readdirSync(`./src/_locales/${locale}`)
       };
-    })
+    });
   })
   .then(res => {
     return res.map(l => {
@@ -42,7 +42,7 @@ getDirectories('./src/_locales')
           f = JSON.parse(fs.readFileSync(`./src/_locales/${l.locale}/${f}`, 'utf8'));
           return f;
         }))
-      }
+      };
     });
   })
   .then(res => {

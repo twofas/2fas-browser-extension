@@ -23,6 +23,7 @@
  * alarms or Date.now) so it can be unit-tested in isolation — the orchestrator
  * (flushBrowserRegistration) supplies `now`/`rand` and performs the I/O.
  */
+import { isSigningKeyConflictReason } from '@partials/describeBackendError.js';
 
 /** Storage key holding the single pending-registration record. */
 export const REGISTRATION_STORAGE_KEY = 'pendingBrowserRegistration';
@@ -83,11 +84,13 @@ export const classifyError = err => {
 
 /**
  * Detects the backend's signing-key conflict rejection: a 400 on PUT whose
- * body carries ErrBrowserExtensionAlreadyHasSigningKey ("browser extension
- * already has public signing key ..."). It means the server holds a DIFFERENT
- * public signing key for this extensionID — key replacement is not supported,
- * so retrying with the same payload is futile; the caller flips the conflict
- * state and re-sends without the key.
+ * body carries ErrBrowserExtensionAlreadyHasSigningKey ("updating public
+ * signing key is not supported" since 2026-09-24, "browser extension already
+ * has public signing key ..." before — both recognised, see
+ * describeBackendError). It means the server holds a DIFFERENT public signing
+ * key for this extensionID — key replacement is not supported, so retrying
+ * with the same payload is futile; the caller flips the conflict state and
+ * re-sends without the key.
  *
  * @param {{status?: number, content?: *}|null|undefined} err - Normalized SDK error.
  * @returns {boolean}
@@ -100,7 +103,7 @@ export const isSigningKeyConflictError = err => {
   try {
     const content = typeof err.content === 'string' ? err.content : JSON.stringify(err.content ?? '');
 
-    return content.toLowerCase().includes('already has public signing key');
+    return isSigningKeyConflictReason(content);
   } catch (e) {
     return false;
   }

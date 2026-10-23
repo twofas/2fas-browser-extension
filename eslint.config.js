@@ -20,16 +20,20 @@
 const neostandard = require('neostandard');
 
 module.exports = [
-  ...neostandard({
-    semi: true,
-    noJsx: true,
-    env: ['browser', 'webextensions', 'node'],
+  // Global ignores: since neostandard 0.14 its own `ignores` option only applies
+  // to its file-scoped configs, so build output would still be linted by ours.
+  {
     ignores: [
       'public/**',
       'build/**',
       'node_modules/**',
       '.yarn/**'
     ]
+  },
+  ...neostandard({
+    semi: true,
+    noJsx: true,
+    env: ['browser', 'webextensions', 'node']
   }),
   {
     languageOptions: {
