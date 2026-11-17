@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "2FAS Auth - Two Factor Authentication",
+  "name": "__MSG_appName__",
   "short_name": "2FAS Auth",
   "author": "Two Factor Authentication Service, Inc.",
   "version": "1.9.3",

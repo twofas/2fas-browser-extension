@@ -1,4 +1,8 @@
 {
+  "appName": {
+    "message": "2FAS Auth - Two Factor Authentication",
+    "description": ""
+  },
   "appDesc": {
     "message": "2FAS Browser Extension is simple, private, and secure: 1 click, 1 tap, and your token is automatically entered!",
     "description": ""

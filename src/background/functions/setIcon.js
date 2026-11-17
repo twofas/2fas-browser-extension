@@ -99,7 +99,7 @@ const setIcon = async (tabID, isActive = true, changeTitle = false) => {
 
   if (isActive || changeTitle) {
     const iconTitle = isActive
-      ? '2FAS - Two Factor Authentication'
+      ? browser.i18n.getMessage('extTooltip')
       : browser.i18n.getMessage('inActiveTabInfo');
 
     await browser.action.setTitle({ tabId: tabID, title: iconTitle });

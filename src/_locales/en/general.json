@@ -222,5 +222,13 @@
   "inActiveTabInfo": {
     "message": "Please refresh this tab to use the 2FAS Browser Extension",
     "description": ""
+  },
+  "extTooltip": {
+    "message": "2FAS - Two Factor Authentication",
+    "description": ""
+  },
+  "deviceNamePattern": {
+    "message": "BROWSER on OS (ID)",
+    "description": ""
   }
 }

@@ -26,6 +26,36 @@ import months from '@partials/months.js';
 import disconnectSVG from '@images/page-icons/disconnect.svg';
 
 /**
+ * Renders a date through the locale's own pattern so word order and separators stay
+ * translatable. Tokens: YYYY, MMM (month name), MM/M (month number), DD/D (day).
+ *
+ * @param {Date} date - Date to render.
+ * @returns {string} Formatted date.
+ */
+const formatDate = date => {
+  const pattern = browser.i18n.getMessage('pairDateFormat') || 'MMM DD,  YYYY';
+  const month = String(date.getMonth() + 1);
+  const day = String(date.getDate());
+
+  return pattern.replace(/YYYY|MMM|MM|DD|M|D/g, token => {
+    switch (token) {
+      case 'YYYY':
+        return String(date.getFullYear());
+      case 'MMM':
+        return months[date.getMonth()];
+      case 'MM':
+        return month.padStart(2, '0');
+      case 'DD':
+        return day.padStart(2, '0');
+      case 'M':
+        return month;
+      default:
+        return day;
+    }
+  });
+};
+
+/**
  * Generates and renders the list of paired devices in the options page table.
  *
  * @param {Array} list - Array of paired device objects to display
@@ -66,7 +96,7 @@ const generateDevicesList = list => {
     t.td[1] = createElement('td');
     t.td[1].setAttribute('data-before-i18n', browser.i18n.getMessage('pairingDate'));
     t.pairDate = new Date(device.paired_at);
-    t.dateString = `${months[t.pairDate.getMonth()]} ${('0' + t.pairDate.getDate()).slice(-2)},  ${t.pairDate.getFullYear()}`;
+    t.dateString = formatDate(t.pairDate);
     t.datePaired = createTextElement('span', t.dateString);
 
     t.td[1].appendChild(t.datePaired);

@@ -30,25 +30,29 @@ import setIcon from '@/background/functions/setIcon.js';
 const setIconSelect = async () => {
   const { extIcon } = await loadFromLocalStorage(['extIcon']);
 
+  const labelDefault = browser.i18n.getMessage('iconDefault');
+  const labelType1 = browser.i18n.getMessage('iconType1');
+  const labelType2 = browser.i18n.getMessage('iconType2');
+
   // eslint-disable-next-line no-new
   new SlimSelect({
     select: '#twofas-icon-select',
     data: [
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128.png')}" alt="Default" /><span>Default</span></span>`,
-        text: 'Default',
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128.png')}" alt="${labelDefault}" /><span>${labelDefault}</span></span>`,
+        text: labelDefault,
         value: 0,
         selected: extIcon === 0
       },
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_1.png')}" alt="Type1" /><span>Type 1</span></span>`,
-        text: 'Type 1',
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_1.png')}" alt="${labelType1}" /><span>${labelType1}</span></span>`,
+        text: labelType1,
         value: 1,
         selected: extIcon === 1
       },
       {
-        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_2.png')}" alt="Type1" /><span>Type 2</span></span>`,
-        text: 'Type 2',
+        html: `<span><img src="${browser.runtime.getURL('images/icons/icon128_2.png')}" alt="${labelType2}" /><span>${labelType2}</span></span>`,
+        text: labelType2,
         value: 2,
         selected: extIcon === 2
       }

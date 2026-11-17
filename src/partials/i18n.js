@@ -33,6 +33,8 @@ const ELEMENT_ATTRIBUTE_MAP = {
  * @returns {void}
  */
 const i18n = () => {
+  document.documentElement.lang = browser.i18n.getUILanguage();
+
   const elements = document.querySelectorAll('[data-i18n]');
 
   elements.forEach(element => {
