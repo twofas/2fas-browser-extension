@@ -94,7 +94,17 @@ const detectBrowser = () => {
  */
 const buildDefaultName = (browserName, osName) => {
   const randomID = uuidv4().substring(0, 4);
-  return `${browserName} ${browser.i18n.getMessage('browserOnOs')} ${osName} (${randomID})`;
+  const pattern = browser.i18n.getMessage('deviceNamePattern') || 'BROWSER on OS (ID)';
+
+  // Word order is part of the copy, so the whole shape lives in the catalogue;
+  // single-pass replace keeps inserted values from being re-scanned for tokens.
+  return pattern.replace(/BROWSER|OS|ID/g, token => {
+    if (token === 'BROWSER') {
+      return browserName;
+    }
+
+    return token === 'OS' ? osName : randomID;
+  });
 };
 
 /**

@@ -198,5 +198,21 @@
   "apiBlockedRefresh": {
     "message": "Refresh",
     "description": ""
+  },
+  "iconDefault": {
+    "message": "Default",
+    "description": ""
+  },
+  "iconType1": {
+    "message": "Type 1",
+    "description": ""
+  },
+  "iconType2": {
+    "message": "Type 2",
+    "description": ""
+  },
+  "pairDateFormat": {
+    "message": "MMM DD,  YYYY",
+    "description": ""
   }
 }
